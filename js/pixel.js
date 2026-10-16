@@ -92,17 +92,17 @@
 
   PX.CHARS = {
     Feline1: {
-      cat: true, tail: true, label: 'FELINE1', cn: '猫娘 Feline1', perk: '二段跳', perkEn: 'DOUBLE JUMP', color: '#ff6fa6',
+      cat: true, tail: true, label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：多 1 颗心 + 每个世界不同的身法', perkEn: 'NINE LIVES', color: '#ff6fa6',
       pal: { o: '#4a2a3e', h: '#fff1f6', H: '#e3bfd2', i: '#ff9fc4', s: '#ffe3d6', p: '#ff9aa8', m: '#c0506a', e: '#e0407a', w: '#ffffff',
         c: '#fbe0ec', C: '#e2aec6', a: '#ff6fa6', l: '#ffffff', b: '#9b5a78', t: '#fff1f6', r: '#ff6fa6' }
     },
     C0: {
-      cat: false, headset: true, label: 'C0', cn: '程序 C0', perk: '按住滑翔', perkEn: 'HOLD TO GLIDE', color: '#4fe3ff',
-      pal: { o: '#050307', h: '#2e2534', H: '#1a141e', s: '#f3d2c4', p: '#ef9a9a', m: '#9c4a5a', e: '#4fe3ff', w: '#ffffff',
+      cat: false, headset: true, label: 'C0', cn: '程序 C0', perk: '超频：危险时自动慢动作', perkEn: 'OVERCLOCK', color: '#4fe3ff',
+      pal: { o: '#050307', h: '#2e2534', H: '#1a141e', s: '#f3d2c4', p: '#ef9a9a', m: '#9c4a5a', e: '#141018', w: '#ffffff',
         c: '#2c2638', C: '#19151f', a: '#4fe3ff', l: '#1c1824', b: '#4fe3ff', r: '#4fe3ff' }
     },
     X0: {
-      cat: false, ribbon: true, label: 'X0', cn: '画师 X0', perk: '镜光护盾', perkEn: 'MIRROR SHIELD', color: '#b48cff',
+      cat: false, ribbon: true, label: 'X0', cn: '画师 X0', perk: '镜光护盾：护盾更快充能 + 吸星砂', perkEn: 'MIRROR SHIELD', color: '#b48cff',
       pal: { o: '#1a0a12', h: '#47303d', H: '#2a1922', s: '#f6dcd6', p: '#ff9fb0', m: '#a04a5a', e: '#b48cff', w: '#ffffff',
         c: '#f5e3ea', C: '#cdb0bc', a: '#2a1220', l: '#2a1220', b: '#2a1220', r: '#ff5f8f' }
     }
@@ -165,7 +165,8 @@
       g.fillStyle = '#c48a4e'; g.fillRect(3, 1, 2, 2); g.fillRect(11, 1, 2, 2);
       return c;
     })();
-    P.spike = function (w, h, seed) {
+    P.spike = function (w, h, seed, pal) {
+      pal = pal || ['#24406e', '#e6fbff', '#a8e6ff', '#6fb6e8'];
       var c = PX.make(w, h), g = c.getContext('2d'), R = PX.rng(seed), n = 2 + Math.floor(R() * 2);
       for (var k = 0; k < n; k++) {
         var cx = Math.floor(w * (k + 0.5) / n + (R() - 0.5) * 3), top = Math.floor(R() * h * 0.4) + (k % 2 ? 5 : 0), hw = Math.max(3, Math.floor(w / n / 2) + 1);
@@ -174,7 +175,7 @@
           for (var x = Math.floor(cx - half); x <= Math.ceil(cx + half); x++) {
             if (x < 0 || x >= w) continue;
             var edge = x <= cx - half + 0.6 || x >= cx + half - 0.6 || y === top;
-            g.fillStyle = edge ? '#24406e' : (x < cx ? '#e6fbff' : (x === cx ? '#a8e6ff' : '#6fb6e8'));
+            g.fillStyle = edge ? pal[0] : (x < cx ? pal[1] : (x === cx ? pal[2] : pal[3]));
             g.fillRect(x, y, 1, 1);
           }
         }

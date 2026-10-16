@@ -179,7 +179,7 @@
     var d = e.detail;
     if (!onscreen()) return;
     if (d.type === 'over') say(d.isBest ? '新纪录！好厉害！' : pick(['啊……再来一次？', '差一点点！', '小心脚下！']), 2600);
-    else if (d.type === 'biome') say(d.name.indexOf('峰') >= 0 ? '哇，极光！' : '下雪了！', 2400);
+    else if (d.type === 'biome') say(d.line || d.name, 2400);
   });
 
   var last = performance.now(), chatter = 400;

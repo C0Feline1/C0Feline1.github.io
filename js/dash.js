@@ -62,7 +62,8 @@
   function esc(s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
   function log(cls, msg) {
     lines.push('<span class="t">[' + now() + ']</span> <span class="' + cls + '">' + esc(msg) + '</span>');
-    if (lines.length > 16) lines.shift();
+    var maxLines = Math.max(8, Math.floor((logEl.clientHeight || 300) / 18) - 1);
+    while (lines.length > maxLines) lines.shift();
     logEl.innerHTML = lines.join('\n') + '\n<span class="cursor"></span>';
   }
   var boot = [
@@ -71,17 +72,10 @@
     ['c', 'arcade KITTY RUNNER 已加载，等待玩家']
   ];
   boot.forEach(function (b, i) { setTimeout(function () { log(b[0], b[1]); }, 250 + i * 320); });
-  var idle = [
-    ['c', 'git    commit -m "调整猫耳抖动幅度"'], ['c', 'build  pixel-atlas 生成完毕 (0 张图片，全靠代码)'],
-    ['p', 'X0     画完了一只雪狼'], ['p', 'Feline1 在测试跳跃手感：喵！'], ['w', 'warn   灵感值波动较大'],
-    ['ok', 'deploy cyf211514104.github.io  ✓'], ['c', 'C0     正在和编译器吵架'], ['w', 'warn   猫猫睡在了键盘上'],
-    ['ok', 'test   42 passed, 0 failed'], ['p', 'X0     调色板 +1：霜脊蓝'], ['c', 'sync   归途的余温 剧情文档 v07']
-  ];
-  var recent = [];
   setTimeout(function loop() {
-    var cand = idle.filter(function (x) { return recent.indexOf(x) < 0; }), m = pick(cand);
-    recent.push(m); if (recent.length > 6) recent.shift();
-    log(m[0], m[1]); setTimeout(loop, 3000 + R() * 4000);
+    var m = BuildLog.next();
+    log(m[0], m[1]);
+    setTimeout(loop, BuildLog.inStory() ? 900 + R() * 900 : 2400 + R() * 3600);
   }, 3200);
 
   window.addEventListener('runner', function (e) {
@@ -89,7 +83,7 @@
     if (d.type === 'over') {
       log(d.isBest ? 'ok' : 'w', 'arcade ' + d.id + ' 在「' + d.where + '」跑了 ' + d.dist + 'm · ' + d.score + ' 分' + (d.isBest ? '  ★ 新纪录' : ''));
       setCard('best', d.best, d.isBest ? '<span class="up">▲ 新纪录！</span>' : '本次 ' + d.score + ' 分', Math.min(1, d.best / 3000));
-    } else if (d.type === 'biome') log('p', 'arcade 裂隙开启 → ' + d.name);
+    } else if (d.type === 'biome') log('p', 'arcade 抵达 → ' + d.name);
     else if (d.type === 'milestone' && d.dist % 300 === 0) log('c', 'arcade ' + d.id + ' 已跑出 ' + d.dist + 'm');
   });
 
