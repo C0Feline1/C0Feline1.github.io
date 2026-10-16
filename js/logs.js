@@ -20,7 +20,7 @@
     ['w', 'warn   灵感值波动较大'], ['w', 'warn   猫猫睡在了键盘上'], ['w', 'warn   咖啡库存低于 20%'], ['w', 'warn   C0 已连续工作 3 小时'],
     ['w', 'warn   发现一只真正的 bug（昆虫）'], ['w', 'warn   显示器亮度被调到了 100%'], ['w', 'warn   某人把 main 分支当成了草稿纸'],
     ['w', 'warn   雨城的霓虹灯又坏了一盏'], ['w', 'warn   锅炉厅压力 99%……正常吗？'], ['w', 'warn   冰湖的鱼不见了'],
-    ['ok', 'deploy cyf211514104.github.io  ✓'], ['ok', 'test   all green ✓'], ['ok', 'check  app-ads.txt → 200 OK'],
+    ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'test   all green ✓'], ['ok', 'check  app-ads.txt → 200 OK'],
     ['ok', 'check  隐私政策页面 → 200 OK'], ['ok', 'backup 已备份到云端 ✓'], ['ok', 'save   守山屋存档点已更新'], ['ok', 'fixed  雪花终于又下了'],
     ['ok', 'ok     三个人都还在 ✓'], ['ok', 'ok     猫猫已喂食'], ['ok', 'ok     植物已浇水 🌱'],
     ['c', 'world  云桥 · 灵灯 1/3 已点亮'], ['c', 'world  雨城 · 数据闸门状态：不稳定'], ['c', 'world  锅炉厅 · 压力心核读数正常'],
