@@ -2,10 +2,25 @@
 (function () {
   var cv = document.getElementById('game');
   if (!cv) return;
-  var g = cv.getContext('2d');
+  var dctx = cv.getContext('2d');
   var W = 240, H = 160, S = 2, GY = 134;
   cv.width = W * S; cv.height = H * S;
+  /* everything is drawn at 240x160 into buf, then blitted at an integer scale (crisp, even pixels) */
+  var buf = document.createElement('canvas'); buf.width = W; buf.height = H;
+  var g = buf.getContext('2d', { willReadFrequently: true });
   g.imageSmoothingEnabled = false;
+  (function () {
+    var fr = g.fillRect.bind(g);
+    g.fillRect = function (x, y, w, h) { var x0 = Math.round(x), y0 = Math.round(y); fr(x0, y0, Math.round(x + w) - x0, Math.round(y + h) - y0); };
+  })();
+  var TQ = [];
+  function fit() {
+    var dpr = window.devicePixelRatio || 1, want = (cv.clientWidth || W * 2) * dpr;
+    var s = Math.max(1, Math.min(10, Math.ceil(want / W - 0.01)));
+    if (s !== S || cv.width !== W * s) { S = s; cv.width = W * S; cv.height = H * S; }
+    var ir = Math.abs(W * S - want) < 1 ? 'pixelated' : 'auto';
+    if (cv.style.imageRendering !== ir) cv.style.imageRendering = ir;
+  }
   var R = Math.random;
   var FONT_CN = '"DotGothic16", "Zpix", "Microsoft YaHei", monospace';
 
@@ -677,7 +692,7 @@
       g.restore();
       return;
     }
-    drawChar(id, x, y, frame, airborne);
+    drawChar(id, x, y, frame, airborne, null, vy);
   }
   var byKey = {}; BIOMES.forEach(function (b) { byKey[b.key] = b; });
   byKey.park.len = 240; byKey.park.line = '公园的花开了';
@@ -692,7 +707,7 @@
     { o: '#2a1410', r: '#e8404a', w: '#ffffff', b: '#a0602a', y: '#ffd45e', k: '#5a5a6a' });
   var lantern = rowsPal(['..ooo..', '.orrro.', 'orrYrro', 'orYYYro', 'orrYrro', '.orrro.', '..ooo..', '...y...', '...y...'], { o: '#5a1010', r: '#e8303a', Y: '#ffd45e', y: '#ffb84f' });
   var toro = rowsPal(['..oooo..', '.oGGGGo.', 'oooooooo', '.oGGGGo.', '.oGyyGo.', '.oGyyGo.', '.oooooo.', '..oGGo..', '..oGGo..', '.oooooo.', 'oGGGGGGo', 'oooooooo'], { o: '#3a3a48', G: '#9a98a8', y: '#ffd45e' });
-  var fox = P.wolf.map(function (c) { var t2 = PX.make(c.width, c.height), x = t2.getContext('2d'); x.drawImage(c, 0, 0); x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,140,60,.55)'; x.fillRect(0, 0, c.width, c.height); return t2; });
+  var fox = P.fox;
   var GB = ['#0f380f', '#306230', '#8bac0f', '#9bbc0f'];
   var blob8 = [
     rowsPal(['....oooo....', '..oollllloo.', '.olllllllllo', 'olwwollowwlo', 'olwkollokwlo', 'ollllllllllo', '.olllllllll.', '..oooooooo..', '.oo......oo.', 'ooo......ooo'], { o: GB[0], l: GB[1], w: GB[3], k: GB[0] }),
@@ -839,7 +854,7 @@
     tile: function (x) { x.fillStyle = '#7ab05a'; x.fillRect(0, 0, 32, H - GY); x.fillStyle = '#a8a098'; x.fillRect(0, 2, 32, 8); x.fillStyle = '#8a8278'; x.fillRect(7, 2, 1, 8); x.fillRect(22, 2, 1, 8); x.fillStyle = '#5a9a4a'; x.fillRect(0, 10, 32, 2); x.fillStyle = '#ffb0c8'; x.fillRect(5, 14, 2, 1); x.fillRect(19, 20, 2, 1); },
     ground: { top: ['#a8a098', '#7ab05a'], dirt: '#7ab05a', dirt2: '#5a9a4a', speck: '#ffb0c8' },
     particle: 'petal', obstacles: ['toro', 'fox', 'rock', 'toro', 'crow'],
-    custom: { toro: function (x) { return obj(toro, x); }, fox: function (x) { return { type: 'fox', anim: fox, x: x, y: GY, w: 18, h: 11, vx: 0.8, hb: [2, 3, 3, 0] }; } }
+    custom: { toro: function (x) { return obj(toro, x); }, fox: function (x) { return { type: 'fox', anim: fox, x: x, y: GY, w: 22, h: 13, vx: 0.8, hb: [3, 4, 4, 1] }; } }
   };
 
   var BIT8 = {
@@ -1050,6 +1065,41 @@
     b.groundTile = gc;
   });
 
+  /* ---------- colour grading: per-world ambient tone, horizon haze, vignette, Game Boy palette ---------- */
+  var TONES = { home: ['#5a3a9a', 0.18], park: ['#ff9a6a', 0.14], market: ['#ff8a5a', 0.15], xian: ['#ffd8a0', 0.14], sakura: ['#ffb0c8', 0.12],
+    cyber: ['#c050ff', 0.16], steam: ['#ffa040', 0.16], desert: ['#ffc070', 0.14], sea: ['#2a8ad8', 0.22], skycity: ['#a0d0ff', 0.1], volcano: ['#ff4a1a', 0.18],
+    space: ['#6a4aff', 0.14], mirror: ['#a0a0ff', 0.12], candy: ['#ffb0e0', 0.12], haunt: ['#6a4aa0', 0.2], snow: ['#a0c0ff', 0.12], cabin: ['#ffb080', 0.12],
+    ridge: ['#c0d0f0', 0.1], cave: ['#ff8a4a', 0.1], peak: ['#8a8aff', 0.12], lake: ['#ffb0a0', 0.12] };
+  BIOMES.forEach(function (b) {
+    var tn = TONES[b.key]; if (tn) { b.tone = tn[0]; b.toneA = tn[1]; }
+    if (b.key === 'ink' || b.key === 'bit8' || b.key === 'mirror' || b.key === 'space') return;
+    var px0 = b.sky.getContext('2d').getImageData(W >> 1, GY - 30, 1, 1).data, hz = PX.make(W, H), hx = hz.getContext('2d');
+    var gr = hx.createLinearGradient(0, GY - 76, 0, GY);
+    gr.addColorStop(0, 'rgba(' + px0[0] + ',' + px0[1] + ',' + px0[2] + ',0)');
+    gr.addColorStop(0.75, 'rgba(' + px0[0] + ',' + px0[1] + ',' + px0[2] + ',.32)');
+    gr.addColorStop(1, 'rgba(' + px0[0] + ',' + px0[1] + ',' + px0[2] + ',.12)');
+    hx.fillStyle = gr; hx.fillRect(0, GY - 76, W, 76); b.haze = hz;
+  });
+  var VIG = (function () {
+    var c = PX.make(W, H), x = c.getContext('2d'), gr = x.createRadialGradient(W / 2, H / 2 + 8, 50, W / 2, H / 2, 160);
+    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(8,2,20,.45)'); x.fillStyle = gr; x.fillRect(0, 0, W, H); return c;
+  })();
+  var GBP = [[15, 56, 15], [48, 98, 48], [139, 172, 15], [155, 188, 15]];
+  function gbMap(k) {
+    var im = g.getImageData(0, 0, W, H), d = im.data;
+    for (var i = 0, n = W * H; i < n; i++) {
+      var p = i * 4, l = (d[p] * 0.3 + d[p + 1] * 0.59 + d[p + 2] * 0.11) / 255;
+      var q = Math.min(3, Math.max(0, Math.floor(l * 4 + (PX.dither(i % W, (i / W) | 0) - 0.5) * 0.7))), c = GBP[q];
+      d[p] += (c[0] - d[p]) * k; d[p + 1] += (c[1] - d[p + 1]) * k; d[p + 2] += (c[2] - d[p + 2]) * k;
+    }
+    g.putImageData(im, 0, 0);
+  }
+  function gradeWorld(b, k) {
+    if (!b || k <= 0.01) return;
+    if (b.tone) { g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = b.toneA * k; g.fillStyle = b.tone; g.fillRect(0, 0, W, H); g.restore(); }
+    if (b.gb) gbMap(k);
+  }
+
   /* ---------- audio ---------- */
   var AC = null, muted = localStorage.getItem('runner-muted') === '1';
   function beep(f, d, type, vol, slide) {
@@ -1074,6 +1124,8 @@
   };
 
   SFX.flip = function () { beep(300, 0.12, 'square', 0.04, 900); };
+  SFX.ready = function () { beep(1320, 0.07, 'square', 0.03); setTimeout(function () { beep(1760, 0.1, 'square', 0.03); }, 70); };
+  SFX.heal = function () { beep(660, 0.14, 'triangle', 0.05, 990); };
   SFX.slow = function () { beep(880, 0.25, 'triangle', 0.05, 220); };
   SFX.swim = function () { beep(520, 0.09, 'sine', 0.05, 300); };
   /* ---------- state ---------- */
@@ -1083,7 +1135,7 @@
   function newGame() {
     var id = PX.ORDER[st.sel];
     game = {
-      id: id, x: 58, y: GY, vy: 0, gdir: 1, hp: id === 'Feline1' ? 4 : 3, maxHp: id === 'Feline1' ? 4 : 3, slowT: 0, slowCd: 0, grace: 0, airFlip: false, cps: [], onGround: true, jumps: 0, holdT: 0, coyote: 0, buffer: 0, gliding: false,
+      id: id, x: 58, y: GY, vy: 0, gdir: 1, hp: id === 'Feline1' ? 4 : 3, maxHp: id === 'Feline1' ? 4 : 3, regenAt: 0, gFlash: 0, slowT: 0, slowCd: 0, grace: 0, airFlip: false, cps: [], onGround: true, jumps: 0, holdT: 0, coyote: 0, buffer: 0, gliding: false,
       shield: id === 'X0' ? 1 : 0, shieldAt: 0, inv: 0, dist: 0, shards: 0, speed: 1.7, scroll: 0,
       obs: [], items: [], parts: [], gap: 140, hist: [], biome: 0, loop: 0, bossT: 120, bossThrow: 0, prevBiome: -1, blend: 1, flash: 0, banner: null,
       shake: 0, dieT: 0, frame: 0, nextMilestone: 100, combo: 0
@@ -1172,12 +1224,12 @@
     else if (type === 'cone') o = { type: type, img: P.cone, x: x, y: GY, w: 8, h: 8, hb: [1, 1, 1, 0] };
     else if (type === 'box') o = { type: type, img: P.box, x: x, y: GY, w: 16, h: 13, hb: [1, 2, 1, 0] };
     else if (type === 'spike') { var sp = spikes[Math.floor(R() * spikes.length)]; o = { type: type, img: sp, x: x, y: GY, w: sp.width, h: sp.height, hb: [2, 4, 2, 0] }; }
-    else if (type === 'wolf') o = { type: type, anim: P.wolf, x: x, y: GY, w: 18, h: 11, vx: 0.9, hb: [2, 3, 3, 0] };
+    else if (type === 'wolf') o = { type: type, anim: P.wolf, x: x, y: GY, w: 22, h: 13, vx: 0.9, hb: [3, 4, 4, 1] };
     else if (type === 'beetle') o = { type: type, anim: P.beetle, x: x, y: GY, w: 14, h: 9, vx: 0.25, hb: [1, 1, 1, 0] };
     else if (type === 'inkrock') { var ir = inkRocks[Math.floor(R() * inkRocks.length)]; o = { type: type, img: ir, x: x, y: GY, w: ir.width, h: ir.height, hb: [2, 4, 2, 0] }; }
     else if (type === 'rock') { var rk = rocks[Math.floor(R() * rocks.length)]; o = { type: type, img: rk, x: x, y: GY, w: rk.width, h: rk.height, hb: [2, 4, 2, 0] }; }
     else if (type === 'pit') o = { type: type, pit: true, x: x, y: GY, w: 18 + Math.floor(R() * 10) + Math.floor(game.speed * 3), h: 0 };
-    else { var fy = GY - 32 - Math.floor(R() * 12); o = { type: type, anim: type === 'crow' ? P.crow : type === 'inkcrow' ? inkCrow : P.bat, x: x, y: fy, w: 10, h: 5, vx: 0.5, fly: true, base: fy, hb: [0, 0, 0, 0] }; }
+    else { var fy = GY - 32 - Math.floor(R() * 12); o = { type: type, anim: type === 'crow' ? P.crow : type === 'inkcrow' ? inkCrow : P.bat, x: x, y: fy, w: type === 'bat' ? 16 : 14, h: 10, vx: 0.5, fly: true, base: fy, hb: [3, 2, 3, 2] }; }
     game.obs.push(o);
     if (!o.fly && !o.pit && R() < 0.22 && game.dist > 120) {
       var o2 = Object.assign({}, o, { x: x + o.w + 4 + Math.floor(R() * 6) });
@@ -1279,6 +1331,75 @@
   /* ---------- update ---------- */
   var HEART = [PX.fromRows(['.oo.oo.', 'orrorro', 'orwrrro', 'orrrrro', '.orrro.', '..oro..', '...o...'], { o: '#3a0a1a', r: '#ff4f7a', w: '#ffffff' }),
     PX.fromRows(['.oo.oo.', 'orrorro', 'orrrrro', 'orrrrro', '.orrro.', '..oro..', '...o...'], { o: '#3a0a1a', r: '#3a2a4a' })];
+  var ICON = {
+    C0: PX.fromRows(['.....oo..', '....owo..', '...owwo..', '..owwoo..', '.owwwwwo.', '..oowwo..', '..owwo...', '..owo....', '..oo.....'], { o: '#06222e', w: '#4fe3ff' }),
+    X0: PX.fromRows(['.ooooooo.', 'oVVVVVVVo', 'oVwVVVVVo', 'oVwVVVVVo', 'oVVVVVVVo', '.oVVVVVo.', '.oVVVVVo.', '..oVVVo..', '...ooo...'], { o: '#24103e', V: '#b48cff', w: '#ffffff' }),
+    Feline1: PX.fromRows(['.oo...oo.', 'oPPo.oPPo', 'oPPo.oPPo', '.oo...oo.', '..ooooo..', '.oPPPPPo.', 'oPPwPPPPo', 'oPPPPPPPo', '.ooooooo.'], { o: '#4a1430', P: '#ff6fa6', w: '#ffffff' })
+  };
+  var FPERK = { run: 'DOUBLE JUMP', fly: 'NIMBLE BODY', flip: 'AIR FLIP', jet: 'FEATHER FALL', swim: 'STRONG PAW' };
+  var MHINT = { fly: 'HOLD: RISE', jet: 'HOLD: THRUST', flip: 'TAP: FLIP GRAVITY', swim: 'TAP: SWIM' };
+  function hudPanel(x, y, w, h, glow) {
+    g.fillStyle = 'rgba(10,6,24,.58)'; g.fillRect(x + 1, y, w - 2, h); g.fillRect(x, y + 1, 1, h - 2); g.fillRect(x + w - 1, y + 1, 1, h - 2);
+    g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(x + 1, y, w - 2, 1);
+    if (glow) { g.fillStyle = glow; g.fillRect(x + 1, y, w - 2, 1); g.fillRect(x + 1, y + h - 1, w - 2, 1); g.fillRect(x, y + 1, 1, h - 2); g.fillRect(x + w - 1, y + 1, 1, h - 2); }
+  }
+  function gaugeState(G) {
+    if (G.id === 'C0') {
+      if (G.slowT > 0) return { fill: G.slowT / 55, label: 'OVERCLOCK!!', active: true };
+      if (G.slowCd > 0) return { fill: 1 - G.slowCd / 300, label: 'OVERCLOCK' };
+      return { fill: 1, label: 'OVERCLOCK READY', ready: true };
+    }
+    if (G.id === 'X0') {
+      if (G.shield) return { fill: 1, label: 'SHIELD READY', ready: true };
+      return { fill: clamp((G.dist - G.shieldAt) / 150, 0, 1), label: 'SHIELD CHARGING' };
+    }
+    if (G.hp >= G.maxHp) return { fill: 1, label: 'NINE LIVES', ready: true };
+    return { fill: clamp((G.dist - G.regenAt) / 400, 0, 1), label: 'NINE LIVES +1' };
+  }
+  function drawHUD(G, mode) {
+    var d = PX.CHARS[G.id], i;
+    hudPanel(3, 3, 64, 24);
+    PX.text(g, String(score()).padStart(5, '0'), 6, 6, '#ffffff', '#1a0f30', 2);
+    PX.text(g, 'HI ' + String(best).padStart(5, '0'), 6, 19, '#ffd45e', '#1a0f30');
+    hudPanel(W - 48, 3, 45, 32);
+    g.drawImage(P.shard[0], W - 45, 5);
+    PX.text(g, 'X' + G.shards, W - 33, 7, '#ffffff', '#1a0f30');
+    PX.text(g, Math.floor(G.dist) + 'M', W - 6 - PX.textWidth(Math.floor(G.dist) + 'M'), 17, '#7fe0ff', '#1a0f30');
+    for (i = 0; i < G.maxHp; i++) g.drawImage(i < G.hp ? HEART[0] : HEART[1], W - 6 - (G.maxHp - i) * 8, 26);
+    var n = BIOMES.length, dx = Math.round(W / 2 - n * 2);
+    hudPanel(dx - 3, 3, n * 4 + 5, 9);
+    for (i = 0; i < n; i++) { g.fillStyle = i === G.biome ? '#ffffff' : (i < G.biome ? '#ff9fc4' : 'rgba(255,255,255,.22)'); g.fillRect(dx + i * 4, 6, 3, 3); }
+    if (G.loop > 0) PX.text(g, 'LOOP ' + (G.loop + 1), W / 2 - PX.textWidth('LOOP ' + (G.loop + 1)) / 2, 14, '#ffd45e', '#1a0f30');
+    /* bottom-left: controls for this world + character perk */
+    var lines = [];
+    if (G.id === 'Feline1') lines.push(['PERK: ' + FPERK[mode], d.color]);
+    else if (G.id === 'C0' && mode === 'run') lines.push(['HOLD IN AIR: GLIDE', d.color]);
+    else if (G.id === 'X0') lines.push(['MAGNET: ON', d.color]);
+    if (MHINT[mode]) lines.push([MHINT[mode], '#ffffff']);
+    if (lines.length) {
+      var lw = 0; lines.forEach(function (l) { lw = Math.max(lw, PX.textWidth(l[0])); });
+      var ly = H - 4 - lines.length * 8;
+      hudPanel(3, ly - 3, lw + 7, lines.length * 8 + 4);
+      lines.forEach(function (l, k) { PX.text(g, l[0], 6, ly + k * 8, l[1], '#1a0f30'); });
+    }
+    /* bottom-right: skill charge gauge */
+    var s = gaugeState(G), x = W - 79, y = H - 19, segs = 10, fill = clamp(s.fill, 0, 1);
+    hudPanel(x - 3, y - 3, 79, 19, G.gFlash > 0 && G.gFlash % 8 < 5 ? d.color : null);
+    g.drawImage(ICON[G.id], x, y + 2 + (s.ready && st.t % 60 < 6 ? -1 : 0));
+    PX.text(g, s.label, x + 12, y, s.ready ? '#ffffff' : d.color, '#1a0f30');
+    var bx = x + 12, by = y + 8;
+    g.fillStyle = '#05030a'; g.fillRect(bx - 1, by - 1, segs * 6 + 1, 7);
+    for (i = 0; i < segs; i++) {
+      var f = clamp(fill * segs - i, 0, 1), sx = bx + i * 6;
+      g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(sx, by, 5, 5);
+      if (f > 0) {
+        var col = s.active ? (st.t % 8 < 4 ? '#ffffff' : d.color) : d.color;
+        g.fillStyle = col; g.fillRect(sx, by, Math.max(1, Math.round(5 * f)), 5);
+        g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(sx, by, Math.max(1, Math.round(5 * f)), 1);
+      }
+    }
+    if (s.ready) { var sh = (st.t * 1.5) % (segs * 6 + 30); if (sh < segs * 6) { g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(bx + sh, by, 2, 5); } }
+  }
   function skillLabel(G, mode) {
     if (G.id === 'C0') return G.slowT > 0 ? 'OVERCLOCK!' : (G.slowCd > 0 ? 'OVERCLOCK ' + Math.ceil(G.slowCd / 60) + 'S' : 'OVERCLOCK READY');
     if (G.id === 'X0') return G.shield ? 'SHIELD ON + MAGNET' : 'SHIELD ' + Math.max(0, Math.ceil(150 - (G.dist - G.shieldAt))) + 'M';
@@ -1309,7 +1430,7 @@
     var CB = BIOMES[G.biome], mode = CB.mode || 'run';
     if (G.grace > 0) G.grace--;
     if (G.id === 'C0') {
-      if (G.slowCd > 0) G.slowCd--;
+      if (G.slowCd > 0 && --G.slowCd === 0) { SFX.ready(); G.gFlash = 40; }
       if (G.slowT > 0) G.slowT--;
       else if (G.slowCd <= 0 && G.inv <= 0 && G.grace <= 0) {
         var pp = pbox();
@@ -1423,7 +1544,12 @@
     if (G.blend < 1) G.blend = Math.min(1, G.blend + 1 / 90);
     if (G.flash > 0) G.flash = Math.max(0, G.flash - 0.05);
     if (G.dist >= G.nextMilestone) { emit({ type: 'milestone', id: id, dist: G.nextMilestone }); G.nextMilestone += 100; }
-    if (id === 'X0' && !G.shield && G.dist - G.shieldAt > 150) { G.shield = 1; SFX.shield(); }
+    if (id === 'X0' && !G.shield && G.dist - G.shieldAt > 150) { G.shield = 1; SFX.shield(); G.gFlash = 40; }
+    if (G.gFlash > 0) G.gFlash--;
+    if (id === 'Feline1') {
+      if (G.hp >= G.maxHp) G.regenAt = G.dist;
+      else if (G.dist - G.regenAt >= 400) { G.hp++; G.regenAt = G.dist; G.gFlash = 40; SFX.heal(); burst(G.x + 8, G.y - 12, 12, ['#ff6fa6', '#ffffff', '#ffd45e'], 1.3); }
+    }
     if (G.inv > 0) G.inv--;
     if (G.banner) { G.banner.t++; if (G.banner.t > 170) G.banner = null; }
     if (G.shake > 0) G.shake *= 0.85;
@@ -1523,6 +1649,7 @@
       }
     }
     drawLayer(b.far, scroll * 0.15);
+    if (b.haze) g.drawImage(b.haze, 0, 0);
     if (b.boss && st.mode !== 'title') drawBoss(alpha);
     g.globalAlpha = alpha;
     drawLayer(b.mid, scroll * 0.45);
@@ -1532,9 +1659,9 @@
     if (b.ceil) drawLayer(b.ceil, scroll * (b.ceilSpeed || 0.9), 0);
     g.globalAlpha = 1;
   }
-  function drawChar(id, x, y, frame, airborne, tint) {
+  function drawChar(id, x, y, frame, airborne, tint, vy) {
     var s = SPR[id], img;
-    if (airborne) img = s.jump;
+    if (airborne) img = vy > 0.6 && s.fall ? s.fall : s.jump;
     else img = s.run[Math.floor(frame / 5) % 4];
     var bob = !airborne && (Math.floor(frame / 5) % 2) ? -1 : 0;
     g.fillStyle = 'rgba(20,10,40,.35)';
@@ -1542,12 +1669,18 @@
     g.fillRect(Math.round(x + 8 - sh / 2), GY - 1, Math.round(sh), 2);
     g.drawImage(tint || img, Math.round(x), Math.round(y - 24 + bob));
   }
-  function drawCN(text, x, y, size, color, align, shadow) {
-    g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
-    g.font = size * S + 'px ' + FONT_CN; g.textAlign = align || 'left'; g.textBaseline = 'top';
-    if (shadow) { g.fillStyle = shadow; g.fillText(text, x * S + 2, y * S + 2); }
-    g.fillStyle = color; g.fillText(text, x * S, y * S); g.restore();
+  function drawCN(text, x, y, size, color, align, shadow) { TQ.push([text, x, y, size, color, align, shadow]); }
+  function flushText() {
+    dctx.save(); dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.textBaseline = 'top';
+    for (var i = 0; i < TQ.length; i++) {
+      var q = TQ[i];
+      dctx.font = q[3] * S + 'px ' + FONT_CN; dctx.textAlign = q[5] || 'left';
+      if (q[6]) { dctx.fillStyle = q[6]; dctx.fillText(q[0], q[1] * S + S, q[2] * S + S); }
+      dctx.fillStyle = q[4]; dctx.fillText(q[0], q[1] * S, q[2] * S);
+    }
+    dctx.restore(); TQ.length = 0;
   }
+  function post() { }
   function box(x, y, w, h, fill, border) {
     g.fillStyle = border || '#ff4fa3'; g.fillRect(x, y, w, h);
     g.fillStyle = fill || '#120d24'; g.fillRect(x + 1, y + 1, w - 2, h - 2);
@@ -1556,7 +1689,8 @@
 
   function drawTitle() {
     var t = st.t;
-    drawBiome(BIOMES[Math.floor(t / 300) % BIOMES.length], t * 0.6, 1);
+    var tb = BIOMES[Math.floor(t / 300) % BIOMES.length];
+    drawBiome(tb, t * 0.6, 1); gradeWorld(tb, 1); g.drawImage(VIG, 0, 0);
     for (var i = 0; i < 3; i++) { var sx = (i * 97 + t * 0.3) % (W + 20) - 10, sy = (i * 53 + t * 0.4) % H; g.fillStyle = '#fff'; g.fillRect(W - sx, sy, 1, 1); }
     g.fillStyle = 'rgba(10,6,30,.45)'; g.fillRect(0, 0, W, H);
     var tw = PX.textWidth('KITTY RUNNER', 3), ty = 10 + (Math.floor(t / 20) % 2);
@@ -1679,6 +1813,9 @@
       }
     }
     g.restore();
+    if (G.blend < 1 && G.prevBiome >= 0) gradeWorld(BIOMES[G.prevBiome], 1 - G.blend);
+    gradeWorld(b, G.prevBiome >= 0 && G.blend < 1 ? G.blend : 1);
+    g.drawImage(VIG, 0, 0);
 
     if (G.slowT > 0) {
       g.fillStyle = 'rgba(79,227,255,.12)'; g.fillRect(0, 0, W, H);
@@ -1689,25 +1826,15 @@
       g.fillStyle = 'rgba(255,255,255,' + G.flash * 0.8 + ')'; g.fillRect(0, 0, W, H);
       for (var k = 0; k < 6; k++) { g.fillStyle = 'rgba(180,140,255,' + G.flash + ')'; g.fillRect(0, 20 + k * 22 + Math.sin(st.t * 0.3 + k) * 6, W, 2); }
     }
-    PX.text(g, String(score()).padStart(5, '0'), 6, 6, '#ffffff', '#1a0f30', 2);
-    PX.text(g, 'HI ' + String(best).padStart(5, '0'), 6, 19, '#ffd45e', '#1a0f30');
-    g.drawImage(P.shard[0], W - 44, 5);
-    PX.text(g, 'X' + G.shards, W - 32, 7, '#ffffff', '#1a0f30');
-    PX.text(g, Math.floor(G.dist) + 'M', W - 6 - PX.textWidth(Math.floor(G.dist) + 'M'), 17, '#7fe0ff', '#1a0f30');
-    var d = PX.CHARS[G.id];
-    var MH = { fly: 'HOLD: RISE', jet: 'HOLD: THRUST', flip: 'TAP: FLIP GRAVITY', swim: 'TAP: SWIM' };
-    if (MH[mode]) PX.text(g, MH[mode], 6, H - 9, '#ffffff', '#1a0f30');
-    PX.text(g, skillLabel(G, mode), 6, 28, d.color, '#1a0f30');
-    for (var hi = 0; hi < G.maxHp; hi++) g.drawImage(hi < G.hp ? HEART[0] : HEART[1], W - 6 - (G.maxHp - hi) * 8, 26);
-    for (var wi = 0; wi < BIOMES.length; wi++) { g.fillStyle = wi === G.biome ? '#ffffff' : (wi < G.biome ? '#ff9fc4' : 'rgba(255,255,255,.25)'); g.fillRect(W / 2 - BIOMES.length * 2.5 + wi * 5, 5, 3, 3); }
-    if (G.loop > 0) PX.text(g, 'LOOP ' + (G.loop + 1), W / 2 - PX.textWidth('LOOP ' + (G.loop + 1)) / 2, 11, '#ffd45e', '#1a0f30');
-    if (G.banner) {
+    drawHUD(G, mode);
+    if (G.banner && st.mode !== 'paused') {
       var bt = G.banner.t, sl = bt < 20 ? (20 - bt) * 6 : (bt > 150 ? (bt - 150) * 6 : 0);
       box(W / 2 - 56, 42 - sl, 112, 26, 'rgba(18,13,36,.9)');
       drawCN(G.banner.cn, W / 2, 45 - sl, 9, '#ffffff', 'center');
       PX.text(g, G.banner.en, W / 2 - PX.textWidth(G.banner.en) / 2, 60 - sl, '#ff9fc4');
     }
     if (st.mode === 'paused') {
+      TQ.length = 0;
       g.fillStyle = 'rgba(10,6,30,.6)'; g.fillRect(0, 0, W, H);
       PX.text(g, 'PAUSE', W / 2 - PX.textWidth('PAUSE', 3) / 2, 38, '#ffffff', '#ff4fa3', 3);
       ['继续游戏', '重新开始', '返回选人'].forEach(function (s, i) {
@@ -1720,7 +1847,7 @@
     }
   }
   function drawOver() {
-    drawPlay();
+    drawPlay(); TQ.length = 0;
     var G = game, t = st.t, y = Math.max(30, 90 - t * 4);
     g.fillStyle = 'rgba(10,6,30,.55)'; g.fillRect(0, 0, W, H);
     box(36, y, 168, 94, 'rgba(18,13,36,.95)');
@@ -1739,10 +1866,15 @@
   function frame(now) {
     acc += Math.min(100, now - last); last = now;
     while (acc >= 1000 / 60) { update(); acc -= 1000 / 60; }
-    g.setTransform(S, 0, 0, S, 0, 0); g.imageSmoothingEnabled = false;
+    fit(); TQ.length = 0;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = false;
     if (st.mode === 'title') drawTitle();
     else if (st.mode === 'over') drawOver();
     else drawPlay();
+    post();
+    dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.imageSmoothingEnabled = false;
+    dctx.drawImage(buf, 0, 0, W * S, H * S);
+    flushText();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

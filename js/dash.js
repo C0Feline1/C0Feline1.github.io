@@ -133,7 +133,8 @@
   window.addEventListener('resize', drawChart); drawChart();
 
   /* ---------- studio cam ---------- */
-  var sc = $('studio'), sg = sc.getContext('2d'), SW = 320, SH = 180, FY = 128;
+  var scView = $('studio'), svg = scView.getContext('2d'), SW = 320, SH = 180, FY = 128;
+  var sc = PX.make(SW, SH), sg = sc.getContext('2d');
   sg.imageSmoothingEnabled = false;
   var SP = {}; PX.ORDER.forEach(function (id) { SP[id] = PX.buildChar(id); });
   var props = PX.buildProps();
@@ -181,7 +182,7 @@
   for (var sn = 0; sn < 30; sn++) snow.push([R() * 60, R() * 54, 0.2 + R() * 0.4]);
   var codeLines = desks.map(function () { var a = []; for (var i = 0; i < 8; i++) a.push([Math.floor(R() * 4), 4 + Math.floor(R() * 14)]); return a; });
   var SAY = { C0: ['BUG!', 'PUSH!', 'HMM...', 'LGTM', '404?'], X0: ['NICE', '+1 PX', 'COLOR!', 'HMM'], Feline1: ['MEOW!', 'JUMP!', 'NYA?', 'OK!', 'FISH?'] };
-  setInterval(function () { var d = pick(desks); bubbles.push({ d: d, text: pick(SAY[d.id]), t: 0 }); if (bubbles.length > 2) bubbles.shift(); }, 2200);
+  setInterval(function () { var d = pick(desks); bubbles = bubbles.filter(function (b) { return b.d !== d; }); bubbles.push({ d: d, text: pick(SAY[d.id]), t: 0 }); if (bubbles.length > 2) bubbles.shift(); }, 2200);
   var steam = [], tk = 0, lastS = 0;
   function studio(ts) {
     requestAnimationFrame(studio);
@@ -264,6 +265,11 @@
     sg.fillStyle = 'rgba(0,0,0,.12)'; for (var sy = 0; sy < SH; sy += 2) sg.fillRect(0, sy, SW, 1);
     PX.text(sg, 'CAM 01  ' + now(), 6, 4, '#ff4f6a', '#000');
     PX.text(sg, 'REC', SW - 18, 4, tk % 30 < 15 ? '#ff4f6a' : '#5a1a2a', '#000');
+    var dpr = window.devicePixelRatio || 1, want = (scView.clientWidth || SW) * dpr, s = Math.max(1, Math.min(8, Math.ceil(want / SW - 0.01)));
+    if (scView.width !== SW * s) { scView.width = SW * s; scView.height = SH * s; }
+    var ir = Math.abs(SW * s - want) < 1 ? 'pixelated' : 'auto';
+    if (scView.style.imageRendering !== ir) scView.style.imageRendering = ir;
+    svg.imageSmoothingEnabled = false; svg.drawImage(sc, 0, 0, SW * s, SH * s);
   }
   requestAnimationFrame(studio);
 })();

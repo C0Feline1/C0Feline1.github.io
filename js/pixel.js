@@ -55,7 +55,7 @@
     'Z': '111001010100111', ':': '000010000010000', '.': '000000000000010', '-': '000000111000000', '!': '010010010000010',
     '/': '001001010100100', '*': '000101010101000', '>': '100010001010100', '<': '001010100010001', '+': '000010111010000',
     '%': '101001010100101', '?': '111001010000010', '#': '101111101111101', '_': '000000000000111', "'": '010010000000000',
-    '@': '101111111010000', ' ': '000000000000000'
+    '@': '101111111010000', '·': '000000010000000', '(': '010100100100010', ')': '010001001001010', ',': '000000000010100', ' ': '000000000000000'
   };
   PX.textWidth = function (s, k) { return (String(s).length * 4 - 1) * (k || 1); };
   PX.text = function (g, s, x, y, color, shadow, k) {
@@ -71,59 +71,93 @@
     pass(0, 0, color);
   };
 
-  /* ---------- characters (16x24, facing right) ---------- */
-  var TOP_CAT = ['...o.......o....', '..oio.....oio...', '..oiio...oiio...', '..ohhhoooohhho..'];
-  var TOP_HUMAN = ['................', '................', '....oooooooo....', '..oohhhhhhhhoo..'];
-  var FACE = [
-    '.ohhhhhhhhhhhho.', 'ohhhhhhhhhhhhhho', 'ohhhhhhhhhhhhhho', 'ohhhhHhhhhHhhhho',
-    'ohhhhssHssHsshho', 'ohhhswesssweshho', 'ohhhseessseeshho', 'ohhhpsssmsspshho', '.ohhhosssssohhho'
-  ];
-  var BODY = [
-    '.ohhoccaacccohho', '.ohocccaaccccoho', '..ooscccccccCso.', '...osCccccccCo..',
-    '...oCCaaaaaaCo..', '...occccccccco..', '..occccccccccco.'
-  ];
-  var LEGS = {
-    stand: ['....ollo.ollo...', '....ollo.ollo...', '....obbo.obbbo..', '....oooo.ooooo..'],
-    r0: ['...ollo...ollo..', '..ollo.....ollo.', '..obbo.....obbo.', '..oooo.....oooo.'],
-    r1: ['....ollo.ollo...', '....ollo.ollo...', '....obbooobbo...', '....oooo.oooo...'],
-    r2: ['...ollo...ollo..', '...ollo....ollo.', '..obbo.....obbo.', '..oooo.....oooo.'],
-    jump: ['....ollo.ollo...', '.....ollollo....', '.....obbobbo....', '.....ooo.ooo....']
+  /* ---------- characters v2 (16x24, facing right, light from top-left) ---------- */
+  var TOP = {
+    cat: ['...o.......o....', '..oio.....oio...', '..oiio...oiio...', '..ohhhoooohhho..'],
+    human: ['................', '................', '....oooooooo....', '..oohhhhhhhhoo..']
   };
+  var HEAD = [
+    '.ohLLhhhhhhhhho.',
+    'ohLhhhhhhhhhhhHo',
+    'ohhhhhhhhhhhhHHo',
+    'ohhhHhhhhhHhhhHo',
+    'ohHHsssHsssHshHo',
+    'ohHssswosswoshHo',
+    'ohHsssEEssEEShHo',
+    'ohHsspsssmssphHo',
+    'ohHoSsssssssohHo'
+  ];
+  var BODIES = {
+    dress: ['ohHokckkkkcCohHo', 'ohHokccaAacCohHo', 'ohHokccccccCohHo', '.oHokccccccCoHo.', '...oaaaaaaaao...', '..okccccccccCo..', '..oCcCcCcCcCco..'],
+    hoodie: ['...okcaccacCo...', '...okcaccacCo...', '...okccccccCo...', '...okcCCCCcCo...', '...okccccccCo...', '...oaaaaaaaao...', '...olllllllno...'],
+    blouse: ['ohHokckkkkcCohHo', 'ohHokccaAacCohHo', 'ohHokccccccCohHo', '.oHokccccccCoHo.', '...oddddddddo...', '..odddddddddDo..', '..odDdDdDdDdDo..']
+  };
+  var LEGS = {
+    stand: ['....olno.olno...', '....olno.olno...', '....obbo.obbBo..', '....oooo.ooooo..'],
+    r0: ['...olno...olno..', '..olno.....olno.', '..obbo.....obBo.', '..oooo.....oooo.'],
+    r1: ['....olno.olno...', '....olno.olno...', '....obbooobBo...', '....oooo.oooo...'],
+    r2: ['...olno...olno..', '...olno....olno.', '..obbo.....obBo.', '..oooo.....oooo.'],
+    jump: ['....olno.olno...', '.....olnolno....', '.....obbobBo....', '.....ooo.ooo....'],
+    fall: ['...olno..olno...', '..olno....olno..', '..obbo....obBo..', '..oooo....oooo..']
+  };
+  var ARMS = {
+    side: [[3, 14, 'C'], [3, 15, 'C'], [3, 16, 's'], [12, 14, 'c'], [12, 15, 'c'], [12, 16, 's']],
+    fwd: [[3, 14, 'C'], [2, 15, 'C'], [1, 16, 's'], [12, 14, 'c'], [13, 15, 'c'], [14, 15, 's']],
+    back: [[3, 14, 'c'], [2, 15, 'c'], [1, 16, 's'], [12, 14, 'C'], [13, 15, 'C'], [14, 15, 's']],
+    up: [[3, 13, 'C'], [2, 12, 'C'], [1, 11, 's'], [12, 13, 'c'], [13, 12, 'c'], [14, 11, 's']],
+    out: [[3, 14, 'C'], [2, 14, 'C'], [1, 14, 's'], [12, 14, 'c'], [13, 14, 'c'], [14, 14, 's']]
+  };
+  var TAILS = [
+    [[3, 19, 't'], [2, 19, 't'], [1, 18, 't'], [0, 17, 't'], [0, 16, 'T']],
+    [[3, 19, 't'], [2, 20, 't'], [1, 20, 't'], [0, 19, 't'], [0, 18, 'T']]
+  ];
+  var HEADSET = [[4, 2, 'r'], [5, 2, 'r'], [6, 2, 'r'], [7, 2, 'r'], [8, 2, 'r'], [9, 2, 'r'], [10, 2, 'r'], [11, 2, 'r'], [3, 3, 'r'], [12, 3, 'r'], [2, 4, 'r'], [13, 4, 'r'], [1, 5, 'r'], [14, 5, 'r'],
+    [0, 6, 'r'], [0, 7, 'r'], [0, 8, 'A'], [1, 6, 'r'], [1, 7, 'w'], [1, 8, 'r'], [0, 9, 'o'], [1, 9, 'o'],
+    [15, 6, 'r'], [15, 7, 'r'], [15, 8, 'A'], [14, 6, 'r'], [14, 7, 'r'], [14, 8, 'r']];
+  var BOW = [[10, 1, 'r'], [11, 1, 'r'], [13, 1, 'r'], [14, 1, 'r'], [10, 2, 'r'], [11, 2, 'A'], [12, 2, 'A'], [13, 2, 'A'], [14, 2, 'r'], [10, 3, 'r'], [11, 3, 'r'], [13, 3, 'r'], [14, 3, 'r']];
 
   PX.CHARS = {
     Feline1: {
-      cat: true, tail: true, label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：多 1 颗心 + 每个世界不同的身法', perkEn: 'NINE LIVES', color: '#ff6fa6',
-      pal: { o: '#4a2a3e', h: '#fff1f6', H: '#e3bfd2', i: '#ff9fc4', s: '#ffe3d6', p: '#ff9aa8', m: '#c0506a', e: '#e0407a', w: '#ffffff',
-        c: '#fbe0ec', C: '#e2aec6', a: '#ff6fa6', l: '#ffffff', b: '#9b5a78', t: '#fff1f6', r: '#ff6fa6' }
+      cat: true, tail: true, body: 'dress', label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：4 颗心，每 400m 回 1 颗 + 各世界身法', perkEn: 'NINE LIVES', color: '#ff6fa6',
+      pal: { o: '#4e2a48', h: '#fbeef5', H: '#d2a8c6', L: '#ffffff', i: '#ff8ab8', s: '#ffe6dc', S: '#f0c2ba', E: '#e8307e', w: '#ffffff', p: '#ffb0c4', m: '#c0506a',
+        c: '#ffd6e8', C: '#eaa6c4', k: '#ffffff', a: '#ff5a9e', A: '#c0306a', l: '#ffffff', n: '#e2d0e4', b: '#b8487e', B: '#ff8ab8', t: '#fbeef5', T: '#d2a8c6', r: '#ff6fa6' }
     },
     C0: {
-      cat: false, headset: true, label: 'C0', cn: '程序 C0', perk: '超频：危险时自动慢动作', perkEn: 'OVERCLOCK', color: '#4fe3ff',
-      pal: { o: '#050307', h: '#2e2534', H: '#1a141e', s: '#f3d2c4', p: '#ef9a9a', m: '#9c4a5a', e: '#141018', w: '#ffffff',
-        c: '#2c2638', C: '#19151f', a: '#4fe3ff', l: '#1c1824', b: '#4fe3ff', r: '#4fe3ff' }
+      cat: false, headset: true, body: 'hoodie', label: 'C0', cn: '程序 C0', perk: '超频：危险时自动慢动作', perkEn: 'OVERCLOCK', color: '#4fe3ff',
+      pal: { o: '#08060c', h: '#2e2534', H: '#1a141e', L: '#5a4a6e', s: '#f3d2c4', S: '#deb0a4', E: '#241c2c', w: '#ffffff', p: '#f4a0a8', m: '#9c4a5a',
+        c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#1c1824', n: '#110e16', b: '#4fe3ff', B: '#ffffff', r: '#4fe3ff' }
     },
     X0: {
-      cat: false, ribbon: true, label: 'X0', cn: '画师 X0', perk: '镜光护盾：护盾更快充能 + 吸星砂', perkEn: 'MIRROR SHIELD', color: '#b48cff',
-      pal: { o: '#1a0a12', h: '#47303d', H: '#2a1922', s: '#f6dcd6', p: '#ff9fb0', m: '#a04a5a', e: '#b48cff', w: '#ffffff',
-        c: '#f5e3ea', C: '#cdb0bc', a: '#2a1220', l: '#2a1220', b: '#2a1220', r: '#ff5f8f' }
+      cat: false, ribbon: true, body: 'blouse', label: 'X0', cn: '画师 X0', perk: '镜光护盾：护盾更快充能 + 吸星砂', perkEn: 'MIRROR SHIELD', color: '#b48cff',
+      pal: { o: '#1e0e16', h: '#5a3a44', H: '#3a2430', L: '#8a6070', s: '#f6dcd6', S: '#e2b8b0', E: '#9a6cff', w: '#ffffff', p: '#ff9fb0', m: '#a04a5a',
+        c: '#f8eef2', C: '#d4bccc', k: '#ffffff', a: '#ff5f8f', A: '#c02a5a', d: '#2a1a2e', D: '#1a0e1c', l: '#3a2430', n: '#24141c', b: '#1a0a12', B: '#5a3a44', r: '#ff5f8f' }
     }
   };
   PX.ORDER = ['Feline1', 'C0', 'X0'];
 
-  function charRows(def, legs, blink) {
-    var rows = (def.cat ? TOP_CAT : TOP_HUMAN).concat(FACE, BODY, LEGS[legs]).map(function (r) { return r.split(''); });
-    if (blink) { rows[9] = 'ohhhssssssssshho'.split(''); rows[10] = 'ohhhsoosssooshho'.split(''); }
-    if (def.tail) [[1, 13], [1, 14], [0, 15], [0, 16], [1, 17], [2, 17]].forEach(function (p) { rows[p[1]][p[0]] = 't'; });
-    if (def.headset) {
-      for (var x = 3; x < 13; x++) rows[2][x] = 'r';
-      [[2, 3], [1, 4], [0, 6], [0, 7], [0, 8], [0, 9], [1, 7], [1, 8], [1, 9]].forEach(function (p) { rows[p[1]][p[0]] = 'r'; });
-    }
-    if (def.ribbon) [[11, 2], [12, 2], [13, 1], [12, 3], [13, 3], [14, 2], [13, 2], [14, 1], [14, 3]].forEach(function (p) { rows[p[1]][p[0]] = 'r'; });
+  function put(rows, pts, outline) {
+    pts.forEach(function (p) { if (rows[p[1]] && p[0] >= 0 && p[0] < 16) rows[p[1]][p[0]] = p[2]; });
+    if (outline) pts.forEach(function (p) {
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var x = p[0] + d[0], y = p[1] + d[1]; if (rows[y] && x >= 0 && x < 16 && rows[y][x] === '.') rows[y][x] = 'o'; });
+    });
+  }
+  function charRows(def, pose) {
+    var rows = (def.cat ? TOP.cat : TOP.human).concat(HEAD, BODIES[def.body], LEGS[pose.legs]).map(function (r) { return r.split(''); });
+    if (pose.blink) { rows[9] = 'ohHsssssssssshHo'.split(''); rows[10] = 'ohHsssoossooShHo'.split(''); }
+    if (def.tail) put(rows, TAILS[pose.tail || 0], true);
+    put(rows, ARMS[pose.arms], true);
+    if (def.headset) put(rows, HEADSET, false);
+    if (def.ribbon) put(rows, BOW, true);
     return rows.map(function (r) { return r.join(''); });
   }
   PX.buildChar = function (id) {
-    var d = PX.CHARS[id], mk = function (legs, blink) { return PX.fromRows(charRows(d, legs, blink), d.pal); };
-    var s = { stand: mk('stand'), blink: mk('stand', true), run: [mk('r0'), mk('r1'), mk('r2'), mk('r1')], jump: mk('jump') };
-    s.hurt = PX.tint(s.jump, 'rgba(255,80,110,.55)');
+    var d = PX.CHARS[id], mk = function (pose) { return PX.fromRows(charRows(d, pose), d.pal); };
+    var s = {
+      stand: mk({ legs: 'stand', arms: 'side' }), blink: mk({ legs: 'stand', arms: 'side', blink: true }),
+      run: [mk({ legs: 'r0', arms: 'back', tail: 0 }), mk({ legs: 'r1', arms: 'side', tail: 1 }), mk({ legs: 'r2', arms: 'fwd', tail: 0 }), mk({ legs: 'r1', arms: 'side', tail: 1 })],
+      jump: mk({ legs: 'jump', arms: 'up', tail: 1 }), fall: mk({ legs: 'fall', arms: 'out', tail: 0 })
+    };
+    s.hurt = PX.tint(mk({ legs: 'fall', arms: 'up', blink: true }), 'rgba(255,80,110,.45)');
     s.white = PX.tint(s.stand, '#ffffff');
     return s;
   };
@@ -147,14 +181,24 @@
     a: ['oo........', '.ooo..oo..', '..oooooooo', '.oeooooo..', 'yo........'],
     b: ['..........', '..........', 'o.oooooooo', 'oeoooooo..', 'yooooo....']
   };
+  /* enemies v2: painted on a grid with auto outline (see session notes) */
+  var WOLF2 = [['ooo..........owowo....', 'Twwo.........oWwWwo...', 'Twwwo........owwwwo...', 'owwwwoooooooowwwwewo.o', '.owwwwLLLLLLLwwwwwwwon', '..oowwwwwwwwwwwwwwmWWo', '...owwwwwwwwwwwwWWWoo.', '...owwWWWWWWWWwoooo...', '....owWWWWWWWwo.......', '....oWogooogoWo.......', '...oWoogo.ogooWo......', '..ofo..ofofo..ofo.....', '...o....o.o....o......'], ['ooo..........owowo....', 'Twwo.........oWwWwo...', 'Twwwo........owwwwo...', 'owwwwoooooooowwwwewo.o', '.owwwwLLLLLLLwwwwwwwon', '..oowwwwwwwwwwwwwwmWWo', '...owwwwwwwwwwwwWWWoo.', '...owwWWWWWWWWwoooo...', '....owWWWWWWWwo.......', '.....oWogooWogo.......', '.....oWogooWogo.......', '.....ofofoofofo.......', '......o.o..o.o........']];
+  var FOX2 = [['oooo.........owowo....', 'TTwwo........oWwWwo...', 'Twwwwo.......owwwwo...', 'Twwwwwooooooowwwwewo.o', 'owwwwwLLLLLLLwwwwwwwon', '.owwwwwwwwwwwwwwwwmkko', '..oowwwwwwwwwwwwkkWoo.', '...owwWWWWWWWkkoooo...', '....owWWWWWWWwo.......', '....oWogooogoWo.......', '...oWoogo.ogooWo......', '..ofo..ofofo..ofo.....', '...o....o.o....o......'], ['oooo.........owowo....', 'TTwwo........oWwWwo...', 'Twwwwo.......owwwwo...', 'Twwwwwooooooowwwwewo.o', 'owwwwwLLLLLLLwwwwwwwon', '.owwwwwwwwwwwwwwwwmkko', '..oowwwwwwwwwwwwkkWoo.', '...owwWWWWWWWkkoooo...', '....owWWWWWWWwo.......', '.....oWogooWogo.......', '.....oWogooWogo.......', '.....ofofoofofo.......', '......o.o..o.o........']];
+  var CROW2 = [['........oBBBo.', '..ooo..oBBBo..', 'oobbbooBBBo...', 'ybebbBBBBoo..o', 'ybbbbbbbbbboob', 'ooobBBBBBBbbbo', '...obbbbbbbobb', '....ooooooo.oo', '..............', '..............'], ['..............', '..ooo.........', 'oobbbo........', 'ybebbbooooo..o', 'ybbbbbbbbbboob', 'ooobBBBBBBbbbo', '...obbBBBBbobb', '....oooBBBBooo', '.......ooBBo..', '.........oo...']];
+  var BAT2 = [['oooo........oooo', 'BBBBooo..oooBBBB', 'BBBBBBboobBBBBBB', 'oWBBBBbbbbBBBBWo', '.ooWBBbeebBBWoo.', '...ooobbbbooo...', '......obbo......', '.......oo.......', '................', '................'], ['................', '......o..o......', '.....oboobo.....', '...ooobbbbooo...', '.ooBBBbeebBBBoo.', 'oBBBBBbbbbBBBBBo', 'BBBBBoobbooBBBBB', 'BBBoo..oo..ooBBB', 'ooo..........ooo', '................']];
+  var WOLF2_PAL = { o: '#1c2848', w: '#f2f6ff', W: '#b6c6e6', L: '#ffffff', g: '#8a9cc8', f: '#3a4a72', T: '#c8d6f0', e: '#ff3a5a', n: '#1c2848', m: '#6a7aa8', k: '#ffffff' };
+  var FOX2_PAL = { o: '#3a1408', w: '#ff8a3a', W: '#d8601e', L: '#ffb070', g: '#a84818', f: '#3a1408', T: '#ffffff', e: '#1a0804', n: '#1a0804', m: '#a84818', k: '#fff4e8' };
+  var CROW2_PAL = { o: '#0a0612', b: '#2a2440', B: '#4a4268', y: '#ffb84f', e: '#ff4f7a' };
+  var BAT2_PAL = { o: '#120a24', b: '#4a3a7a', B: '#6a5aa8', W: '#9a8ad8', e: '#ff4f7a' };
   PX.buildProps = function () {
     var P = {};
-    P.wolf = [PX.fromRows(WOLF.top.concat(WOLF.a), WOLF_PAL), PX.fromRows(WOLF.top.concat(WOLF.b), WOLF_PAL)].map(PX.flip);
+    P.wolf = WOLF2.map(function (r) { return PX.flip(PX.fromRows(r, WOLF2_PAL)); });
+    P.fox = FOX2.map(function (r) { return PX.flip(PX.fromRows(r, FOX2_PAL)); });
     P.beetle = [PX.fromRows(BEETLE.top.concat(BEETLE.a), BEETLE_PAL), PX.fromRows(BEETLE.top.concat(BEETLE.b), BEETLE_PAL)].map(PX.flip);
     P.cone = PX.fromRows(CONE, CONE_PAL);
     var birdPal = { o: '#1b1430', e: '#ff4f7a', y: '#ffb84f' }, batPal = { o: '#d8ecff', e: '#2a5fd8', y: '#7fb8ff' };
-    P.crow = [PX.fromRows(BIRD.a, birdPal), PX.fromRows(BIRD.b, birdPal)];
-    P.bat = [PX.fromRows(BIRD.a, batPal), PX.fromRows(BIRD.b, batPal)];
+    P.crow = CROW2.map(function (r) { return PX.fromRows(r, CROW2_PAL); });
+    P.bat = BAT2.map(function (r) { return PX.fromRows(r, BAT2_PAL); });
     P.box = (function () {
       var c = PX.make(16, 13), g = c.getContext('2d');
       g.fillStyle = '#3a2412'; g.fillRect(0, 2, 16, 11);
