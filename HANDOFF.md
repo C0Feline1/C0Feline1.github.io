@@ -62,3 +62,11 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - `js/game.js`：世界时长按速度自动算（约 25 秒/世界）；每个世界有自己的关卡片段轮换（`SETS`：阶梯平台、浮桥、弹簧、滑铲横杆、爬墙竖井、射击场、道具点）；道具（磁铁、双倍、泡泡盾、迷你火箭）；↓ 滑铲/快速下落/穿过平台，← → 微调位置；C 技能（C0 超频），F/X 射击（GUN 世界）。
 - 排行榜：每局都会 `/qualify`（不再只看本地最高分），`/start` 失败会重试。分数公式未改（距离 + 星砂×25），服务器校验不受影响。
 - 调试钩子：`window.__KR_DEBUG()`、`window.__KR_T`（只读测试用，可删）。
+
+## Round 3
+- Pits / world transitions: no pit may spawn within 60 m of a world boundary (`PIT_SAFE`), the switch is delayed while a pit is under/near the runner (`pitNear`), wide pits are only removed once fully off-screen (`o.x + o.w < -40`), pits are never ghosted, platforms only fade when the control mode changes, a runner whose pit slid away while shallow stands on the lip.
+- DOWN is hold-to-crouch (keyboard ↓/S, D-pad ▼ hold, swipe-and-hold); stays low while under a low bar; blur releases all held keys.
+- Wall-jump happens ON THE ROAD: a pillar (arch, run in under it) + a cliff face; the road pauses, tap to hop wall-to-wall, then hop onto the raised ledge and keep running; the ledge steps back down. Lap 1: no spikes and 64 px climb; spikes/height ramp from lap 2 (`shaftLayout`). Obstacle density also ramps by lap (`lz`).
+- Rest houses (home/cabin/sakura/snow set pieces): run in the door → cosy room (no hazards, no scroll): fish snack → feed/pet the cat (+heart), lamp switch, music box, photo of C0/X0/Feline1, bookshelf secret (power-up); DOWN = use; exit door on the right returns to the same road.
+- Bigger touch controls (D-pad 150 px, A/B 66 px, SKILL/FIRE 72×50, SOUND 48 px tall), key labels on buttons, help text cut to one line (hidden on phones), no horizontal overflow at 360–430 px.
+- build.log capped at 40 lines.

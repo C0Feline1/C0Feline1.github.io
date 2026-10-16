@@ -58,13 +58,16 @@
   }, 15000);
 
   /* terminal */
-  var logEl = $('log'), lines = [];
+  var logEl = $('log'), MAXL = 40, cur = document.createElement('span');
+  cur.className = 'cursor'; logEl.textContent = ''; logEl.appendChild(cur);
   function esc(s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
   function log(cls, msg) {
-    lines.push('<span class="t">[' + now() + ']</span> <span class="' + cls + '">' + esc(msg) + '</span>');
-    var maxLines = Math.max(8, Math.floor((logEl.clientHeight || 300) / 18) - 1);
-    while (lines.length > maxLines) lines.shift();
-    logEl.innerHTML = lines.join('\n') + '\n<span class="cursor"></span>';
+    /* append one line, drop the oldest beyond MAXL: fixed-size DOM, no growing arrays */
+    var d = document.createElement('div');
+    d.innerHTML = '<span class="t">[' + now() + ']</span> <span class="' + cls + '">' + esc(msg) + '</span>';
+    logEl.insertBefore(d, cur);
+    while (logEl.childElementCount - 1 > MAXL) logEl.removeChild(logEl.firstElementChild);
+    logEl.scrollTop = logEl.scrollHeight;
   }
   var boot = [
     ['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/归途的余温  ✓'],
@@ -96,7 +99,7 @@
   if ($('sBtn')) bindBtn($('sBtn'), function () { KittyRunner.skill(); });
   if ($('fBtn')) { bindBtn($('fBtn'), function () { KittyRunner.fire(true); }); ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('fBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); }); }
   document.querySelectorAll('.dpad button').forEach(function (b) { bindBtn(b, function () { KittyRunner.dpad(b.dataset.d); }); });
-  document.querySelectorAll('.dpad button[data-d=left], .dpad button[data-d=right]').forEach(function (b) {
+  document.querySelectorAll('.dpad button[data-d=left], .dpad button[data-d=right], .dpad button[data-d=down]').forEach(function (b) {
     b.addEventListener('pointerdown', function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, true); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, false); }); });
   });
