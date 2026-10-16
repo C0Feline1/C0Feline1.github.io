@@ -28,7 +28,7 @@
     ['p', 'cat    猫猫伸了个懒腰'], ['p', 'cat    猫猫推倒了一支笔'], ['p', 'cat    猫猫盯着屏幕上的光标'], ['p', 'cat    猫猫占领了椅子'],
     ['p', 'spider 小八在天花板上织了一张网'], ['p', 'spider 小八巡逻经过 build.log'], ['p', 'spider 小八在看你'],
     ['c', 'net    ping github.com … 42ms'], ['c', 'cache  清理了 128MB 临时文件'], ['c', 'gpu    像素渲染温度 46°C'],
-    ['c', 'audio  正在合成 8-bit 跳跃音效'], ['c', 'audio  BGM 还没写，先哼着'], ['c', 'i18n   找到 3 处没翻译的"喵"']
+    ['c', 'audio  正在合成 8-bit 跳跃音效'], ['c', 'audio  Feline Neon Loop 已就绪'], ['c', 'i18n   找到 3 处没翻译的"喵"']
   ];
 
   /* ---------- templated generators ---------- */
