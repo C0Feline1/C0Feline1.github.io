@@ -93,7 +93,13 @@
   }
   bindBtn($('aBtn'), function () { KittyRunner.action(); });
   bindBtn($('bBtn'), function () { KittyRunner.b(); });
+  if ($('sBtn')) bindBtn($('sBtn'), function () { KittyRunner.skill(); });
+  if ($('fBtn')) { bindBtn($('fBtn'), function () { KittyRunner.fire(true); }); ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('fBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); }); }
   document.querySelectorAll('.dpad button').forEach(function (b) { bindBtn(b, function () { KittyRunner.dpad(b.dataset.d); }); });
+  document.querySelectorAll('.dpad button[data-d=left], .dpad button[data-d=right]').forEach(function (b) {
+    b.addEventListener('pointerdown', function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, true); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, false); }); });
+  });
 
   /* inspiration chart */
   var ch = $('chart'), cg = ch.getContext('2d'), data = [], v = 70000;

@@ -15,7 +15,7 @@
     --bg: #07050d; --panel: #0e0a18; --panel2: #140f22; --line: #2a1f3d; --dim: #8b7fa8; --text: #f2ecff;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  html, body { -webkit-tap-highlight-color: transparent; margin: 0; background: var(--bg); color: var(--text); }
   body {
     font-family: "DotGothic16", "Microsoft YaHei", monospace; font-size: 13px; line-height: 1.5;
     background:
@@ -131,6 +131,14 @@
   .lb-btns button:disabled { opacity: .5; cursor: default; }
   .lb-msg { min-height: 1.4em; margin: 8px 0 0 !important; color: var(--cyan) !important; font-size: 12px; }
 
+  .xbtns { display: flex; gap: 6px; }
+  .xbtn { width: 46px; height: 26px; border-radius: 13px; border: 0; background: #3a6ad4; color: #e0ecff; font: 10px "DotGothic16", monospace; box-shadow: inset 0 -3px 0 #1f3a8a, 0 2px 0 #120a20; cursor: pointer; touch-action: none; }
+  .xbtn.fire { background: #d47a3c; box-shadow: inset 0 -3px 0 #8a4a1f, 0 2px 0 #120a20; }
+  .xbtn:active { transform: translateY(1px); }
+  /* mobile: no tap highlight / selection / long-press callout on the console */
+  .gba, .gba *, #game { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  #game, .gba button { touch-action: none; }
+  .smallbtn { touch-action: manipulation; }
   @keyframes tick { to { transform: translateX(-100%); } }
   @keyframes blink { 50% { opacity: 0; } }
   @media (max-width: 920px) {
@@ -188,7 +196,7 @@
     <div class="panel lb">
       <div class="ph"><h2>🏆 HALL OF FAME · 排行榜 TOP 100</h2><span class="tag" id="lbStatus" style="color:var(--dim)">…</span></div>
       <ol class="lb-list" id="lbList"><li class="lb-empty">加载中……</li></ol>
-      <p class="lb-tip">刷新自己的最高分并进入前 100 名时，可以留下名字。</p>
+      <p class="lb-tip">任意一局得分进入全球前 100 名，就可以留下名字。</p>
     </div>
   </section>
 
@@ -204,7 +212,7 @@
             <button data-d="right" style="left:48px;top:24px" aria-label="右：下一个角色"></button>
             <button data-d="down" style="left:24px;top:48px" aria-label="下：返回选人"></button>
           </div>
-          <div class="note">选人：← → / 1 2 3<br>暂停：B　菜单：Esc</div>
+          <div class="note">选人：← → / 1 2 3　移动：← →<br>滑铲：↓　技能：C　射击：F/X<br>暂停：B / P　菜单：Esc</div>
         </div>
         <div class="scr">
           <div class="screenwrap">
@@ -214,12 +222,12 @@
         </div>
         <div class="side right">
           <div class="ab"><button class="abtn b" id="bBtn" aria-label="B：选人 / 暂停">B</button><button class="abtn" id="aBtn" aria-label="A：跳跃">A</button></div>
-          <button class="smallbtn" id="bgmBtn" type="button" aria-pressed="false" aria-label="播放或暂停猫娘像素背景音乐">♫ BGM OFF</button>
-          <button class="smallbtn" id="muteBtn">♪ ON</button>
-          <div class="note">A 跳跃（长按更高）<br>B 选人 / 暂停</div>
+          <div class="xbtns"><button class="xbtn" id="sBtn" type="button" aria-label="技能">SKILL</button><button class="xbtn fire" id="fBtn" type="button" aria-label="射击">FIRE</button></div>
+          <button class="smallbtn" id="bgmBtn" type="button" aria-pressed="false" aria-label="打开或关闭全部声音">♫ SOUND OFF</button>
+          <div class="note">A 跳跃（长按更高）　▼ 滑铲/下落<br>B 选人 / 暂停</div>
         </div>
       </div>
-      <p class="help">点击画面 / <kbd>Space</kbd> / <kbd>↑</kbd> 跳跃　·　Feline1 九命回血　·　C0 危险时自动慢动作　·　X0 护盾 + 吸星砂（右下角能量条）　·　23 个世界：修仙御剑、赛博翻转重力、蒸汽喷射背包、海底游泳……峰顶有 BOSS</p>
+      <p class="help">点击画面 / <kbd>Space</kbd> / <kbd>↑</kbd> 跳跃　·　<kbd>↓</kbd> 滑铲 / 快速下落 / 穿过平台（手机：下滑）　·　<kbd>C</kbd> 技能　·　<kbd>F</kbd> 射击（标 GUN 的世界）　·　Feline1 二段跳 + 九命回血　·　C0 按 <kbd>C</kbd> / SKILL 超频（慢动作 + 穿透，10 秒冷却）　·　X0 护盾（12 秒充能）+ 小磁铁　·　道具：磁铁 / 双倍星砂 / 泡泡盾 / 迷你火箭　·　24 个世界：庭院自由探索、修仙御剑（灵气环）、天空热气球、赛博翻转重力、蒸汽喷射背包、海底游泳……峰顶有 BOSS</p>
     </div>
   </section>
 
@@ -253,13 +261,14 @@
 <div class="lb-modal" id="lbModal" hidden>
   <div class="lb-box" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
     <h3 id="lbTitle">★ NEW RECORD ★</h3>
-    <p>你的最高分 <b id="lbScore">0</b>　<span id="lbRankHint"></span></p>
+    <p>本局得分 <b id="lbScore">0</b>　<span id="lbRankHint"></span></p>
     <label>留下名字登上排行榜（1-12 个字）<input id="lbName" maxlength="12" autocomplete="nickname" spellcheck="false"></label>
     <div class="lb-btns"><button id="lbSend">登上排行榜</button><button id="lbSkip" class="ghost">算了</button></div>
     <p class="lb-msg" id="lbMsg"></p>
   </div>
 </div>
 <script src="js/pixel.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/game.js"></script>
 <script src="js/music.js"></script>
 <script src="js/logs.js"></script>

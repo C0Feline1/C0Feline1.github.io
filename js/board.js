@@ -10,7 +10,11 @@
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function req(path, body) {
     var opt = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
-    return fetch(API + path, opt).then(function (r) { return r.json().then(function (j) { j._status = r.status; return j; }); });
+    return fetch(API + path, opt).then(function (r) {
+      var ct = r.headers.get('content-type') || '';
+      if (ct.indexOf('json') < 0) throw new Error('bad response ' + r.status);
+      return r.json().then(function (j) { j._status = r.status; if (!r.ok && !j.error) j.error = 'HTTP ' + r.status; j._ok = r.ok; return j; });
+    });
   }
 
   var highlight = null;
@@ -25,7 +29,7 @@
     var me = listEl.querySelector('.me'); if (me) me.scrollIntoView({ block: 'nearest' });
   }
   function load() {
-    req('/top?limit=100').then(function (j) { render(j.top || []); statusEl.textContent = 'ONLINE'; statusEl.style.color = 'var(--green)'; })
+    req('/top?limit=100').then(function (j) { if (!j._ok) throw new Error(j.error); render(j.top || []); statusEl.textContent = 'ONLINE'; statusEl.style.color = 'var(--green)'; })
       .catch(function () { statusEl.textContent = 'OFFLINE'; statusEl.style.color = 'var(--red)'; if (!listEl.children.length || listEl.querySelector('.lb-empty')) listEl.innerHTML = '<li class="lb-empty">排行榜暂时连不上，稍后再来看看</li>'; });
   }
   load(); setInterval(load, 60000);
@@ -61,18 +65,31 @@
       .catch(function () { msg.textContent = '网络有点问题，稍后再试'; sendBtn.disabled = false; });
   }
 
+  function startRun(id) {
+    return req('/start', { char: id }).then(function (j) { if (j.run) return j; throw new Error('no run'); });
+  }
+  var startP = null, curChar = null;
   window.addEventListener('runner', function (e) {
     var d = e.detail;
     if (d.type === 'start') {
-      run = null;
-      req('/start', { char: d.id }).then(function (j) { if (j.run) run = j; }).catch(function () { });
+      run = null; curChar = d.id;
+      startP = startRun(d.id).then(function (j) { run = j; return j; }, function () { return null; });
     } else if (d.type === 'over') {
-      var r = run; run = null;
-      if (!d.isBest || !r || d.score <= 0) return;
-      req('/qualify?score=' + d.score).then(function (j) {
-        if (!j.qualifies) return;
-        pending = { run: r, score: d.score, dist: d.dist, shards: d.shards, frames: d.frames, cps: d.cps };
-        setTimeout(function () { if (pending) openModal(pending, j.rank); }, 1300);
+      var p = startP || Promise.resolve(null); startP = null;
+      setTimeout(load, 800);
+      if (d.score <= 0) return;
+      p.then(function (r) {
+        /* /start failed at game start: retry once now; a run token is required by the server */
+        if (!r) return startRun(d.id).catch(function () { return null; });
+        return r;
+      }).then(function (r) {
+        run = null;
+        if (!r) { statusEl.textContent = 'OFFLINE · 本局不计分'; statusEl.style.color = 'var(--red)'; return; }
+        return req('/qualify?score=' + d.score).then(function (j) {
+          if (!j._ok || !j.qualifies) return;
+          pending = { run: r, score: d.score, dist: d.dist, shards: d.shards, frames: d.frames, cps: d.cps };
+          setTimeout(function () { if (pending) openModal(pending, j.rank); }, 1300);
+        });
       }).catch(function () { });
     }
   });

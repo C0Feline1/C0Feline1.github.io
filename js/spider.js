@@ -113,10 +113,12 @@
 
   /* ---------- speech ---------- */
   var sayUntil = 0;
-  function say(text, ms) { bub.textContent = text; bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
+  function say(text, ms) { if (window.SND) SND.spider('chirp'); bub.textContent = text; bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
   function placeBubble() {
     var w = bub.offsetWidth, dw = document.documentElement.scrollWidth;
     var bx = clamp(S.x - w / 2, 4, dw - w - 4), by = S.y - S.hop - 26 * K;
+    /* keep the bubble off the header clock/ticker: flip it below 小八 when it would overlap the top bar */
+    var hd = document.querySelector('.top'); if (hd) { var hr = hd.getBoundingClientRect(), hb = hr.bottom + window.scrollY; if (by < hb + 4 && S.y < hb + 140) by = S.y + 14 * K; }
     bub.style.transform = 'translate(' + Math.round(bx) + 'px,' + Math.round(by) + 'px)';
   }
 
@@ -425,12 +427,20 @@
   window.addEventListener('leaderboard', function (e) { if (onScreen(S.x, S.y)) say('上榜啦！第 ' + e.detail.rank + ' 名！', 3000); });
 
   /* ---------- main loop ---------- */
-  var lastT = performance.now(), chatter = 500, guard = 0;
+  var lastT = performance.now(), chatter = 500, guard = 0, sndMode = null, sndT = 0;
   function tick(now) {
     requestAnimationFrame(tick);
     var dt = Math.min(3, (now - lastT) / 16.67); lastT = now;
     if (document.hidden) return;
     refreshNoGo(); S.t += dt; updateDirt(dt);
+    if (window.SND && SND.on && onScreen(S.x, S.y)) {
+      if (S.mode !== sndMode) { var M = { swing: 'swing', dangle: 'swing', dig: 'dig', flee: 'hop', weave: 'web' }; if (M[S.mode]) SND.spider(M[S.mode]); sndMode = S.mode; }
+      sndT += dt;
+      if ((S.mode === 'walk' || S.mode === 'flee') && S.v > 0.6) SND.spider('step');
+      if (S.mode === 'weave' && sndT > 22) { sndT = 0; SND.spider('web'); }
+      if (S.mode === 'dig' && sndT > 14) { sndT = 0; SND.spider('dig'); }
+      if (S.mode === 'sleep' && sndT > 110) { sndT = 0; SND.spider('snore'); }
+    }
     if (S.mode === 'dangle') {
       S.y += Math.max(0.6, (S.ty - S.y) * 0.05) * dt; S.a += angDiff(S.a, Math.PI / 2 + Math.sin(now / 300) * 0.15) * 0.1;
       if (S.y >= S.ty) { S.y = S.ty; S.wait += dt; if (S.wait > 40) { S.mode = 'idle'; S.wait = 40; S.twitch = 30; S.tuck = false; plantAll(); say(pick(['嗨～', '我来巡逻了', '大家在干嘛？']), 1800); } }

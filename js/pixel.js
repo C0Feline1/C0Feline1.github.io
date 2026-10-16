@@ -118,17 +118,17 @@
 
   PX.CHARS = {
     Feline1: {
-      cat: true, tail: true, body: 'dress', label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：4 颗心，每 400m 回 1 颗 + 各世界身法', perkEn: 'NINE LIVES', color: '#ff6fa6',
+      cat: true, tail: true, body: 'dress', label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：4 颗心，每 25 秒回 1 颗 + 二段跳', perkEn: 'NINE LIVES', color: '#ff6fa6',
       pal: { o: '#4e2a48', h: '#fbeef5', H: '#d2a8c6', L: '#ffffff', i: '#ff8ab8', s: '#ffe6dc', S: '#f0c2ba', E: '#e8307e', w: '#ffffff', p: '#ffb0c4', m: '#c0506a',
         c: '#ffd6e8', C: '#eaa6c4', k: '#ffffff', a: '#ff5a9e', A: '#c0306a', l: '#ffffff', n: '#e2d0e4', b: '#b8487e', B: '#ff8ab8', t: '#fbeef5', T: '#d2a8c6', r: '#ff6fa6' }
     },
     C0: {
-      cat: false, headset: true, body: 'hoodie', label: 'C0', cn: '程序 C0', perk: '超频：危险时自动慢动作', perkEn: 'OVERCLOCK', color: '#4fe3ff',
+      cat: false, headset: true, body: 'hoodie', label: 'C0', cn: '程序 C0', perk: '超频：按 C 慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
       pal: { o: '#08060c', h: '#2e2534', H: '#1a141e', L: '#5a4a6e', s: '#f3d2c4', S: '#deb0a4', E: '#241c2c', w: '#ffffff', p: '#f4a0a8', m: '#9c4a5a',
         c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#1c1824', n: '#110e16', b: '#4fe3ff', B: '#ffffff', r: '#4fe3ff' }
     },
     X0: {
-      cat: false, ribbon: true, body: 'blouse', label: 'X0', cn: '画师 X0', perk: '镜光护盾：护盾更快充能 + 吸星砂', perkEn: 'MIRROR SHIELD', color: '#b48cff',
+      cat: false, ribbon: true, body: 'blouse', label: 'X0', cn: '画师 X0', perk: '镜光护盾：12 秒充能 + 小磁铁', perkEn: 'MIRROR SHIELD', color: '#b48cff',
       pal: { o: '#1e0e16', h: '#5a3a44', H: '#3a2430', L: '#8a6070', s: '#f6dcd6', S: '#e2b8b0', E: '#9a6cff', w: '#ffffff', p: '#ff9fb0', m: '#a04a5a',
         c: '#f8eef2', C: '#d4bccc', k: '#ffffff', a: '#ff5f8f', A: '#c02a5a', d: '#2a1a2e', D: '#1a0e1c', l: '#3a2430', n: '#24141c', b: '#1a0a12', B: '#5a3a44', r: '#ff5f8f' }
     }
@@ -226,7 +226,7 @@
       }
       return c;
     };
-    var SH = { o: '#ff4fa3', y: '#ffd45e', Y: '#fff1a8', w: '#ffffff' };
+    var SH = { o: '#9a5a12', y: '#ffd45e', Y: '#fff1a8', w: '#ffffff' };
     P.shard = [
       ['....o....', '...oyo...', '..oyYyo..', '.oyYwYyo.', 'oyYwwwYyo', '.oyYwYyo.', '..oyYyo..', '...oyo...', '....o....'],
       ['.........', '....o....', '...oyo...', '..oyYyo..', '.oyYwYyo.', '..oyYyo..', '...oyo...', '....o....', '.........'],
