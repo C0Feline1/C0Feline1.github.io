@@ -1783,6 +1783,18 @@
     if (Rm.px > ROAM_W - 40) { Rm.exit = 1; SFX.rift(); }
     Rm.cam += (clamp(Rm.px - 100, 0, ROAM_W - W) - Rm.cam) * 0.12;
     Rm.trail.unshift([Rm.px, Rm.py, Rm.face]); Rm.trail.length = 40;
+    /* the other two walk on their own feet: follow the leader's trail, jump up to ledges, land on ground/platforms */
+    if (!Rm.fol) Rm.fol = [0, 1].map(function (k) { return { x: Rm.px - 18 - k * 16, y: GY, vy: 0, on: true, face: 1, mv: 0, drop: 0 }; });
+    Rm.fol.forEach(function (fo, k) {
+      var tr = Rm.trail[14 + k * 12] || Rm.trail[0], tx = clamp(tr[0], 8, ROAM_W - 10), dx = clamp(tx - fo.x, -1.7, 1.7);
+      if (Math.abs(tx - fo.x) > 2) { fo.x += dx; fo.face = dx > 0 ? 1 : -1; fo.mv = 1; } else fo.mv = 0;
+      if (fo.on && tr[1] < fo.y - 8 && Math.abs(tx - fo.x) < 40) { fo.vy = -5.2; fo.on = false; }
+      if (fo.on && tr[1] > fo.y + 8 && fo.y < GY) fo.drop = 14;
+      if (fo.drop > 0) fo.drop--;
+      var py = fo.y; fo.vy = Math.min(5, fo.vy + 0.3); fo.y += fo.vy; fo.on = false;
+      if (fo.vy >= 0 && fo.drop <= 0) Rm.plats.forEach(function (p) { if (!fo.on && fo.x + 12 > p.x && fo.x + 4 < p.x + p.w && py <= p.y + 3 && fo.y >= p.y) { fo.y = p.y; fo.vy = 0; fo.on = true; } });
+      if (!fo.on && fo.y >= GY) { fo.y = GY; fo.vy = 0; fo.on = true; }
+    });
     G.x = Rm.px - Rm.cam; G.y = Rm.py; G.onGround = Rm.on; G.vy = Rm.vy;
     if (G.sq) { G.sq *= 0.78; if (Math.abs(G.sq) < 0.02) G.sq = 0; }
   }
@@ -1807,9 +1819,9 @@
     Rm.items.forEach(function (it) { g.drawImage(P.shard[Math.floor((f + it.x) / 6) % 4], sx(it.x), Math.round(it.y + Math.sin(f * 0.1 + it.x) * 2)); });
     /* the other two follow along the trail */
     var others = PX.ORDER.filter(function (x) { return x !== G.id; });
-    others.forEach(function (oid, k) { var tr = Rm.trail[12 + k * 12] || [Rm.px, Rm.py, 1], s = SPR[oid], moving = Math.abs((Rm.trail[0] || tr)[0] - tr[0]) > 2;
-      var img = tr[1] < GY - 0.5 && !Rm.plats.some(function (p) { return Math.abs(tr[1] - p.y) < 1; }) ? s.jump : (moving ? s.run[Math.floor(f / 5) % 4] : s.stand);
-      g.save(); g.translate(sx(tr[0] - 18 - k * 4) + 8, Math.round(tr[1])); g.scale(tr[2] < 0 ? -1 : 1, 1); g.drawImage(img, -8, -24); g.restore(); });
+    others.forEach(function (oid, k) { var fo = (Rm.fol || [])[k]; if (!fo) return; var s = SPR[oid];
+      var img = !fo.on ? s.jump : (fo.mv ? s.run[Math.floor((f + k * 7) / 5) % 4] : s.stand);
+      g.save(); g.translate(sx(fo.x) + 8, Math.round(fo.y)); g.scale(fo.face < 0 ? -1 : 1, 1); g.drawImage(img, -8, -24); g.restore(); });
     var blink = G.inv > 0 && Math.floor(G.inv / 3) % 2;
     if (!blink) { var s0 = SPR[G.id], im = !Rm.on ? s0.jump : (Math.abs(Rm.vx) > 0.3 ? s0.run[Math.floor(f / 5) % 4] : s0.stand);
       g.save(); g.translate(sx(Rm.px) + 8, Math.round(Rm.py)); g.scale((Rm.face < 0 ? -1 : 1) * (1 + G.sq * 0.6), 1 - G.sq); g.drawImage(im, -8, -24); g.restore(); }
@@ -2052,7 +2064,7 @@
     }
     downPressed = false;
     if (G.sq) { G.sq *= 0.78; if (Math.abs(G.sq) < 0.02) G.sq = 0; }
-    G.hist.unshift([G.y, G.gdir]); G.hist.length = 80;
+    G.hist.unshift([G.y, G.gdir, G.sliding ? 1 : 0]); G.hist.length = 80;
 
     var ba = biomeAt(G.dist), nb = ba[1];
     if (nb !== G.biome || ba[0] !== G.loop) {
@@ -2343,7 +2355,11 @@
         if (mode !== 'flip' && gd < 0) { y += 20; gd = 1; }
         if (mode === 'run') y = Math.min(GY, y);
         var air = mode === 'flip' ? !(gd > 0 ? y >= GY : y <= CY) : y < GY - 0.5;
-        drawRider(c[0], G.x - c[1], y, G.frame + c[1], mode, gd, air, y - h2[0] < -0.4, (y - h2[0]) / 3);
+        if (h[2] && mode === 'run') { /* follower slides too: same squash as the leader */
+          g.save(); g.translate(Math.round(G.x - c[1] + 8), Math.round(y)); g.scale(1.3, 0.5); g.translate(-Math.round(G.x - c[1] + 8), -Math.round(y));
+          drawRider(c[0], G.x - c[1], y, G.frame + c[1], mode, gd, false, false, 0); g.restore();
+          if (G.frame % 3 === 0) particle(G.x - c[1] + 2 + R() * 10, GY - 1, -G.speed * 0.5 - R(), -R() * 0.8, 12, BIOMES[G.biome].ground.top[0], 1);
+        } else drawRider(c[0], G.x - c[1], y, G.frame + c[1], mode, gd, air, y - h2[0] < -0.4, (y - h2[0]) / 3);
       });
     } else {
       others.forEach(function (oid, k) {
