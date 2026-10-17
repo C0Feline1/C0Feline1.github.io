@@ -151,6 +151,7 @@
   var startP = null;
   window.addEventListener('runner', function (e) {
     var d = e.detail;
+    if (d.practice) return; /* practice runs never talk to the leaderboard server (no /start, /qualify or /submit) */
     if (d.type === 'start') {
       run = null; noScore = false; setStatus(online);
       startP = startRun(d.id).then(function (j) { run = j; return j; }, function () { return null; });

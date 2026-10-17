@@ -83,7 +83,8 @@
 
   window.addEventListener('runner', function (e) {
     var d = e.detail;
-    if (d.type === 'over') {
+    if (d.type === 'over' && d.practice) log('c', 'arcade ' + d.id + ' 练习「' + d.where + '」' + (d.clear ? '通关 ✓' : '倒下了') + ' · 不计分');
+    else if (d.type === 'over') {
       log(d.isBest ? 'ok' : 'w', 'arcade ' + d.id + ' 在「' + d.where + '」跑了 ' + d.dist + 'm · ' + d.score + ' 分' + (d.isBest ? '  ★ 新纪录' : ''));
       setCard('best', d.best, d.isBest ? '<span class="up">▲ 新纪录！</span>' : '本次 ' + d.score + ' 分', Math.min(1, d.best / 3000));
     } else if (d.type === 'biome') log('p', 'arcade 抵达 → ' + d.name);
@@ -118,9 +119,12 @@
   if (spin) {
     var sg = spin.getContext('2d'), sa = 0, SC = ['#ff4fa3', '#4fe3ff', '#ffd45e', '#5dff8f'];
     window.AdSpin = { el: spin, speed: 0.09, kick: 0 }; /* spider.js adds a kick when 小八 bumps into it */
-    var drawSpin = function () {
+    var spinVis = true, spinT = 0;
+    if (window.IntersectionObserver) new IntersectionObserver(function (en) { spinVis = en[en.length - 1].isIntersecting; }).observe(spin);
+    var drawSpin = function (ts) {
       requestAnimationFrame(drawSpin);
-      if (document.hidden) return;
+      if (document.hidden || !spinVis || ts - spinT < 30) return; /* off-screen: idle; on-screen: ~30 fps */
+      spinT = ts || 0;
       sa += window.AdSpin.speed + window.AdSpin.kick; window.AdSpin.kick *= 0.97; sg.clearRect(0, 0, 40, 40);
       sg.fillStyle = '#3d2a66'; sg.fillRect(19, 20, 2, 20); sg.fillStyle = '#2a1648'; sg.fillRect(14, 38, 12, 2);
       for (var k = 0; k < 4; k++) {
@@ -138,6 +142,8 @@
   /* inspiration chart */
   var ch = $('chart'), cg = ch.getContext('2d'), data = [], v = 70000;
   for (var i = 0; i < 90; i++) { v += (R() - 0.46) * 1800; data.push(v); }
+  var chartVis = true;
+  if (window.IntersectionObserver) new IntersectionObserver(function (en) { chartVis = en[en.length - 1].isIntersecting; if (chartVis) drawChart(); }).observe(ch);
   function drawChart() {
     var dpr = window.devicePixelRatio || 1, w = ch.clientWidth, h = ch.clientHeight;
     if (ch.width !== w * dpr) { ch.width = w * dpr; ch.height = h * dpr; }
@@ -164,7 +170,7 @@
   }
   setInterval(function () {
     var last = data[data.length - 1], nv = last + (R() - 0.47) * 2000;
-    data.push(nv); data.shift(); drawChart();
+    data.push(nv); data.shift(); if (chartVis) drawChart();
     var pct = (nv - data[0]) / data[0] * 100;
     $('chartVal').textContent = '✦ ' + fmt(nv);
     $('chartTag').textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
@@ -224,9 +230,12 @@
   var SAY = { C0: ['BUG!', 'PUSH!', 'HMM...', 'LGTM', '404?'], X0: ['NICE', '+1 PX', 'COLOR!', 'HMM'], Feline1: ['MEOW!', 'JUMP!', 'NYA?', 'OK!', 'FISH?'] };
   setInterval(function () { var d = pick(desks); bubbles = bubbles.filter(function (b) { return b.d !== d; }); bubbles.push({ d: d, text: pick(SAY[d.id]), t: 0 }); if (bubbles.length > 2) bubbles.shift(); }, 2200);
   var steam = [], tk = 0, lastS = 0;
+  var studioVis = true, scW = 0;
+  if (window.IntersectionObserver) new IntersectionObserver(function (en) { studioVis = en[en.length - 1].isIntersecting; }).observe(scView);
+  if (window.ResizeObserver) new ResizeObserver(function () { scW = scView.clientWidth; }).observe(scView);
   function studio(ts) {
     requestAnimationFrame(studio);
-    if (ts - lastS < 40) return;
+    if (ts - lastS < 40 || !studioVis || document.hidden) return; /* off-screen: idle */
     lastS = ts; tk++;
     sg.drawImage(bg, 0, 0);
     // window: moon + snow
@@ -305,7 +314,7 @@
     sg.fillStyle = 'rgba(0,0,0,.12)'; for (var sy = 0; sy < SH; sy += 2) sg.fillRect(0, sy, SW, 1);
     PX.text(sg, 'CAM 01  ' + now(), 6, 4, '#ff4f6a', '#000');
     PX.text(sg, 'REC', SW - 18, 4, tk % 30 < 15 ? '#ff4f6a' : '#5a1a2a', '#000');
-    var dpr = window.devicePixelRatio || 1, want = (scView.clientWidth || SW) * dpr, s = Math.max(1, Math.min(8, Math.ceil(want / SW - 0.01)));
+    var dpr = window.devicePixelRatio || 1, want = (scW || scView.clientWidth || SW) * dpr, s = Math.max(1, Math.min(8, Math.ceil(want / SW - 0.01)));
     if (scView.width !== SW * s) { scView.width = SW * s; scView.height = SH * s; }
     var ir = Math.abs(SW * s - want) < 1 ? 'pixelated' : 'auto';
     if (scView.style.imageRendering !== ir) scView.style.imageRendering = ir;

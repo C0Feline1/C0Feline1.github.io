@@ -6,6 +6,10 @@
   var AC = window.AudioContext || window.webkitAudioContext;
   var on = localStorage.getItem('sound-on') === '1';
   var spOn = localStorage.getItem('spider-sound') !== '0', spListeners = [];
+  var duck = null, lowFx = false;
+  /* measured music RMS per world (audit/audio_bal.json) -> gain that brings every song to about -24 dBFS */
+  var NORM = { home: 1.02, park: 0.89, market: 1.02, xian: 1.2, ink: 1.22, sakura: 1.2, cyber: 0.9, bit8: 0.86, steam: 0.89, desert: 1.11, court: 1.06, sea: 1.1,
+    skycity: 1.04, volcano: 0.79, space: 1.08, mirror: 0.94, candy: 0.91, haunt: 1.26, snow: 1.15, cabin: 1.22, ridge: 0.81, cave: 1.33, peak: 0.75, lake: 1.05 };
   var ctx = null, master, musicBus, sfxBus, spiderBus, pageGain, pageEl = null, pageSrc = null, noiseBuf = null, waves = {};
   var outNode = null, players = [], gameState = 'title', wantWorld = -1, pageTimer = null, listeners = [];
   var PAGE = { bpm: 92, root: 60, scale: [0, 2, 4, 5, 7, 9, 11] }; /* matches tools/compose_loop.py (C major, 92 BPM) */
@@ -16,8 +20,8 @@
     master = ctx.createGain(); master.gain.value = on ? 1 : 0;
     var comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
     master.connect(comp); comp.connect(ctx.destination); outNode = comp;
-    musicBus = ctx.createGain(); musicBus.gain.value = 0.55; musicBus.connect(master);
-    sfxBus = ctx.createGain(); sfxBus.gain.value = 0.9; sfxBus.connect(master);
+    musicBus = ctx.createGain(); musicBus.gain.value = 0.55; duck = ctx.createGain(); duck.gain.value = 1; musicBus.connect(duck); duck.connect(master);
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 1.42; sfxBus.connect(master); /* +4 dB: jump / shard used to sit under the music */
     spiderBus = ctx.createGain(); spiderBus.gain.value = 0.42; spiderBus.connect(comp); /* not under master: the SOUND switch doesn't mute 小八 */
     pageGain = ctx.createGain(); pageGain.gain.value = 0; pageGain.connect(musicBus);
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
@@ -99,7 +103,9 @@
   function Player(song, t0) {
     this.s = song; this.t = t0; this.step = 0; this.out = ctx.createGain(); this.out.gain.value = 0.0001;
     this.echo = ctx.createDelay(1); this.echo.delayTime.value = 60 / song.bpm * 0.75; this.eg = ctx.createGain(); this.eg.gain.value = 0.22;
-    this.echo.connect(this.eg); this.eg.connect(this.out); this.out.connect(musicBus); this.stopAt = Infinity;
+    if (lowFx) this.eg.gain.value = 0;
+    this.norm = ctx.createGain(); this.norm.gain.value = NORM[song.key] || 1;
+    this.echo.connect(this.eg); this.eg.connect(this.out); this.out.connect(this.norm); this.norm.connect(musicBus); this.stopAt = Infinity;
   }
   Player.prototype.play = function (step, t) {
     var s = this.s, sx = 60 / s.bpm / 4, bar = Math.floor(step / 16), b16 = step % 16, ct = chordTones(s, bar), o = this.out;
@@ -128,7 +134,7 @@
     var ahead = ctx.currentTime + 0.15;
     players = players.filter(function (p) {
       while (p.t < ahead && p.t < p.stopAt) { if (p.t >= ctx.currentTime - 0.05) p.play(p.step, p.t); p.t += 60 / p.s.bpm / 4; p.step = (p.step + 1) % 128; }
-      if (p.t >= p.stopAt && ctx.currentTime > p.stopAt + 0.5) { p.out.disconnect(); return false; }
+      if (p.t >= p.stopAt && ctx.currentTime > p.stopAt + 0.5) { p.out.disconnect(); p.norm.disconnect(); return false; }
       return true;
     });
   }
@@ -243,6 +249,8 @@
   var SND = {
     get on() { return on; }, toggle: function () { setOn(!on); }, setOn: setOn, onChange: function (f) { listeners.push(f); f(on); },
     setWorlds: function (keys) { BIOME_KEYS = keys; }, songs: SONGS,
+    duck: function () { if (!on || !duck) return; var t = ctx.currentTime; duck.gain.cancelScheduledValues(t); duck.gain.setTargetAtTime(0.7, t, 0.01); duck.gain.setTargetAtTime(1, t + 0.12, 0.08); },
+    lowfx: function (v) { lowFx = !!v; players.forEach(function (p) { p.eg.gain.value = lowFx ? 0 : 0.22; }); },
     beep: function (f, d, type, vol, slide) { if (!on || !init()) return; var t = ctx.currentTime; tone(sfxBus, type === 'square' ? 0.5 : type || 0.5, f, t, d, (vol || 0.05) * 1.6, { slide: slide, sus: 1, rel: 0.02 }); },
     noise: function (d, vol, freq) { if (!on || !init()) return; noise(sfxBus, ctx.currentTime, d, vol || 0.1, 'lowpass', freq || 2000); },
     world: function (i, hard) { wantWorld = i; if (on && init() && (gameState === 'play' || gameState === 'dying')) startWorld(i, hard); },
