@@ -117,26 +117,29 @@
   /* ad box: a pixel pinwheel that never stops spinning (小八 gets flung if it touches it) */
   var spin = $('adSpin');
   if (spin) {
-    var sg = spin.getContext('2d'), sa = 0, SC = ['#ff4fa3', '#4fe3ff', '#ffd45e', '#5dff8f'];
+    var pg = spin.getContext('2d'), sa = 0, SC = ['#ff4fa3', '#4fe3ff', '#ffd45e', '#5dff8f']; /* own name: the studio cam below has its own `sg` */
     window.AdSpin = { el: spin, speed: 0.09, kick: 0 }; /* spider.js adds a kick when 小八 bumps into it */
-    var spinVis = true, spinT = 0;
-    if (window.IntersectionObserver) new IntersectionObserver(function (en) { spinVis = en[en.length - 1].isIntersecting; }).observe(spin);
+    var spinVis = true, spinT = -1e9, spinOn = false;
     var drawSpin = function (ts) {
+      if (document.hidden || !spinVis) { spinOn = false; return; } /* off-screen / hidden tab: loop stops, restarted below */
       requestAnimationFrame(drawSpin);
-      if (document.hidden || !spinVis || ts - spinT < 30) return; /* off-screen: idle; on-screen: ~30 fps */
-      spinT = ts || 0;
-      sa += window.AdSpin.speed + window.AdSpin.kick; window.AdSpin.kick *= 0.97; sg.clearRect(0, 0, 40, 40);
-      sg.fillStyle = '#3d2a66'; sg.fillRect(19, 20, 2, 20); sg.fillStyle = '#2a1648'; sg.fillRect(14, 38, 12, 2);
+      if (ts - spinT < 40) return; /* ~25 fps */
+      spinT = ts;
+      sa += window.AdSpin.speed + window.AdSpin.kick; window.AdSpin.kick *= 0.97; pg.clearRect(0, 0, 40, 40);
+      pg.fillStyle = '#3d2a66'; pg.fillRect(19, 20, 2, 20); pg.fillStyle = '#2a1648'; pg.fillRect(14, 38, 12, 2);
       for (var k = 0; k < 4; k++) {
         var a0 = sa + k * Math.PI / 2;
         for (var r = 2; r < 16; r++) for (var w = 0; w <= r * 0.7; w += 0.6) {
           var a = a0 + w / r, x = Math.round(20 + Math.cos(a) * r), y = Math.round(20 + Math.sin(a) * r);
-          sg.fillStyle = w > r * 0.55 || r > 14 ? '#1a1030' : SC[k]; sg.fillRect(x, y, 1, 1);
+          pg.fillStyle = w > r * 0.55 || r > 14 ? '#1a1030' : SC[k]; pg.fillRect(x, y, 1, 1);
         }
       }
-      sg.fillStyle = '#ffffff'; sg.fillRect(19, 19, 2, 2);
+      pg.fillStyle = '#ffffff'; pg.fillRect(19, 19, 2, 2);
     };
-    drawSpin();
+    var spinGo = function () { if (!spinOn && spinVis && !document.hidden) { spinOn = true; requestAnimationFrame(drawSpin); } };
+    if (window.IntersectionObserver) new IntersectionObserver(function (en) { spinVis = en[en.length - 1].isIntersecting; spinGo(); }).observe(spin);
+    document.addEventListener('visibilitychange', spinGo);
+    spinGo();
   }
 
   /* inspiration chart */
@@ -145,8 +148,10 @@
   var chartVis = true;
   if (window.IntersectionObserver) new IntersectionObserver(function (en) { chartVis = en[en.length - 1].isIntersecting; if (chartVis) drawChart(); }).observe(ch);
   function drawChart() {
-    var dpr = window.devicePixelRatio || 1, w = ch.clientWidth, h = ch.clientHeight;
-    if (ch.width !== w * dpr) { ch.width = w * dpr; ch.height = h * dpr; }
+    var box = ch.parentNode, dpr = window.devicePixelRatio || 1, w = box.clientWidth, h = box.clientHeight;
+    if (!w || !h) return;
+    var bw0 = Math.round(w * dpr), bh0 = Math.round(h * dpr);
+    if (ch.width !== bw0 || ch.height !== bh0) { ch.width = bw0; ch.height = bh0; }
     cg.setTransform(dpr, 0, 0, dpr, 0, 0); cg.clearRect(0, 0, w, h);
     var mn = Math.min.apply(null, data), mx = Math.max.apply(null, data), lh = h * 0.68;
     cg.strokeStyle = 'rgba(139,127,168,.15)'; cg.lineWidth = 1;
@@ -176,7 +181,9 @@
     $('chartTag').textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
     $('chartTag').style.color = pct >= 0 ? 'var(--green)' : 'var(--red)';
   }, 900);
-  window.addEventListener('resize', drawChart); drawChart();
+  if (window.ResizeObserver) new ResizeObserver(function () { drawChart(); }).observe(ch.parentNode); /* box is out of the canvas' reach: no loop */
+  else window.addEventListener('resize', drawChart);
+  drawChart();
 
   /* ---------- studio cam ---------- */
   var scView = $('studio'), svg = scView.getContext('2d'), SW = 320, SH = 180, FY = 128;
@@ -230,12 +237,15 @@
   var SAY = { C0: ['BUG!', 'PUSH!', 'HMM...', 'LGTM', '404?'], X0: ['NICE', '+1 PX', 'COLOR!', 'HMM'], Feline1: ['MEOW!', 'JUMP!', 'NYA?', 'OK!', 'FISH?'] };
   setInterval(function () { var d = pick(desks); bubbles = bubbles.filter(function (b) { return b.d !== d; }); bubbles.push({ d: d, text: pick(SAY[d.id]), t: 0 }); if (bubbles.length > 2) bubbles.shift(); }, 2200);
   var steam = [], tk = 0, lastS = 0;
-  var studioVis = true, scW = 0;
-  if (window.IntersectionObserver) new IntersectionObserver(function (en) { studioVis = en[en.length - 1].isIntersecting; }).observe(scView);
+  var studioVis = true, scW = 0, studioOn = false;
+  function studioGo() { if (!studioOn && studioVis && !document.hidden) { studioOn = true; requestAnimationFrame(studio); } }
+  if (window.IntersectionObserver) new IntersectionObserver(function (en) { studioVis = en[en.length - 1].isIntersecting; studioGo(); }).observe(scView);
+  document.addEventListener('visibilitychange', studioGo);
   if (window.ResizeObserver) new ResizeObserver(function () { scW = scView.clientWidth; }).observe(scView);
   function studio(ts) {
+    if (!studioVis || document.hidden) { studioOn = false; return; } /* off-screen: loop stops (studioGo restarts it) */
     requestAnimationFrame(studio);
-    if (ts - lastS < 40 || !studioVis || document.hidden) return; /* off-screen: idle */
+    if (ts - lastS < 40) return; /* ~25 fps */
     lastS = ts; tk++;
     sg.drawImage(bg, 0, 0);
     // window: moon + snow
@@ -320,5 +330,5 @@
     if (scView.style.imageRendering !== ir) scView.style.imageRendering = ir;
     svg.imageSmoothingEnabled = false; svg.drawImage(sc, 0, 0, SW * s, SH * s);
   }
-  requestAnimationFrame(studio);
+  studioGo();
 })();

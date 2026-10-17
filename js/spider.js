@@ -8,6 +8,7 @@
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   var css = document.createElement('style');
   css.textContent =
+    '.spider-layer{position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none}.spider-layer>i{position:absolute;left:0;top:0;width:0;height:0}' +
     '.spider{position:absolute;left:0;top:0;width:' + CSS + 'px;height:' + CSS + 'px;image-rendering:pixelated;z-index:40;pointer-events:none;will-change:transform}' +
     '.silk{position:absolute;left:0;top:0;width:' + Math.max(1, K - 1) + 'px;background:linear-gradient(rgba(235,225,255,.25),rgba(235,225,255,.9));z-index:39;pointer-events:none;display:none;transform-origin:50% 0}' +
     '.spider-web{position:absolute;left:0;top:0;image-rendering:pixelated;z-index:38;pointer-events:none;transition:opacity 2s}' +
@@ -21,10 +22,14 @@
     /* phones: keep it away from the console d-pad; it sits in the header corner and scrolls away */
     '@media (max-width:640px){.spider-snd{position:absolute;left:auto;right:24px;top:22px;bottom:auto}}';
   document.head.appendChild(css);
+  /* everything 小八 draws lives in a layer that is exactly the pink .frame and clips (never adds scroll area);
+     the inner <i> is shifted back by the frame offset so children keep using page coordinates */
+  var layer = document.createElement('div'); layer.className = 'spider-layer'; layer.setAttribute('aria-hidden', 'true');
+  var host = document.createElement('i'); layer.appendChild(host); document.body.appendChild(layer);
   var cv = PX.make(LS, LS), g = cv.getContext('2d');
-  cv.className = 'spider'; cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
-  var silk = document.createElement('div'); silk.className = 'silk'; document.body.appendChild(silk);
-  var bub = document.createElement('div'); bub.className = 'spider-bub'; document.body.appendChild(bub);
+  cv.className = 'spider'; host.appendChild(cv);
+  var silk = document.createElement('div'); silk.className = 'silk'; host.appendChild(silk);
+  var bub = document.createElement('div'); bub.className = 'spider-bub'; host.appendChild(bub);
   cv.style.transform = 'translate(-400px,-400px)';
   /* 小八's own little sound switch (independent of the game's SOUND switch) */
   var sndBtn = document.createElement('button'); sndBtn.className = 'spider-snd'; sndBtn.type = 'button'; sndBtn.textContent = '🕷';
@@ -126,21 +131,28 @@
   var sayUntil = 0;
   function say(text, ms) { var n = String(text).replace(/[^\u4e00-\u9fffA-Za-z]/g, '').length; if (n <= 1) snd('chirp'); else snd('babble', { n: Math.ceil(n / 1.5) }); bub.textContent = text; bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
   function placeBubble() {
-    var w = bub.offsetWidth, dw = document.documentElement.scrollWidth;
-    var bx = clamp(S.x - w / 2, 4, dw - w - 4), by = S.y - S.hop - 26 * K;
+    var w = bub.offsetWidth, F = FR || { l: 0, t: 0, r: document.documentElement.clientWidth, b: 1e9 };
+    var bx = clamp(S.x - w / 2, F.l + 4, F.r - w - 4), by = S.y - S.hop - 26 * K;
     /* keep the bubble off the header clock/ticker: flip it below 小八 when it would overlap the top bar */
     var hd = document.querySelector('.top'); if (hd) { var hr = hd.getBoundingClientRect(), hb = hr.bottom + window.scrollY; if (by < hb + 4 && S.y < hb + 140) by = S.y + 14 * K; }
+    by = clamp(by, F.t + 4, F.b - bub.offsetHeight - 12);
     bub.style.transform = 'translate(' + Math.round(bx) + 'px,' + Math.round(by) + 'px)';
   }
 
-  /* ---------- geometry: the game console is off limits ---------- */
-  var NG = null;
+  /* ---------- geometry: bounds = the pink .frame; the whole ARCADE panel is off limits ---------- */
+  var NG = null, FR = null, P = 18 * K; /* P: body + leg reach kept clear of the arcade panel */
+  function pageRect(e) { var r = e.getBoundingClientRect(); return { l: r.left + window.scrollX, t: r.top + window.scrollY, r: r.right + window.scrollX, b: r.bottom + window.scrollY }; }
   function refreshNoGo() {
-    var e = document.querySelector('.gba');
-    if (!e) { NG = null; return; }
-    var r = e.getBoundingClientRect();
-    NG = { l: r.left + window.scrollX, t: r.top + window.scrollY, r: r.right + window.scrollX, b: r.bottom + window.scrollY };
+    var e = document.querySelector('.arcade > .panel') || document.querySelector('.gba');
+    NG = e ? pageRect(e) : null;
+    var f = document.querySelector('.frame'), nf = f ? pageRect(f) : null;
+    if (nf && (!FR || nf.l !== FR.l || nf.t !== FR.t || nf.r !== FR.r || nf.b !== FR.b)) {
+      FR = nf;
+      layer.style.cssText = 'left:' + FR.l + 'px;top:' + FR.t + 'px;width:' + (FR.r - FR.l) + 'px;height:' + (FR.b - FR.t) + 'px';
+      host.style.cssText = 'left:' + -FR.l + 'px;top:' + -FR.t + 'px';
+    }
   }
+  function inFrame(x, y, m) { return !FR || (x > FR.l + m && x < FR.r - m && y > FR.t + m && y < FR.b - m); }
   function noGo(pad) { return NG ? { l: NG.l - pad, t: NG.t - pad, r: NG.r + pad, b: NG.b + pad } : null; }
   function inR(x, y, Q) { return !!Q && x > Q.l && x < Q.r && y > Q.t && y < Q.b; }
   function rectsOverlap(a, b) { return !!a && !!b && a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t; }
@@ -150,10 +162,10 @@
     return false;
   }
   function view() { var de = document.documentElement; return { x: window.scrollX, y: window.scrollY, w: de.clientWidth, h: window.innerHeight, dw: de.scrollWidth, dh: de.scrollHeight }; }
-  function okSpot(x, y) { var v = view(); return x > 24 && y > 24 && x < v.dw - 24 && y < v.dh - 24 && !inR(x, y, noGo(44)); }
+  function okSpot(x, y) { return inFrame(x, y, 8 * K) && !inR(x, y, noGo(P + 12)); }
   function onScreen(x, y, m) { var v = view(); m = m || 0; return x > v.x + m && x < v.x + v.w - m && y > v.y + m && y < v.y + v.h - m; }
   function nearestOutside(x, y) {
-    var Q = noGo(56); if (!Q || !inR(x, y, Q)) return [x, y];
+    var Q = noGo(P + 16); if (!Q || !inR(x, y, Q)) return [x, y];
     var c = [[Q.l, y], [Q.r, y], [x, Q.t], [x, Q.b]].filter(function (p) { return okSpot(p[0], p[1]); });
     c.sort(function (a, b) { return Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y); });
     return c[0] || null;
@@ -197,7 +209,7 @@
   }
   function goto(x, y, target, mode) {
     if (!okSpot(x, y)) { var n = nearestOutside(x, y); if (!n || !okSpot(n[0], n[1])) return false; x = n[0]; y = n[1]; }
-    if (crosses(S.x, S.y, x, y, 30)) { startDig(x, y, target); return true; }
+    if (crosses(S.x, S.y, x, y, P)) { startDig(x, y, target); return true; }
     S.tx = x; S.ty = y; S.target = target || null; S.mode = mode || 'walk'; S.burst = 30 + R() * 50; S.rest = 0; S.tuck = false; S.act = null;
     return true;
   }
@@ -222,7 +234,7 @@
     var base = Math.atan2(S.y - fy, S.x - fx), offs = [0, 0.6, -0.6, 1.2, -1.2, 1.8, -1.8];
     for (var k = 0; k < offs.length; k++) {
       var ang = base + offs[k], dist = 170 + R() * 140, x = S.x + Math.cos(ang) * dist, y = S.y + Math.sin(ang) * dist;
-      if (okSpot(x, y) && !crosses(S.x, S.y, x, y, 30)) {
+      if (okSpot(x, y) && !crosses(S.x, S.y, x, y, P)) {
         S.tx = x; S.ty = y; S.mode = 'flee'; S.target = null; S.rest = 0; S.tuck = false; S.act = null; S.hop = 0; snd('hop'); say(text || pick(SCARED), 1300); return;
       }
     }
@@ -238,7 +250,7 @@
       if (d <= 1) { hx.fillStyle = d > 0.7 ? (dy < 0 ? '#5a3a7a' : '#ff4fa3') : (d > 0.42 ? '#120a1e' : '#030208'); hx.fillRect(xx, yy, 1, 1); }
     }
     hx.fillStyle = '#ff9fc4'; [[0, 5], [1, 3], [23, 6], [22, 8], [11, 0], [6, 9], [17, 9]].forEach(function (p) { hx.fillRect(p[0], p[1], 1, 1); });
-    c.className = 'spider-hole'; c.style.width = 24 * K + 'px'; c.style.height = 10 * K + 'px'; document.body.appendChild(c);
+    c.className = 'spider-hole'; c.style.width = 24 * K + 'px'; c.style.height = 10 * K + 'px'; host.appendChild(c);
     var h = { el: c, x: x, y: y, s: 0 }; holes.push(h); holeTf(h); return h;
   }
   function holeTf(h) { h.el.style.transform = 'translate(' + Math.round(h.x - 12 * K) + 'px,' + Math.round(h.y - 5 * K) + 'px) scale(' + h.s.toFixed(3) + ',' + (h.s * h.s).toFixed(3) + ')'; }
@@ -246,7 +258,7 @@
   function spray(x, y, n) {
     var cols = ['#ff4fa3', '#4fe3ff', '#b48cff', '#ffd45e', '#5a3a7a'];
     for (var i = 0; i < n; i++) {
-      var d = document.createElement('div'); d.className = 'spider-dirt'; d.style.background = pick(cols); document.body.appendChild(d);
+      var d = document.createElement('div'); d.className = 'spider-dirt'; d.style.background = pick(cols); host.appendChild(d);
       dirt.push({ el: d, x: x + (R() - 0.5) * 8 * K, y: y, vx: (R() - 0.5) * 5, vy: -2 - R() * 4, life: 36 + R() * 20 });
     }
   }
@@ -273,7 +285,7 @@
       A.hole.s = Math.max(0, 1 - A.t / 14); holeTf(A.hole);
       if (A.t >= 14) { dropHole(A.hole); A.phase = 'tunnel'; A.t = 0; }
     } else if (A.phase === 'tunnel') {
-      if (A.t >= 34) { S.x = A.dest[0]; S.y = A.dest[1]; S.sink = 0; S.a = Math.PI / 2 + (R() - 0.5); plantAll(); A.hole = makeHole(S.x, S.y + 4 * K); A.phase = 'open'; A.t = 0; }
+      if (A.t >= 34) { S.x = A.dest[0]; S.y = A.dest[1]; if (FR) { S.x = clamp(S.x, FR.l + 8 * K, FR.r - 8 * K); S.y = clamp(S.y, FR.t + 8 * K, FR.b - 8 * K); } S.sink = 0; S.a = Math.PI / 2 + (R() - 0.5); plantAll(); A.hole = makeHole(S.x, S.y + 4 * K); A.phase = 'open'; A.t = 0; }
     } else if (A.phase === 'open') {
       A.hole.s = Math.min(1, A.t / 14); holeTf(A.hole);
       if (A.t >= 14) { A.phase = 'out'; A.t = 0; spray(S.x, S.y + 4 * K, 10); }
@@ -304,10 +316,11 @@
   function removeWeb(w) { if (!w) return; w.el.style.opacity = 0; setTimeout(function () { w.el.remove(); }, 2100); }
   function tryWeave() {
     var v = view(), x0 = S.x - 28 * K, y0 = S.y - 28 * K, box = { l: x0, t: y0, r: x0 + WS * K, b: y0 + WS * K };
-    if (box.l < v.x + 4 || box.t < v.y + 4 || box.r > v.x + v.w - 4 || box.b > v.y + v.h - 4 || rectsOverlap(box, noGo(8))) return false;
+    if (box.l < v.x + 4 || box.t < v.y + 4 || box.r > v.x + v.w - 4 || box.b > v.y + v.h - 4 || rectsOverlap(box, noGo(P))) return false;
+    if (FR && (box.l < FR.l + 2 || box.t < FR.t + 2 || box.r > FR.r - 2 || box.b > FR.b - 2)) return false;
     if (web) { removeWeb(web); web = null; }
     var c = PX.make(WS, WS); c.className = 'spider-web'; c.style.width = WS * K + 'px'; c.style.height = WS * K + 'px';
-    c.style.transform = 'translate(' + Math.round(x0) + 'px,' + Math.round(y0) + 'px)'; document.body.appendChild(c);
+    c.style.transform = 'translate(' + Math.round(x0) + 'px,' + Math.round(y0) + 'px)'; host.appendChild(c);
     web = { el: c, ctx: c.getContext('2d'), x0: x0, y0: y0 };
     var shape = pick(SHAPES), path = [], spokes = [], k;
     for (k = 0; k < 8; k++) { var a = k * Math.PI / 4 + (R() - 0.5) * 0.25; spokes.push([28 + Math.cos(a) * 26, 28 + Math.sin(a) * 26]); }
@@ -353,9 +366,9 @@
   /* ---------- swinging on a silk thread ---------- */
   function trySwing() {
     var L = 85 + R() * 50, ax = S.x, ay = S.y - L, v = view();
-    if (ay < v.y + 16 || !onScreen(S.x, S.y, 40)) return false;
+    if (ay < v.y + 16 || !onScreen(S.x, S.y, 40) || !inFrame(ax, ay, 4)) return false;
     for (var k = -6; k <= 6; k++) { var th = k / 6 * 0.8, x = ax + Math.sin(th) * L, y = ay + Math.cos(th) * L; if (!okSpot(x, y)) return false; }
-    if (crosses(ax, ay, ax, S.y, 24)) return false;
+    if (crosses(ax, ay, ax, S.y, P)) return false;
     S.mode = 'swing'; S.tuck = true; S.v = 0; last.swing = performance.now();
     S.act = { phase: 'shoot', t: 0, ax: ax, ay: ay, L: L, len: 0, th: 0, w: 0 };
     say('吐丝～', 1200);
@@ -411,9 +424,10 @@
   function dropIn() {
     var v = view();
     for (var k = 0; k < 14; k++) {
-      var x = v.x + 60 + R() * Math.max(10, v.w - 120), ty = v.y + 80 + R() * Math.min(240, v.h * 0.4);
-      if (okSpot(x, ty) && !crosses(x, v.y, x, ty, 24)) {
-        S.x = x; S.anchorY = v.y; S.y = v.y - 30; S.ty = ty; S.a = Math.PI / 2; S.v = 0; S.mode = 'dangle'; S.wait = 0; S.tuck = true; S.scale = 1; S.hop = 0; S.act = null;
+      var top = FR ? Math.max(v.y, FR.t + 2) : v.y;
+      var x = v.x + 60 + R() * Math.max(10, v.w - 120), ty = top + 80 + R() * Math.min(240, v.h * 0.4);
+      if (okSpot(x, ty) && !crosses(x, top, x, ty, P)) {
+        S.x = x; S.anchorY = top; S.y = top + 4 * K; S.ty = ty; S.a = Math.PI / 2; S.v = 0; S.mode = 'dangle'; S.wait = 0; S.tuck = true; S.scale = 1; S.hop = 0; S.act = null;
         plantAll(true); return true;
       }
     }
@@ -454,22 +468,31 @@
     lastFling = now; var dir = S.x < c[0] ? -1 : 1; if (Math.abs(S.x - c[0]) < 4) dir = R() < 0.5 ? -1 : 1;
     if (web && S.mode === 'weave') { var w = web; web = null; removeWeb(w); }
     S.mode = 'fling'; S.tuck = true; S.v = 0; S.hop = 0; S.target = null;
-    S.act = { vx: dir * (6 + R() * 3), vy: -10 - R() * 3, spin: dir * (0.3 + R() * 0.15), floor: Math.min(view().y + view().h - 50, S.y + 90 + R() * 140), bounce: 0, t: 0 };
+    S.act = { vx: dir * (6 + R() * 3), vy: -10 - R() * 3, spin: dir * (0.3 + R() * 0.15), floor: Math.min(view().y + view().h - 50, FR ? FR.b - 10 * K : 1e9, S.y + 90 + R() * 140), bounce: 0, t: 0 };
     if (window.AdSpin) AdSpin.kick = 0.6;
     snd('whee'); say(pick(['哇啊啊——！', '呀～～飞了！', '风车好凶！']), 1500);
   }
   function stepFling(dt) {
     var A = S.act, v = view(); A.t += dt;
+    var ox = S.x, oy = S.y, Q = noGo(P), m = 8 * K;
     A.vy += 0.45 * dt; S.x += A.vx * dt; S.y += A.vy * dt; S.a += A.spin * dt;
-    if (S.x < v.x + 20) { S.x = v.x + 20; A.vx = Math.abs(A.vx) * 0.7; snd('bonk'); }
-    if (S.x > v.x + v.w - 20) { S.x = v.x + v.w - 20; A.vx = -Math.abs(A.vx) * 0.7; snd('bonk'); }
+    var wl = Math.max(v.x, FR ? FR.l : -1e9) + m, wr = Math.min(v.x + v.w, FR ? FR.r : 1e9) - m;
+    if (S.x < wl) { S.x = wl; A.vx = Math.abs(A.vx) * 0.7; snd('bonk'); }
+    if (S.x > wr) { S.x = wr; A.vx = -Math.abs(A.vx) * 0.7; snd('bonk'); }
+    if (FR && S.y < FR.t + m) { S.y = FR.t + m; A.vy = Math.abs(A.vy) * 0.5; snd('bonk'); }
+    if (inR(S.x, S.y, Q)) { /* never into the arcade panel: bounce off the side we came from */
+      if (ox <= Q.l || ox >= Q.r) { S.x = ox <= Q.l ? Q.l : Q.r; A.vx = -A.vx * 0.7; }
+      else if (oy <= Q.t) { S.y = Q.t; A.floor = Q.t; }
+      else { S.y = Q.b; A.vy = Math.abs(A.vy) * 0.5; }
+      snd('bonk');
+    }
     if (A.vy > 0 && S.y >= A.floor) {
       S.y = A.floor;
       if (A.bounce < 1 && A.vy > 4) { A.bounce++; A.vy = -A.vy * 0.38; A.vx *= 0.6; A.spin *= 0.5; snd('bonk'); }
       else {
         S.mode = 'idle'; S.tuck = false; S.act = null; S.wait = 130; S.twitch = 60; S.a = Math.PI / 2 + (R() - 0.5) * 0.6; plantAll();
         snd('dizzy'); say(pick(['头好晕……', '@_@ 转晕了', '再也不碰风车了……']), 2200);
-        if (inR(S.x, S.y, noGo(30))) { var o = nearestOutside(S.x, S.y) || randomSpot(); if (o) startDig(o[0], o[1], null); }
+        if (inR(S.x, S.y, noGo(P)) || !inFrame(S.x, S.y, 0)) { var o = nearestOutside(S.x, S.y) || randomSpot(); if (o) startDig(o[0], o[1], null); }
       }
     }
     if (A.t > 400) { S.mode = 'idle'; S.tuck = false; S.act = null; S.wait = 60; plantAll(); }
@@ -503,7 +526,7 @@
       var go = (flee || S.rest <= 0) && Math.abs(diff) < 0.9, tv = go ? Math.min(maxV, dist / 12 + 0.6) : 0;
       S.v += (tv - S.v) * (tv > S.v ? 0.25 : 0.45) * dt;
       var nx = S.x + Math.cos(S.a) * S.v * dt, ny = S.y + Math.sin(S.a) * S.v * dt;
-      if (inR(nx, ny, noGo(32))) { S.v = 0; startDig(S.tx, S.ty, S.target); }
+      if (inR(nx, ny, noGo(P))) { S.v = 0; startDig(S.tx, S.ty, S.target); }
       else { S.x = nx; S.y = ny; }
       if (S.mode !== 'dig' && dist < 6) {
         S.v = 0; S.mode = 'idle'; S.twitch = 20;
@@ -527,9 +550,7 @@
     else if (S.mode === 'sleep' || S.mode === 'dance' || S.mode === 'wave') stepMood(dt, now);
 
     if (S.mode !== 'off') {
-      if (++guard % 20 === 0 && !CALM[S.mode] && S.mode !== 'weave' && inR(S.x, S.y, noGo(20))) {
-        var out = nearestOutside(S.x, S.y) || randomSpot(); if (out) startDig(out[0], out[1], null);
-      }
+      if (++guard % 20 === 0) reclamp();
       chatter -= dt;
       if (chatter <= 0) { chatter = 600 + R() * 600; if (onScreen(S.x, S.y) && !bub.classList.contains('on') && (S.mode === 'idle' || S.mode === 'walk')) say(pick(IDLE)); }
       if (!onScreen(S.x, S.y, -40) && S.mode !== 'dangle' && S.mode !== 'dig') { S.idleOff += dt; if (S.idleOff > 150) { S.idleOff = 0; dropIn(); } } else S.idleOff = 0;
@@ -538,6 +559,21 @@
     }
     render(now);
   }
+  /* keep 小八 inside the frame and out of the arcade panel (also after resizes / layout changes) */
+  function reclamp() {
+    if (!FR || S.mode === 'off' || (S.mode === 'dig' && S.act && (S.act.phase === 'close' || S.act.phase === 'tunnel'))) return; /* underground: invisible */
+    var m = 8 * K;
+    if (!inFrame(S.x, S.y, m - 1) || ((S.mode === 'swing' || S.mode === 'dangle') && !inFrame(S.act ? S.act.ax : S.x, S.act ? S.act.ay : S.anchorY, -1))) {
+      if (web && S.mode === 'weave') { removeWeb(web); web = null; }
+      if (S.act && S.act.hole) dropHole(S.act.hole);
+      S.x = clamp(S.x, FR.l + m, FR.r - m); S.y = clamp(S.y, FR.t + m, FR.b - m);
+      S.mode = 'idle'; S.act = null; S.tuck = false; S.hop = 0; S.sink = 0; S.scale = 1; S.wait = 30; plantAll();
+    }
+    if (S.mode !== 'weave' && S.mode !== 'dig' && inR(S.x, S.y, noGo(P - 4))) {
+      var out = nearestOutside(S.x, S.y) || randomSpot(); if (out) startDig(out[0], out[1], null);
+    }
+  }
+  window.addEventListener('resize', function () { refreshNoGo(); reclamp(); });
   function showSilk(x, y, h, rad) {
     silk.style.display = 'block'; silk.style.height = Math.max(0, Math.round(h)) + 'px';
     silk.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px) rotate(' + (rad * 180 / Math.PI).toFixed(2) + 'deg)';
