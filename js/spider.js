@@ -33,7 +33,7 @@
   cv.style.transform = 'translate(-400px,-400px)';
   /* 小八's own little sound switch (independent of the game's SOUND switch) */
   var sndBtn = document.createElement('button'); sndBtn.className = 'spider-snd'; sndBtn.type = 'button'; sndBtn.textContent = '🕷';
-  document.body.appendChild(sndBtn);
+  (document.querySelector('.frame') || document.body).appendChild(sndBtn); /* inside the pink frame, bottom-left corner */
   function sndLabel(v) { sndBtn.classList.toggle('off', !v); sndBtn.title = sndBtn.ariaLabel = '小八的声音：' + (v ? '开' : '关'); sndBtn.setAttribute('aria-pressed', v ? 'true' : 'false'); }
   if (window.SND && SND.onSpider) SND.onSpider(sndLabel); else sndBtn.hidden = true;
   sndBtn.addEventListener('click', function (e) { e.stopPropagation(); if (window.SND) SND.toggleSpider(); });

@@ -9,6 +9,25 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<script>
+/* fixed-aspect page frame: 16:9 in landscape (1280x720 design px; phones in landscape 720x405), 9:16 in portrait (405x720).
+   The pink .frame is laid out at the design size and scaled to the largest box that fits the window, so text and panels look
+   the same at every window size. */
+(function () {
+  var R = document.documentElement;
+  window.KR_FIT = function () {
+    var vw = window.innerWidth, vh = window.innerHeight, mode = vw >= vh ? (vh < 500 ? 'phl' : 'land') : 'port';
+    var D = mode === 'land' ? [1280, 720] : mode === 'phl' ? [720, 405] : [405, 720], m = mode === 'land' ? 12 : 0;
+    var s = Math.max(0.2, Math.min((vw - m) / D[0], (vh - m) / D[1]));
+    R.classList.add('fx'); ['land', 'phl', 'port'].forEach(function (k) { R.classList.toggle('fx-' + k, k === mode); });
+    R.style.setProperty('--fw', D[0] + 'px'); R.style.setProperty('--fh', D[1] + 'px'); R.style.setProperty('--fs', s);
+    var F = window.KR_FRAME, ch = !F || F.s !== s || F.mode !== mode;
+    window.KR_FRAME = { w: D[0], h: D[1], s: s, mode: mode };
+    return ch;
+  };
+  window.KR_FIT();
+})();
+</script>
 <style>
   :root {
     --pink: #ff4fa3; --pink2: #ff9fc4; --cyan: #4fe3ff; --violet: #b48cff; --gold: #ffd45e; --green: #5dff8f; --red: #ff4f6a;
@@ -155,6 +174,10 @@
   /* mobile: no tap highlight / selection / long-press callout on the console */
   .gba, .gba *, #game { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   #game, .gba button { touch-action: none; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  .gba, .gba *, #game, .mtab, .dock-tabs, .dock-tabs *, .dock-open, .spider-snd { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  .mtab, .dock-tabs button, .dock-open, .spider-snd { touch-action: manipulation; }
+  input, textarea, select { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
   @keyframes tick { to { transform: translateX(-100%); } }
   @keyframes blink { 50% { opacity: 0; } }
   @media (max-width: 920px) {
@@ -177,7 +200,7 @@
   .dpad button[data-d]::after { border-color: transparent; }
   .dpad button[data-d=up]::after { border-bottom-color: #8a7ab8; } .dpad button[data-d=down]::after { border-top-color: #8a7ab8; }
   .dpad button[data-d=left]::after { border-right-color: #8a7ab8; } .dpad button[data-d=right]::after { border-left-color: #8a7ab8; }
-  .help { font-size: 11px; margin-top: 6px; }
+  .help { font-size: 12px; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .gba, .gba * { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
   .gba { cursor: default; }
   #game { overscroll-behavior: contain; }
@@ -273,6 +296,90 @@
     .arcade .help { display: none; }
   }
   @media (max-width: 340px) { .gba.sw.stack .jc { padding-left: 1px; padding-right: 1px; } }
+  /* ---------- p5: fixed-aspect page frame (see the script in <head>) ----------
+     The frame is a grid at its design size (1280x720 / 720x405 / 405x720) scaled with a transform; the sections are
+     display:contents so every panel is a grid item; panels never grow the page, long lists scroll inside their panel. */
+  .dock-tabs, .dock-open { display: none; }
+  html.fx, html.fx body { height: 100%; overflow: hidden; }
+  html.fx body { padding: 0; }
+  html.fx .frame { position: fixed; left: 50%; top: 50%; width: var(--fw); height: var(--fh); max-width: none; margin: 0; box-sizing: border-box;
+    transform: translate(-50%, -50%) scale(var(--fs)); transform-origin: 50% 50%; display: grid; gap: 6px; padding: 8px; overflow: hidden; }
+  html.fx .grid.main, html.fx .grid.lower, html.fx .lbrow, html.fx .grid.arcade { display: contents; }
+  html.fx .grid { margin-top: 0; }
+  html.fx .panel { display: flex; flex-direction: column; overflow: hidden; padding: 7px 10px; min-width: 0; min-height: 0; }
+  html.fx .ph { flex: none; margin-bottom: 5px; min-width: 0; }
+  html.fx .ph h2 { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; display: block; }
+  html.fx .top { grid-area: top; flex-wrap: nowrap; padding: 5px 10px; gap: 10px; min-width: 0; }
+  html.fx .logo { font-size: 18px; flex: none; } html.fx .logo canvas { width: 26px; height: 26px; }
+  html.fx .clock { font-size: 15px; padding: 1px 8px; flex: none; }
+  html.fx .mood { flex: none; }
+  html.fx .cards { grid-area: cards; gap: 6px; min-height: 0; grid-auto-rows: max-content; }
+  html.fx .card { padding: 5px 9px; } html.fx .card .tag { display: none; } html.fx .card .ph { margin-bottom: 0; }
+  html.fx .card .big { font-size: 19px; line-height: 1.25; } html.fx .card .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.fx .cam { grid-area: cam; padding: 0; } html.fx .cam canvas { flex: none; }
+  html.fx .term { grid-area: term; height: auto; } html.fx .term pre { flex: 1 1 0; height: auto; min-height: 0; max-height: none; }
+  html.fx .lb { grid-area: lb; } html.fx .lb-list { flex: 1 1 0; height: auto; max-height: none; min-height: 0; }
+  html.fx .lb-tip, html.fx .lb-retry { flex: none; } html.fx .lb-tip { padding-left: 30px; }
+  html.fx .ad { grid-area: ad; } html.fx .ad-body { flex: 1 1 0; min-height: 0; padding: 8px; } html.fx #adSpin { width: 96px; height: 96px; }
+  html.fx .chart { grid-area: chart; } html.fx .chart-box { flex: 1 1 0; height: auto; min-height: 30px; } html.fx .chart .val { font-size: 20px; flex: none; }
+  html.fx .worksp { grid-area: works; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--pink) transparent; }
+  html.fx .legal { grid-area: legal; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--pink) transparent; }
+  html.fx footer { grid-area: foot; margin: 0; font-size: 10px; line-height: 1.35; align-self: end; padding-left: 34px; text-align: left; }
+  /* arcade: the console fills the panel (dash.js: --fit panel, --force row / stack) and is centred with the help line */
+  html.fx .arcade > .panel { grid-area: arcade; margin: 0; padding: 6px 10px 8px; --fit: panel; --force: row; }
+  html.fx .arc .gba.sw { margin: auto auto 0; }
+  html.fx .arc .help { flex: none; margin: 6px 0 auto; display: block; }
+  html.fx .jmini { width: 32px; height: 32px; font-size: 20px; line-height: 32px; }
+  html.fx .jstick { width: 32px; height: 32px; }
+  html.fx .jc { gap: 14px; padding: 14px 4px; }
+  html.fx .xyab button { font-size: 19px; }
+  /* tabbed dock */
+  html.fx.dock .dock-tabs { display: flex; grid-area: tabs; gap: 3px; min-width: 0; }
+  .dock-tabs button { flex: 1 1 0; min-width: 0; background: var(--panel); color: var(--dim); border: 1px solid var(--line); font: 12px/22px "DotGothic16", "Microsoft YaHei", monospace;
+    padding: 0; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .dock-tabs button:hover { color: var(--text); }
+  .dock-tabs button.on { color: #fff; border-color: var(--pink); background: #2a1648; box-shadow: inset 0 -2px 0 var(--pink); }
+  .dock-tabs button[hidden], .dock-tabs .dock-x { display: none; }
+  html.fx .tp { grid-area: dock !important; }
+  html.fx .tp:not(.tab-on) { display: none !important; }
+  html.fx .cards.tp { grid-template-columns: 1fr 1fr; align-content: start; overflow-y: auto; }
+  /* 小八's sound button: inside the frame, bottom-left corner */
+  html.fx .spider-snd { position: absolute; left: 6px; right: auto; top: auto; bottom: 6px; width: 26px; height: 26px; font-size: 13px; line-height: 20px; z-index: 60; }
+
+  /* landscape: big arcade + one sidebar (stats, studio cam, tabbed dock) */
+  html.fx-land .frame { grid-template-columns: minmax(0, 1fr) 240px; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "top top" "arcade cards" "arcade cam" "arcade tabs" "arcade dock" "arcade foot"; }
+  html.fx-land .cards { grid-template-columns: 1fr 1fr; }
+  html.fx-land .arc .gba.sw { --jcw: 116px; --bc: 36px; }
+  html.fx-land footer { padding-left: 0; }
+  html.fx-land .lb-row { grid-template-columns: 24px minmax(0, 1fr) auto 50px; } html.fx-land .lb-time { display: none; }
+  /* portrait 9:16: header, stacked console (screen full width, Joy-Cons under it), tabbed dock */
+  html.fx-port .frame { padding: 5px; gap: 5px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); grid-template-areas: "top" "arcade" "tabs" "dock"; }
+  html.fx-port .top { padding: 4px 8px; gap: 8px; justify-content: space-between; } html.fx-port .ticker, html.fx-port .mood { display: none; }
+  html.fx-port .logo { font-size: 15px; } html.fx-port .logo canvas { width: 22px; height: 22px; } html.fx-port .clock { font-size: 13px; }
+  html.fx-port footer, html.fx-port .arc > .ph, html.fx-port .arc .help, html.fx-port .scrlabel { display: none !important; }
+  html.fx-port .arcade > .panel { --force: stack; padding: 2px 2px 4px; }
+  html.fx-port .arc .gba.sw { --bc: 46px; padding-top: 36px; margin: 0 auto; }
+  html.fx-port .gba.sw .scr { padding: 6px 4px 6px; }
+  html.fx-port .gba.sw.stack .jc { flex-direction: row; justify-content: space-around; gap: 6px; padding: 10px 4px 14px; }
+  html.fx-port .gba.sw.stack .jl .jmini, html.fx-port .gba.sw.stack .jr .jmini { align-self: center; margin: 0; }
+  html.fx-port .jstick { display: none; }
+  html.fx-port .jmini { width: 40px; height: 40px; font-size: 24px; line-height: 40px; }
+  html.fx-port .tp { padding: 6px 8px; }
+  html.fx-port .dock-tabs button { font-size: 12px; }
+  /* phone landscape 16:9: the console is the whole frame; the dashboard opens over it from the "≡ 信息" button */
+  html.fx-phl .frame { padding: 4px; gap: 4px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); grid-template-areas: "arcade"; }
+  html.fx-phl .top, html.fx-phl footer, html.fx-phl .arc > .ph, html.fx-phl .arc .help, html.fx-phl .scrlabel { display: none !important; }
+  html.fx-phl .arcade > .panel { padding: 2px 4px; border: 0; }
+  html.fx-phl .arc .gba.sw { --jcw: 136px; --bc: 42px; margin: auto; }
+  html.fx-phl .jmini { width: 40px; height: 40px; font-size: 24px; line-height: 40px; }
+  html.fx-phl:not(.dock-shown) .tp, html.fx-phl:not(.dock-shown) .dock-tabs { display: none !important; }
+  html.fx-phl .dock-open { display: block; position: absolute; right: 10px; top: 6px; z-index: 5; height: 28px; padding: 0 10px; background: #1a1430; color: #e8f4ff; border: 2px solid var(--line);
+    font: 14px/24px "DotGothic16", "Microsoft YaHei", monospace; cursor: pointer; touch-action: manipulation; }
+  html.fx-phl.dock-shown .frame { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "tabs" "dock"; }
+  html.fx-phl.dock-shown .arcade > .panel, html.fx-phl.dock-shown .dock-open { display: none; }
+  html.fx-phl.dock-shown .dock-tabs { display: flex; } html.fx-phl.dock-shown .dock-tabs .dock-x { display: block; flex: 0 0 40px; }
+  html.fx-phl .spider-layer { display: none; }
 </style>
 </head>
 <body>
@@ -280,29 +387,34 @@
   <header class="top">
     <div class="logo"><canvas id="logoPx" width="16" height="16"></canvas><span>C0 STUDIO <b>+</b> FELINE</span></div>
     <div class="ticker"><span id="ticker"></span></div>
-    <div style="font-size:12px;color:var(--dim)">MOOD <span id="moodTxt">74.9%</span><span class="bar"><i id="moodBar" style="width:75%"></i></span></div>
+    <div class="mood" style="font-size:12px;color:var(--dim)">MOOD <span id="moodTxt">74.9%</span><span class="bar"><i id="moodBar" style="width:75%"></i></span></div>
     <div class="clock" id="clock">00:00:00</div>
   </header>
 
-  <section class="grid cards" id="cards"></section>
+  <nav class="dock-tabs" id="dockTabs" aria-label="面板切换">
+    <button type="button" data-t="cards">数据</button><button type="button" data-t="cam">实况</button><button type="button" data-t="lb">排行</button><button type="button" data-t="term">日志</button><button type="button" data-t="chart">灵感</button><button type="button" data-t="works">作品</button><button type="button" data-t="legal">关于</button><button type="button" data-t="ad">广告</button><button type="button" class="dock-x" data-t="close" aria-label="关闭面板">✕</button>
+  </nav>
+  <button type="button" class="dock-open" id="dockOpen" aria-label="打开信息面板">≡ 信息</button>
+
+  <section class="grid cards" id="cards" data-tab="cards"></section>
 
   <section class="grid main">
-    <div class="panel cam">
+    <div class="panel cam" data-tab="cam">
       <div class="ph"><h2><span class="rec">●</span> STUDIO CAM · 工作室实况</h2><span class="tag" style="color:var(--cyan)">LIVE · 假的</span></div>
       <canvas id="studio" width="320" height="180" aria-label="像素工作室动画：三个角色正在工作"></canvas>
     </div>
-    <div class="panel term">
+    <div class="panel term" data-tab="term">
       <div class="ph"><h2>&gt;_ build.log</h2><span class="tag" style="color:var(--green)">TAIL -F</span></div>
       <pre id="log"></pre>
     </div>
     <div class="lbrow">
-      <div class="panel lb">
+      <div class="panel lb" data-tab="lb">
         <div class="ph"><h2>🏆 HALL OF FAME · 排行榜 TOP 100</h2><span class="tag" id="lbStatus" style="color:var(--dim)">…</span></div>
         <ol class="lb-list" id="lbList"><li class="lb-empty">加载中……</li></ol>
         <p class="lb-retry" id="lbRetry" hidden><span id="lbRetryMsg">上一局成绩没有提交成功</span> <button type="button" id="lbRetryBtn">重试提交</button></p>
         <p class="lb-tip">任意一局得分进入全球前 100 名，就可以留下名字。</p>
       </div>
-      <div class="panel ad" id="adBox">
+      <div class="panel ad" id="adBox" data-tab="ad">
         <div class="ph"><h2>📢 广告位招租 · AD SPACE FOR RENT</h2><span class="tag" style="color:var(--gold)">VACANT</span></div>
         <div class="ad-body">
           <canvas id="adSpin" width="40" height="40" aria-label="一直在转的像素风车"></canvas>
@@ -317,7 +429,7 @@
   </section>
 
   <section class="grid arcade">
-    <div class="panel">
+    <div class="panel arc">
       <div class="ph"><h2>▶ ARCADE · KITTY RUNNER</h2><span class="tag" style="color:var(--gold)">PLAYABLE</span></div>
       <div class="gba sw">
         <div class="jc jl">
@@ -340,7 +452,7 @@
         <div class="jc jr">
           <button class="jmini" id="plusBtn" type="button" aria-label="+：暂停 / 继续（键盘 S、P、Esc）" title="+：暂停 / 继续（键盘 S、P、Esc）">+</button>
           <div class="xyab">
-            <button class="fbtn x" id="xBtn" type="button" aria-label="X：攻击（键盘 X）" title="X：攻击（键盘 X）">X</button>
+            <button class="fbtn x" id="xBtn" type="button" aria-label="X：攻击，长按切换近战 / 远程（键盘 X）" title="X：攻击，长按切换近战 / 远程（键盘 X）">X</button>
             <button class="fbtn y" id="yBtn" type="button" aria-label="Y：互动（键盘 ↑）" title="Y：互动（键盘 ↑）">Y</button>
             <button class="fbtn a" id="aBtn" type="button" aria-label="A：跳跃 / 确认（键盘 C、空格、回车）" title="A：跳跃 / 确认（键盘 C、空格、回车）">A</button>
             <button class="fbtn b" id="bBtn" type="button" aria-label="B：技能 / 返回（键盘 Z）" title="B：技能 / 返回（键盘 Z）">B</button>
@@ -348,17 +460,17 @@
           <div class="jstick" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="help">跳跃·确认 <kbd>C</kbd>/<kbd>空格</kbd> · A键 ｜ 攻击 <kbd>X</kbd> · X键（按住连发，猫娘按住切换 爪/毛线球） ｜ 技能·返回 <kbd>Z</kbd> · B键 ｜ 互动·进休息站 <kbd>↑</kbd> · Y键 ｜ 暂停 <kbd>S</kbd>·<kbd>P</kbd>·<kbd>Esc</kbd> · +键 ｜ 下蹲 按住<kbd>↓</kbd> · 十字键↓ ｜ 移动 <kbd>←</kbd><kbd>→</kbd> · 十字键 ｜ 返回·换人 −键 ｜ 音乐 <kbd>M</kbd> ｜ 点屏幕：开始 / 跳</p>
+      <p class="help"><kbd>←</kbd><kbd>→</kbd> 移动 · <kbd>↓</kbd> 蹲 · <kbd>C</kbd> 跳 · <kbd>X</kbd> 攻击（长按切换近战/远程） · <kbd>Z</kbd> 技能 · <kbd>↑</kbd> 交互 · <kbd>S</kbd> 暂停</p>
     </div>
   </section>
 
   <section class="grid lower">
-    <div class="panel chart">
+    <div class="panel chart" data-tab="chart">
       <div class="ph"><h2>INSPIRATION · 灵感指数</h2><span class="tag" id="chartTag" style="color:var(--green)">+2.31%</span></div>
       <div class="chart-box"><canvas id="chart"></canvas></div>
       <div class="val" id="chartVal">✦ 74,916</div>
     </div>
-    <div class="panel">
+    <div class="panel worksp" data-tab="works">
       <div class="ph"><h2>WORKS · 作品</h2><span class="tag">3 SLOTS</span></div>
       <ul class="works">
         <li class="work-link"><a href="https://play.google.com/store/apps/details?id=com.stardreamgallery.game" target="_blank" rel="noopener"><span class="st tag" style="color:var(--gold)">封闭测试中</span><b>星梦画廊 Stardream Gallery ↗</b><p>竖屏拼图 · Android · 在 Google Play 查看</p></a></li>
@@ -367,7 +479,7 @@
       </ul>
       <p class="about">独立开发人C0，一个人做游戏和小工具。这个页面上的数据全是演出来的，只有作品和下面的链接是真的。</p>
     </div>
-    <div class="panel">
+    <div class="panel legal" data-tab="legal">
       <div class="ph"><h2>LEGAL &amp; VERIFY · 法律与验证</h2><span class="tag" style="color:var(--green)">ALL GREEN</span></div>
       <h3 class="legal-h">隐私政策 · Privacy Policies</h3>
       <ul class="links legal-apps">
@@ -395,13 +507,13 @@
     <p class="lb-msg" id="lbMsg"></p>
   </div>
 </div>
-<script src="js/pixel.js?v=20261018l"></script>
-<script src="js/audio.js?v=20261018l"></script>
-<script src="js/game.js?v=20261018l"></script>
-<script src="js/music.js?v=20261018l"></script>
-<script src="js/logs.js?v=20261018l"></script>
-<script src="js/dash.js?v=20261018l"></script>
-<script src="js/spider.js?v=20261018l"></script>
-<script src="js/board.js?v=20261018l"></script>
+<script src="js/pixel.js?v=20261018m"></script>
+<script src="js/audio.js?v=20261018m"></script>
+<script src="js/game.js?v=20261018m"></script>
+<script src="js/music.js?v=20261018m"></script>
+<script src="js/logs.js?v=20261018m"></script>
+<script src="js/dash.js?v=20261018m"></script>
+<script src="js/spider.js?v=20261018m"></script>
+<script src="js/board.js?v=20261018m"></script>
 </body>
 </html>

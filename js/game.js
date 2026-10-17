@@ -18,7 +18,7 @@
   var cvW = 0; /* canvas CSS width, cached by a ResizeObserver: reading clientWidth every frame forces a layout */
   if (window.ResizeObserver) new ResizeObserver(function () { cvW = cv.clientWidth; }).observe(cv);
   function fit() {
-    var dpr = window.devicePixelRatio || 1, want = (cvW || cv.clientWidth || W * 2) * dpr;
+    var dpr = (window.devicePixelRatio || 1) * (window.KR_FRAME ? KR_FRAME.s : 1), want = (cvW || cv.clientWidth || W * 2) * dpr;
     var s = Math.max(1, Math.min(10, Math.ceil(want / W - 0.01)));
     if (s !== S || cv.width !== W * s) { S = s; cv.width = W * S; cv.height = H * S; }
     var ir = Math.abs(W * S - want) < 1 ? 'pixelated' : 'auto';
@@ -1327,6 +1327,9 @@
   SFX.claw = function () { beep(1400, 0.05, 'square', 0.03, 500); if (window.SND) SND.noise(0.06, 0.05, 3000); };
   SFX.brush = function () { beep(480, 0.1, 'triangle', 0.04, 1200); };
   SFX.code = function () { beep(1500, 0.04, 'square', 0.025); setTimeout(function () { beep(1900, 0.04, 'square', 0.025); }, 45); };
+  SFX.keys = function () { beep(1100, 0.04, 'square', 0.03, 700); if (window.SND) SND.noise(0.05, 0.06, 2600); setTimeout(function () { beep(900, 0.03, 'square', 0.025); }, 40); };
+  SFX.paint = function () { beep(560, 0.1, 'sine', 0.04, 300); if (window.SND) SND.noise(0.07, 0.04, 900); };
+  SFX.swap = function () { beep(660, 0.06, 'square', 0.035); setTimeout(function () { beep(990, 0.08, 'square', 0.035); }, 70); };
   SFX.yarn = function () { beep(720, 0.09, 'sine', 0.045, 380); };
   SFX.dash = function () { beep(180, 0.4, 'sawtooth', 0.04, 900); };
   /* ---------- state ---------- */
@@ -1355,7 +1358,7 @@
       shake: 0, dieT: 0, frame: 0, nextMilestone: 100, combo: 0,
       plats: [], shots: [], fireCd: 0, setCd: 2, setIdx: 0, sliding: false, dropT: 0, sq: 0, onPlat: null, climb: null, fadeIn: 24, pop: null,
       magnet: 0, x2: 0, rocket: 0, bubble: 0, shieldF: 0, regenF: 0, tips: {}, slot: 0, houseAt: null, lap0: { f: 0, s: 0, d: 0 },
-      practice: null, wst: freshWst(), lapSt: { hits: 0, got: 0, miss: 0 }, toasts: [], toyMem: {}, newBadges: []
+      practice: null, wst: freshWst(), lapSt: { hits: 0, got: 0, miss: 0 }, toasts: [], toyMem: {}, newBadges: [], amode: atkModeOf(id), modeFlash: 0
     };
     PLANS = []; CAMY = 0;
     if (pbi >= 0) { /* G10 practice (3C): the chosen world loops forever (lap-1 layout and speed); difficulty climbs every
@@ -1375,6 +1378,7 @@
   function emit(dash) { window.dispatchEvent(new CustomEvent('runner', { detail: dash })); }
 
   /* ---------- input ---------- */
+  var ATK_HOLD = 36; /* frames */
   var holding = false, pressed = false, downHeld = false, downPressed = false, leftHeld = false, rightHeld = false, fireHeld = false, nudge = 0, yPressed = false, atkHoldT = 0;
   function press() { pressed = true; holding = true; }
   function release() { holding = false; }
@@ -1468,7 +1472,7 @@
     else if (st.mode === 'over' && dir === 'down') { st.mode = 'title'; st.t = 0; }
   }
   /* keyboard: C = A (jump / confirm; Space and Enter too), Z = B (skill in a run; back / change character elsewhere),
-     X = X button (attack; hold = auto attack, Feline1 switches claw / yarn), Up = Y (interact: doors, rest stops, toys),
+     X = X button (attack; hold ~0.6 s = switch melee / ranged once, keep holding = auto attack), Up = Y (interact: doors, rest stops, toys),
      S = + (pause / resume; P and Esc too), arrows navigate menus, Left / Right move, Down crouches (hold), M toggles sound.
      The listener sits on the canvas only, so typing in the name box (or any input) never reaches it. */
   function bPress() { kick(); if (st.mode === 'play') skill(); else bButton(); }
@@ -2125,22 +2129,33 @@
     g.fillStyle = 'rgba(255,212,122,.15)'; g.fillRect(x + 30, y - 34, 34, 24);
     if (!o.done && f % 40 < 28) PX.text(g, 'REST', x + 4, y - 36 - 22 + (f % 40 < 14 ? 0 : 1), '#ffffff', '#000');
   }
-  /* ---------- phase3C: attack (X button / key A) in every world, one style per character ----------
-     Feline1: CAT CLAW (melee) by default; hold X ~0.6 s to switch to YARN BALL (ranged) and back.
-     C0: CODE BULLETS '{}' '</>' (ranged).  X0: PAINTBRUSH slash (melee) leaving a short paint trail.
-     Melee = 2 damage in a wide arc right in front, slower; ranged = 1 damage, reaches across the screen.
+  /* ---------- attack (X button / key X) in every world: every runner has a melee and a ranged mode ----------
+     Feline1: CAT CLAW (melee) / YARN BALL (ranged).  C0: KEYBOARD SMASH (melee) / CODE BULLETS '{}' '</>' (ranged).
+     X0: PAINTBRUSH slash (melee, short paint trail) / PAINT SPLASH blobs (ranged).
+     Tap X = one attack. Hold X: at ~0.6 s the mode switches exactly once (sound, popup, HUD icon), then holding keeps attacking
+     in the new mode until X is released; the next hold switches back. The last mode per runner is remembered (runner-atkmode).
+     Melee: a wide arc right in front, slower; ranged: reaches across the screen, slower to fire than before (balance).
      Creatures can be hit (they drop a shard, except in the no-shard climaxes); spikes, rocks, pits, fences can't.
      Melee swings swat the butler ghost's plates back at him. */
-  var ATK = { claw: { melee: 1, cd: 18, reach: 30, name: 'CLAW' }, brush: { melee: 1, cd: 20, reach: 32, name: 'BRUSH' },
-    code: { cd: 11, spd: 5, name: 'CODE' }, yarn: { cd: 15, spd: 4.2, name: 'YARN' } };
+  var ATK = { claw: { melee: 1, cd: 18, reach: 30, name: 'CLAW' }, brush: { melee: 1, cd: 20, reach: 32, name: 'BRUSH' }, keys: { melee: 1, cd: 18, reach: 30, name: 'KEYBOARD' },
+    code: { cd: 13, spd: 5, name: 'CODE' }, yarn: { cd: 16, spd: 4.2, name: 'YARN' }, paint: { cd: 18, spd: 3.8, name: 'PAINT' } };
   var PAINT = ['#ff9fc4', '#b48cff', '#ffd45e', '#4fe3ff'];
-  function atkStyle(G) { return G.id === 'C0' ? 'code' : G.id === 'X0' ? 'brush' : G.fmode === 'yarn' ? 'yarn' : 'claw'; }
+  var AMODES = { Feline1: { melee: 'claw', ranged: 'yarn', d: 'melee' }, C0: { melee: 'keys', ranged: 'code', d: 'ranged' }, X0: { melee: 'brush', ranged: 'paint', d: 'melee' } };
+  var AMODE_TXT = { claw: 'CAT CLAW: MELEE', yarn: 'YARN BALL: RANGED', keys: 'KEYBOARD SMASH: MELEE', code: 'CODE BULLETS: RANGED', brush: 'BRUSH SLASH: MELEE', paint: 'PAINT SPLASH: RANGED' };
+  function atkModeOf(id) { var m = lsGet('runner-atkmode', {}) || {}; return m[id] === 'melee' || m[id] === 'ranged' ? m[id] : AMODES[id].d; }
+  function atkStyle(G) { var M = AMODES[G.id] || AMODES.Feline1; return M[G.amode === 'ranged' || G.amode === 'melee' ? G.amode : M.d]; }
+  function swapAtk(G) {
+    G.amode = ATK[atkStyle(G)].melee ? 'ranged' : 'melee'; G.modeFlash = 40;
+    var m = lsGet('runner-atkmode', {}) || {}; m[G.id] = G.amode; lsSet('runner-atkmode', m);
+    var k = atkStyle(G); popText(AMODE_TXT[k], PX.CHARS[G.id].color); SFX.swap();
+    burst(G.x + 8, G.y - 12, 10, [PX.CHARS[G.id].color, '#ffffff'], 1.2);
+  }
   function fire() {
     var G = game; if (!G || st.mode !== 'play' || G.climb || G.roam || G.fireCd > 0) return;
     var k = atkStyle(G), A = ATK[k], pb = pbox(); G.fireCd = A.cd;
     if (A.melee) { G.swing = { k: k, t: 0, done: [] }; SFX[k](); return; }
-    G.shots.push({ k: k, x: pb[0] + pb[2], y: pb[1] + (G.sliding ? 3 : 7), vx: A.spd, life: 60, dmg: 1, glyph: (G.codeN = (G.codeN || 0) + 1) % 2 ? '{}' : '</>' });
-    SFX[k](); particle(pb[0] + pb[2] + 2, pb[1] + 7, 1, 0, 6, k === 'code' ? '#5dff8f' : '#ff9fc4', 2, 0);
+    G.shots.push({ k: k, x: pb[0] + pb[2], y: pb[1] + (G.sliding ? 3 : 7), vx: A.spd, life: 60, dmg: 1, glyph: (G.codeN = (G.codeN || 0) + 1) % 2 ? '{}' : '</>', c: PAINT[G.codeN % 4] });
+    SFX[k](); particle(pb[0] + pb[2] + 2, pb[1] + 7, 1, 0, 6, k === 'code' ? '#5dff8f' : k === 'paint' ? PAINT[G.codeN % 4] : '#ff9fc4', 2, 0);
   }
   function canHit(o) { return !o.pit && !o.safe && !o.ghost && !o.gate && (o.anim || o.foe || o.type === 'talisman' || o.type === 'gear'); }
   function killObs(G, j, k) {
@@ -2154,6 +2169,8 @@
     else if (k === 'brush') { burst(cx, cy, 16, PAINT, 1.9); for (var q = 0; q < 5; q++) particle(cx + (R() - 0.5) * 12, cy + (R() - 0.5) * 10, 0, 0.15, 26, PAINT[q % 4], 2, 0.02); beep(420, 0.1, 'triangle', 0.035, 900); }
     else if (k === 'code') { burst(cx, cy, 12, ['#5dff8f', '#4fe3ff', '#ffffff'], 1.6); beep(1800, 0.05, 'square', 0.025, 900); }
     else if (k === 'yarn') { burst(cx, cy, 12, ['#ff6fa6', '#ffd0e4', '#ffffff'], 1.5); beep(520, 0.08, 'sine', 0.035, 260); }
+    else if (k === 'keys') { burst(cx, cy, 12, ['#e8e4f8', '#5dff8f', '#ffffff'], 1.7); for (var kk = 0; kk < 4; kk++) particle(cx + (R() - 0.5) * 10, cy - 4, (R() - 0.5) * 1.6, -1 - R(), 18, kk % 2 ? '#e8e4f8' : '#3d2a66', 2, 0.08); beep(1500, 0.05, 'square', 0.03, 600); }
+    else if (k === 'paint') { burst(cx, cy, 14, PAINT, 1.6); for (var pq = 0; pq < 6; pq++) particle(cx + (R() - 0.5) * 14, cy + (R() - 0.5) * 10, 0, 0.12, 28, PAINT[pq % 4], 2, 0.02); beep(380, 0.09, 'sine', 0.035, 700); }
     else burst(cx, cy, 14, ['#ffd45e', '#ffffff', '#ff4fa3'], 1.8);
   }
   function meleeTick(G) {
@@ -2180,6 +2197,14 @@
         var X = Math.round(cx + 9 + i * 6 + Math.sin(u * Math.PI) * 7), Y = Math.round(cy + fl * (-15 + u * 28));
         if (pass === 0) { g.fillStyle = '#1a0f30'; g.fillRect(X - 1, Y - 1, 4, 4); } else { g.fillStyle = u > pr - 0.25 ? '#ff6fa6' : '#ffffff'; g.fillRect(X, Y, 2, 2); } }
       g.globalAlpha = 1;
+    } else if (sw.k === 'keys') { /* a pixel keyboard swung in an arc, with a green motion trail */
+      var ka = -1.25 + Math.min(9, sw.t + 1) * 0.3;
+      for (a = 0; a < 5; a++) { var ta = ka - a * 0.22; if (ta < -1.3) break; g.globalAlpha = 0.5 - a * 0.1; g.fillStyle = '#5dff8f'; g.fillRect(Math.round(cx + 4 + Math.cos(ta) * 22), Math.round(cy + fl * Math.sin(ta) * 17), 3, 3); }
+      g.globalAlpha = 1;
+      var kx = Math.round(cx + 4 + Math.cos(ka) * 20) - 8, ky = Math.round(cy + fl * Math.sin(ka) * 15) - 3;
+      g.fillStyle = '#1a0f30'; g.fillRect(kx - 1, ky - 1, 18, 8); g.fillStyle = '#c8c0e8'; g.fillRect(kx, ky, 16, 6);
+      g.fillStyle = '#3d2a66'; for (i = 0; i < 5; i++) { g.fillRect(kx + 1 + i * 3, ky + 1, 2, 1); g.fillRect(kx + 2 + i * 3, ky + 3, 2, 1); }
+      g.fillRect(kx + 4, ky + 5, 8, 1);
     } else if (sw.k === 'brush') {
       var na = Math.min(14, (sw.t + 2) * 2); /* a thick painted arc: outline, then colour */
       for (a = 0; a <= na; a++) { var an = -1.25 + a * 0.18; g.fillStyle = '#1a0f30'; g.fillRect(Math.round(cx + Math.cos(an) * 23) - 1, Math.round(cy + fl * Math.sin(an) * 18) - 1, 7, 6); }
@@ -2215,6 +2240,7 @@
       var x = Math.round(s.x), y = Math.round(s.y);
       if (s.k === 'code') { g.fillStyle = 'rgba(93,255,143,.35)'; g.fillRect(x - 6, y + 1, 5, 1); PX.text(g, s.glyph, x, y - 2, '#5dff8f', '#0a2a1a'); return; }
       if (s.k === 'yarn') { g.fillStyle = '#ffd0e4'; g.fillRect(x - 7, y + 2 + ((x >> 2) % 2), 6, 1); g.fillStyle = '#7a1a4a'; g.fillRect(x - 1, y - 2, 6, 6); g.fillStyle = '#ff6fa6'; g.fillRect(x, y - 1, 4, 4); g.fillStyle = '#ffd0e4'; g.fillRect(x + 1, y - 1, 1, 4); g.fillRect(x, y + 1, 4, 1); return; }
+      if (s.k === 'paint') { g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(x - 6, y + 1, 4, 1); g.fillStyle = s.c; g.fillRect(x - 3, y + 2 + ((x >> 3) % 2), 2, 2); g.fillStyle = '#1a0f30'; g.fillRect(x - 1, y - 2, 7, 6); g.fillStyle = s.c; g.fillRect(x, y - 1, 5, 4); g.fillStyle = '#ffffff'; g.fillRect(x + 1, y - 1, 2, 1); return; }
       if (s.k === 'plate') { g.fillStyle = '#1a1424'; g.fillRect(x - 1, y - 2, 12, 5); g.fillStyle = '#e8e4f8'; g.fillRect(x, y - 1, 10, 3); g.fillStyle = '#ffffff'; g.fillRect(x + 2 + (G.frame % 4), y - 1, 2, 1); return; }
       g.fillStyle = 'rgba(255,184,79,.45)'; g.fillRect(x - 4, y, 4, 2);
       g.fillStyle = '#ffd45e'; g.fillRect(x, y - 1, 5, 4); g.fillStyle = '#ffffff'; g.fillRect(x + 1, y, 3, 2);
@@ -2241,7 +2267,7 @@
     if (G.rocket > 0) list.push(['rocket', G.rocket / PWD.rocket.t]);
     if (G.bubble) list.push(['bubble', 1]);
     list.forEach(function (l, i) {
-      var d = PWD[l[0]], x = 3 + i * 22; hudPanel(x, y, 20, 13);
+      var d = PWD[l[0]], x = 21 + i * 22; hudPanel(x, y, 20, 13); /* right of the attack-mode icon */
       g.drawImage(d.icon, x + 2, y + 2); g.fillStyle = '#05030a'; g.fillRect(x + 11, y + 4, 7, 5);
       g.fillStyle = d.col; g.fillRect(x + 11, y + 4, Math.max(1, Math.round(7 * l[1])), 5);
       if (l[1] < 0.25 && G.frame % 10 < 5) { g.fillStyle = '#ffffff'; g.fillRect(x + 11, y + 4, 7, 5); }
@@ -2904,9 +2930,22 @@
     if (G.hp >= G.maxHp) return { fill: 1, label: 'NINE LIVES', ready: true };
     return { fill: clamp((G.frame - G.regenF) / 1500, 0, 1), label: 'NINE LIVES +1' };
   }
+  /* attack mode icon (melee: claw / keyboard / brush, ranged: yarn / {} / paint drop) + hold-to-switch progress */
+  function drawAtkIcon(G, x, y) {
+    var k = atkStyle(G), mel = ATK[k].melee, fl = G.modeFlash > 0 && G.modeFlash % 8 < 4;
+    hudPanel(x, y, 15, 15, fl ? '#ffffff' : mel ? '#ff9a3a' : '#4fe3ff');
+    var cx = x + 3, cy = y + 3;
+    if (k === 'claw') { g.fillStyle = '#ffffff'; for (var i = 0; i < 3; i++) { g.fillRect(cx + 1 + i * 3, cy, 1, 3); g.fillRect(cx + 2 + i * 3, cy + 3, 1, 3); g.fillRect(cx + 3 + i * 3, cy + 6, 1, 3); } }
+    else if (k === 'keys') { g.fillStyle = '#c8c0e8'; g.fillRect(cx, cy + 2, 9, 5); g.fillStyle = '#3d2a66'; g.fillRect(cx + 1, cy + 3, 1, 1); g.fillRect(cx + 3, cy + 3, 1, 1); g.fillRect(cx + 5, cy + 3, 1, 1); g.fillRect(cx + 7, cy + 3, 1, 1); g.fillRect(cx + 2, cy + 5, 5, 1); }
+    else if (k === 'brush') { g.fillStyle = '#7a4a28'; g.fillRect(cx + 5, cy, 2, 5); g.fillStyle = '#e8e4f8'; g.fillRect(cx + 4, cy + 5, 4, 1); g.fillStyle = '#ff9fc4'; g.fillRect(cx + 3, cy + 6, 5, 3); g.fillStyle = '#b48cff'; g.fillRect(cx + 1, cy + 8, 3, 1); }
+    else if (k === 'yarn') { g.fillStyle = '#7a1a4a'; g.fillRect(cx + 1, cy + 1, 7, 7); g.fillStyle = '#ff6fa6'; g.fillRect(cx + 2, cy + 2, 5, 5); g.fillStyle = '#ffd0e4'; g.fillRect(cx + 3, cy + 2, 1, 5); g.fillRect(cx + 2, cy + 4, 5, 1); }
+    else if (k === 'code') PX.text(g, '{}', cx, cy + 1, '#5dff8f', '#0a2a1a');
+    else { g.fillStyle = '#4fe3ff'; g.fillRect(cx + 3, cy, 3, 2); g.fillRect(cx + 2, cy + 2, 5, 3); g.fillStyle = '#b48cff'; g.fillRect(cx + 1, cy + 5, 7, 3); g.fillStyle = '#ffffff'; g.fillRect(cx + 3, cy + 3, 1, 1); }
+    if (fireHeld && atkHoldT > 6 && atkHoldT < ATK_HOLD) { g.fillStyle = '#05030a'; g.fillRect(x + 1, y + 16, 13, 2); g.fillStyle = '#ffd45e'; g.fillRect(x + 1, y + 16, Math.round(13 * atkHoldT / ATK_HOLD), 2); }
+  }
   function drawHUD(G, mode) {
     var d = PX.CHARS[G.id], i;
-    drawPowers(G);
+    drawPowers(G); if (mode !== 'roam') drawAtkIcon(G, 3, 30);
     if (G.mb && mode !== 'roam') drawMBBar(G, G.mb);
     hudPanel(3, 3, 64, 24);
     if (G.practice) { /* practice runs are not scored: the counter shows the difficulty level instead */
@@ -2944,7 +2983,7 @@
     /* bottom-left: one compact hint line. Shown for 10 s after entering a world, and only until the player has seen it 3 times */
     var lines = [], since = G.frame - (G.hintF || 0), narrow = cvW && cvW < 420;
     var hk = BIOMES[G.biome].sub && MHINT[BIOMES[G.biome].sub] ? BIOMES[G.biome].sub : mode, gun = GUN[BIOMES[G.biome].key];
-    var seenN = hintSeen[hk] || 0, ctl = (MHINT[hk] || '') + (mode !== 'roam' && hk !== 'climb' ? '  {X}: ATTACK' : '');
+    var seenN = hintSeen[hk] || 0, ctl = (MHINT[hk] || '') + (mode !== 'roam' && hk !== 'climb' ? (narrow ? '  {X}: ATTACK' : '  {X}: ATTACK  HOLD {X}: SWAP') : '');
     if (since < 240) {
       var perk = G.id === 'Feline1' ? 'PERK: ' + FPERK[mode] : G.id === 'C0' && mode === 'run' ? 'HOLD IN AIR: GLIDE' : G.id === 'X0' ? 'MINI MAGNET' : '';
       if (perk && !narrow && seenN <= 3) lines.push([perk, d.color]);
@@ -3020,10 +3059,11 @@
     if (G.dropT > 0) G.dropT--;
     if (G.fireCd > 0) G.fireCd--;
     meleeTick(G);
-    if (fireHeld && G.id === 'Feline1') { /* hold X: switch claw <-> yarn */
-      if (++atkHoldT === 36) { G.fmode = G.fmode === 'yarn' ? 'claw' : 'yarn'; popText(G.fmode === 'yarn' ? 'YARN BALL: RANGED' : 'CAT CLAW: MELEE', '#ff9fc4'); SFX.select(); }
+    if (G.modeFlash > 0) G.modeFlash--;
+    if (fireHeld) { /* hold X: one mode switch at ~0.6 s, then auto attack in the new mode until X is released */
+      if (++atkHoldT === ATK_HOLD) swapAtk(G);
+      else if (atkHoldT > ATK_HOLD && G.fireCd <= 0) fire();
     } else atkHoldT = 0;
-    if (fireHeld && G.fireCd <= 0 && G.id !== 'Feline1') fire();
     if (yPressed) G.yBuf = 14; else if (G.yBuf > 0) G.yBuf--; /* a Y press counts for a moment, so it can be pressed a bit early */
     yPressed = false;
     if (restTick(G)) { updateParts(); return; }

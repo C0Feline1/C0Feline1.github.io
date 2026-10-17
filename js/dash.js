@@ -96,14 +96,28 @@
     /* pointerdown only (no click handler anywhere on the console, so a tap can't fire twice); left button / primary touch only */
     el.addEventListener('pointerdown', function (e) { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); $('game').focus({ preventScroll: true }); fn(); });
   }
-  /* Switch layout: A = jump / confirm, B = skill (back in menus), X = attack (hold: auto / Feline1 switches claw-yarn), Y = interact,
+  /* Switch layout: A = jump / confirm, B = skill (back in menus), X = attack (hold: switch melee / ranged once, then auto attack), Y = interact,
      - = back / change character, + = pause / start */
   bindBtn($('aBtn'), function () { KittyRunner.action(); });
   bindBtn($('bBtn'), function () { KittyRunner.bPress(); });
   if ($('yBtn')) bindBtn($('yBtn'), function () { KittyRunner.y(); });
   if ($('minusBtn')) bindBtn($('minusBtn'), function () { KittyRunner.b(); });
   if ($('plusBtn')) bindBtn($('plusBtn'), function () { KittyRunner.plus(); });
-  if ($('xBtn')) { bindBtn($('xBtn'), function () { KittyRunner.fire(true); }); ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('xBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); }); }
+  if ($('xBtn')) {
+    /* X: hold = switch attack mode once, then auto attack. The pointer is captured so sliding a finger / the mouse a little
+       off the button does not end the hold (that used to split one hold into several and flip the mode back and forth) */
+    bindBtn($('xBtn'), function () { KittyRunner.fire(true); });
+    $('xBtn').addEventListener('pointerdown', function (e) { try { $('xBtn').setPointerCapture(e.pointerId); } catch (er) { } });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) { $('xBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); });
+  }
+  /* mobile: a long press on the console must not select text, open the callout menu or the magnifier, and a double tap must
+     not zoom. touchstart is cancelled on the console buttons and the screen (they work from pointer events); the music tab
+     keeps its click */
+  var conEl = document.querySelector('.gba');
+  if (conEl) {
+    conEl.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    conEl.addEventListener('touchstart', function (e) { var t = e.target.closest && e.target.closest('button, canvas'); if (t && !t.classList.contains('mtab')) e.preventDefault(); }, { passive: false });
+  }
   document.querySelectorAll('.dpad button').forEach(function (b) { bindBtn(b, function () { KittyRunner.dpad(b.dataset.d); }); });
   document.querySelectorAll('.dpad button[data-d=left], .dpad button[data-d=right], .dpad button[data-d=down]').forEach(function (b) {
     b.addEventListener('pointerdown', function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, true); });
@@ -117,6 +131,31 @@
      "stack" (screen on top, Joy-Cons below), then sizes the screen: as wide as the panel allows while the screen (with the
      panel title and its bezel) still fits the window height. Desktop snaps to an integer device-pixel scale of 240 px
      when that costs less than 10 %, so the pixels stay crisp. Phones (<= 520 px) always stack and use the full width. */
+  /* tabbed dock inside the fixed frame: which panels share the dock depends on the frame (portrait / phone landscape: all of
+     them; landscape: everything except the stats and the studio cam) */
+  var DOCK = { land: ['lb', 'term', 'chart', 'works', 'legal', 'ad'], port: ['cards', 'cam', 'lb', 'term', 'chart', 'works', 'legal', 'ad'] };
+  DOCK.phl = DOCK.port;
+  var docRoot = document.documentElement, dockTab = 'lb';
+  try { dockTab = localStorage.getItem('dash-tab') || 'lb'; } catch (e) { }
+  function dockSync() {
+    var F = window.KR_FRAME; if (!F) return;
+    var set = DOCK[F.mode] || [];
+    if (set.indexOf(dockTab) < 0) dockTab = set.indexOf('lb') >= 0 ? 'lb' : set[0];
+    docRoot.classList.toggle('dock', set.length > 0);
+    document.querySelectorAll('[data-tab]').forEach(function (p) { var t = p.getAttribute('data-tab'); p.classList.toggle('tp', set.indexOf(t) >= 0); p.classList.toggle('tab-on', t === dockTab); });
+    document.querySelectorAll('.dock-tabs button[data-t]').forEach(function (b) { var t = b.getAttribute('data-t'); b.hidden = t !== 'close' && set.indexOf(t) < 0; b.classList.toggle('on', t === dockTab); });
+  }
+  document.querySelectorAll('.dock-tabs button[data-t]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-t');
+      if (t === 'close') { docRoot.classList.remove('dock-shown'); return; }
+      dockTab = t; try { localStorage.setItem('dash-tab', t); } catch (e) { }
+      dockSync(); window.dispatchEvent(new Event('resize'));
+    });
+  });
+  if ($('dockOpen')) $('dockOpen').addEventListener('click', function () { docRoot.classList.add('dock-shown'); dockSync(); window.dispatchEvent(new Event('resize')); });
+  dockSync();
+
   var scrCv = $('game'), lastScr = 0;
   function sizeScreen() {
     if (!shell || !scrCv) return;
@@ -130,8 +169,17 @@
     if (shell.classList.contains('stack')) jcW = parseFloat(getComputedStyle(shell).getPropertyValue('--jcw')) || 152; /* joy-con width in the row layout (CSS --jcw) */
     var extraY = scr.offsetHeight - ch + parseFloat(getComputedStyle(shell).paddingTop) + 12; /* never the (auto, centring) margin: no feedback */
     var stackW = Math.max(160, innerW - bezelX), rowW = innerW - bezelX - 2 * jcW, maxW = stackW, row = false;
-    if (window.innerWidth > 520) {
-      var availH = window.innerHeight - extraY - (ph ? ph.offsetHeight + 6 : 0) - parseFloat(ps.paddingTop) - 6, hW = Math.max(360, availH * 1.5);
+    var F = window.KR_FRAME, vW = F ? F.w : window.innerWidth, vH = F ? F.h : window.innerHeight, force = ps.getPropertyValue('--force').trim();
+    if (vW > 520) {
+      /* height budget (CSS --fit on the arcade panel): "panel" = the panel's own (CSS-fixed) height, "view" = what is left of the
+         first screen below the panel's top, default = the window height */
+      var fit = ps.getPropertyValue('--fit').trim(), help = panel.querySelector('.help');
+      var helpH = help && help.offsetParent ? help.offsetHeight + parseFloat(getComputedStyle(help).marginTop) + parseFloat(getComputedStyle(help).marginBottom) : 0;
+      var chrome = extraY + (ph ? ph.offsetHeight + 6 : 0) + parseFloat(ps.paddingTop) + 6;
+      var availH = vH - chrome;
+      if (fit === 'panel') availH = panel.clientHeight - parseFloat(ps.paddingBottom) - helpH - chrome;
+      else if (fit === 'view') availH = vH - (panel.getBoundingClientRect().top + window.scrollY) - parseFloat(ps.paddingBottom) - helpH - chrome - 8;
+      var hW = Math.max(F ? 200 : 360, availH * 1.5);
       /* stacked: the Joy-Cons sit below the screen, so they take height too (~200 px incl. gaps) */
       var jcH = shell.classList.contains('stack') && jc ? jc.offsetHeight + 12 : 200;
       var sW = Math.min(stackW, Math.max(360, (availH - jcH) * 1.5)), rW = Math.min(rowW, hW);
@@ -139,15 +187,19 @@
          >= 360 px; stacked only on narrow panels and phones, even if stacking would give a bigger screen */
       row = innerW >= 700 && rW >= 360; maxW = row ? rW : sW;
     }
+    /* the fixed frame decides the console form itself (CSS --force): landscape frames always use the full Switch row,
+       the portrait frame stacks the Joy-Cons under a full-width screen */
+    if (force === 'row') { row = true; maxW = Math.max(160, Math.min(rowW, fit === 'panel' ? hW : rowW)); }
+    else if (force === 'stack') { row = false; maxW = stackW; }
     shell.classList.toggle('row', row); shell.classList.toggle('stack', !row);
-    var dpr = window.devicePixelRatio || 1, s = Math.floor(maxW * dpr / 240), iw = s * 240 / dpr;
-    var w = window.innerWidth > 520 && s >= 2 && iw >= maxW * 0.9 ? iw : Math.floor(maxW);
+    var dpr = (window.devicePixelRatio || 1) * (F ? F.s : 1), s = Math.floor(maxW * dpr / 240), iw = s * 240 / dpr;
+    var w = vW > 520 && s >= 2 && iw >= maxW * (F ? 0.95 : 0.9) ? iw : Math.floor(maxW); /* in the scaled frame only a near-free snap */
     if (Math.abs(w - lastScr) < 0.5) return;
     lastScr = w; shell.style.setProperty('--scrw', w + 'px'); shell.classList.add('sized');
   }
   if (shell && scrCv) {
     var scrT = 0, kickScr = function () { cancelAnimationFrame(scrT); scrT = requestAnimationFrame(function () { sizeScreen(); requestAnimationFrame(sizeScreen); }); };
-    window.addEventListener('resize', kickScr);
+    window.addEventListener('resize', function () { if (window.KR_FIT) KR_FIT(); dockSync(); kickScr(); });
     if (window.ResizeObserver) new ResizeObserver(kickScr).observe(shell.parentElement);
     sizeScreen(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(kickScr);
   }
@@ -186,7 +238,7 @@
   var chartVis = true;
   if (window.IntersectionObserver) new IntersectionObserver(function (en) { chartVis = en[en.length - 1].isIntersecting; if (chartVis) drawChart(); }).observe(ch);
   function drawChart() {
-    var box = ch.parentNode, dpr = window.devicePixelRatio || 1, w = box.clientWidth, h = box.clientHeight;
+    var box = ch.parentNode, dpr = (window.devicePixelRatio || 1) * (window.KR_FRAME ? KR_FRAME.s : 1), w = box.clientWidth, h = box.clientHeight;
     if (!w || !h) return;
     var bw0 = Math.round(w * dpr), bh0 = Math.round(h * dpr);
     if (ch.width !== bw0 || ch.height !== bh0) { ch.width = bw0; ch.height = bh0; }
@@ -362,7 +414,7 @@
     sg.fillStyle = 'rgba(0,0,0,.12)'; for (var sy = 0; sy < SH; sy += 2) sg.fillRect(0, sy, SW, 1);
     PX.text(sg, 'CAM 01  ' + now(), 6, 4, '#ff4f6a', '#000');
     PX.text(sg, 'REC', SW - 18, 4, tk % 30 < 15 ? '#ff4f6a' : '#5a1a2a', '#000');
-    var dpr = window.devicePixelRatio || 1, want = (scW || scView.clientWidth || SW) * dpr, s = Math.max(1, Math.min(8, Math.ceil(want / SW - 0.01)));
+    var dpr = (window.devicePixelRatio || 1) * (window.KR_FRAME ? KR_FRAME.s : 1), want = (scW || scView.clientWidth || SW) * dpr, s = Math.max(1, Math.min(8, Math.ceil(want / SW - 0.01)));
     if (scView.width !== SW * s) { scView.width = SW * s; scView.height = SH * s; }
     var ir = Math.abs(SW * s - want) < 1 ? 'pixelated' : 'auto';
     if (scView.style.imageRendering !== ir) scView.style.imageRendering = ir;
