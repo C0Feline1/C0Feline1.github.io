@@ -515,7 +515,7 @@
   };
 
   var CYBER = {
-    key: 'cyber', name: '雨城 · 不眠街', en: 'RAIN CITY · A TO FLIP', len: 260, seed: 901, line: '重力反过来了！', rift: true, mode: 'flip',
+    key: 'cyber', name: '雨城 · 不眠街', en: 'RAIN CITY · {A} TO FLIP', len: 260, seed: 901, line: '重力反过来了！', rift: true, mode: 'flip',
     sky: withSky(['#0a0418', '#1a0a36', '#3a0e4a', '#6a1450']),
     far: layer(256, function (x, w) {
       var r = PX.rng(911), px = 0;
@@ -590,7 +590,7 @@
   };
 
   var SEA = {
-    key: 'sea', name: '珊瑚遗迹 · 潮汐', en: 'CORAL RUINS · A TO SWIM', len: 240, seed: 981, line: '咕噜咕噜……', rift: true, mode: 'swim', speedMul: 0.85,
+    key: 'sea', name: '珊瑚遗迹 · 潮汐', en: 'CORAL RUINS · {A} TO SWIM', len: 240, seed: 981, line: '咕噜咕噜……', rift: true, mode: 'swim', speedMul: 0.85,
     sky: withSky(['#1a7ab0', '#0a4a7a', '#082a56', '#06163a'], function (x) {
       for (var xx = 0; xx < W; xx++) { var yy = 5 + Math.round(Math.sin(xx * 0.2) * 1.5); x.fillStyle = '#9ad8f8'; x.fillRect(xx, yy, 1, 1); x.fillStyle = 'rgba(200,240,255,.5)'; x.fillRect(xx, 0, 1, yy); }
     }),
@@ -978,7 +978,7 @@
   };
 
   var SKYCITY = {
-    key: 'skycity', name: '天空之城', en: 'SKY CITY · A TO PUFF', seed: 1701, line: '坐热气球去！', rift: true, mode: 'fly', speedMul: 0.95,
+    key: 'skycity', name: '天空之城', en: 'SKY CITY · {A} TO PUFF', seed: 1701, line: '坐热气球去！', rift: true, mode: 'fly', speedMul: 0.95,
     sky: withSky(['#2a6ad8', '#5aa0f0', '#a8d8ff', '#e8f6ff'], function (x) { disc(x, 40, 30, 10, '#ffffff'); }),
     far: layer(256, function (x, w) {
       var r = PX.rng(1711);
@@ -1018,7 +1018,7 @@
   };
 
   var MIRROR = {
-    key: 'mirror', name: '镜湖 · 倒影', en: 'MIRROR LAKE · A TO FLIP', seed: 1901, line: '上下颠倒的世界', rift: true, mode: 'flip',
+    key: 'mirror', name: '镜湖 · 倒影', en: 'MIRROR LAKE · {A} TO FLIP', seed: 1901, line: '上下颠倒的世界', rift: true, mode: 'flip',
     sky: (function () {
       var top = PX.skyGradient(W, H / 2, ['#2a2a6a', '#6a6ac8', '#c8b8f0']), c = PX.make(W, H), x = c.getContext('2d');
       x.drawImage(top, 0, 0); x.save(); x.translate(0, H); x.scale(1, -1); x.drawImage(top, 0, 0); x.restore();
@@ -1039,7 +1039,7 @@
   };
 
   var CANDY = {
-    key: 'candy', name: '棉花糖梦境', en: 'CANDY DREAM · A TO FLOAT', seed: 2001, line: '软绵绵的！', rift: true, mode: 'swim', speedMul: 0.9,
+    key: 'candy', name: '棉花糖梦境', en: 'CANDY DREAM · {A} TO FLOAT', seed: 2001, line: '软绵绵的！', rift: true, mode: 'swim', speedMul: 0.9,
     sky: withSky(['#a8d8ff', '#d8c8ff', '#ffc8e8', '#fff0f6'], function (x) { var r = PX.rng(2011); for (var i = 0; i < 6; i++) cloudPuff(x, Math.floor(r() * W), 20 + Math.floor(r() * 40), 6 + Math.floor(r() * 5), ['#ffffff', '#ffe8f4', '#f0c8e0']); }),
     far: layer(256, function (x, w) {
       for (var i = 0; i < 5; i++) { var cx = 20 + i * 56, rr = 20 + (i % 3) * 6; for (var yy = -rr; yy <= 0; yy++) { var hw = Math.floor(Math.sqrt(rr * rr - yy * yy)); x.fillStyle = ['#ffb0d0', '#c8b0ff', '#a8e8d0'][i % 3]; x.fillRect(cx - hw, GY - 6 + yy, hw * 2, 1); } x.fillStyle = '#ffffff'; x.fillRect(cx - 6, GY - 6 - rr + 3, 12, 2); }
@@ -1392,9 +1392,15 @@
     if (st.mode === 'paused') { pauseChoose(); return; }
     press();
   }
-  /* phase3C: the screen itself has no gameplay actions any more (it fought with "tap the console to start").
-     A click / tap on it only focuses the game and, on the title screen, starts a run. Everything else: buttons / keys. */
-  cv.addEventListener('pointerdown', function (e) { e.preventDefault(); cv.focus({ preventScroll: true }); if (st.mode === 'title') onAction(); else kick(); });
+  /* screen taps: only pointer events on the canvas itself count (the console shell, bezel and Joy-Con bodies have no handler).
+     Title: starts a normal run (whatever is highlighted). Play: the same as A (tap = jump, hold = higher jump, released on
+     pointerup anywhere). Game over: again (after the short delay; not while the name box is open). Menus and pause: buttons only. */
+  cv.addEventListener('pointerdown', function (e) {
+    if (e.button > 0) return;
+    e.preventDefault(); e.stopPropagation(); cv.focus({ preventScroll: true }); kick();
+    if (st.mode === 'title') { if (!locked) { st.pbi = -1; newGame(); } }
+    else if (st.mode === 'play' || st.mode === 'over') onAction();
+  });
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
   function pauseChoose() { autoPaused = false; var s = st.psel || 0; if (s === 0) st.mode = 'play'; else if (s === 1) newGame(); else { st.mode = 'title'; st.t = 0; } SFX.select(); }
@@ -1423,48 +1429,61 @@
     if (st.mode === 'title' && (dir === 'left' || dir === 'right')) { st.sel = (st.sel + (dir === 'left' ? 2 : 1)) % 3; SFX.select(); }
     else if (st.mode === 'over' && dir === 'down') { st.mode = 'title'; st.t = 0; }
   }
-  /* keyboard (Switch layout): Z = A (jump / confirm), X = B (skill in a run; back / change character in menus),
-     A = X button (attack), S = Y button (interact: toys, doors; on the title it opens the menu row), arrows move, DOWN crouches.
-     Space / Up / Enter also jump-confirm; P / Esc = + (pause); M toggles sound. No WASD aliases. */
+  /* keyboard: C = A (jump / confirm; Space and Enter too), Z = B (skill in a run; back / change character elsewhere),
+     X = X button (attack; hold = auto attack, Feline1 switches claw / yarn), Up = Y (interact: doors, rest stops, toys),
+     S = + (pause / resume; P and Esc too), arrows navigate menus, Left / Right move, Down crouches (hold), M toggles sound.
+     The listener sits on the canvas only, so typing in the name box (or any input) never reaches it. */
   function bPress() { kick(); if (st.mode === 'play') skill(); else bButton(); }
   function yPress() { kick(); if (st.mode === 'play') { yPressed = true; return; } if (st.mode === 'title') { dpad('down'); return; } if (MENUS[st.mode]) menuConfirm(); }
   function plusPress() { kick(); if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } else if (st.mode === 'paused') st.mode = 'play'; else if (st.mode === 'title' || st.mode === 'over') onAction(); }
   function keyOf(e) { return e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key; }
+  function jumpKey(k) { return k === 'c' || k === ' ' || k === 'Enter'; }
+  function pauseKey(k) { return k === 's' || k === 'p' || k === 'Escape'; }
+  window.addEventListener('pointerdown', function () { PX.keyMode = false; }, true);
   cv.addEventListener('keydown', function (e) {
-    var k = keyOf(e); kick();
-    if (MENUS[st.mode] || (st.mode === 'title' && (k === 'ArrowDown' || (k === 'ArrowUp' && st.trow === 1)))) {
-      if (k === 'ArrowUp' || k === 'ArrowDown' || k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); dpad(k.slice(5).toLowerCase()); return; }
-      if (k === ' ' || k === 'Enter' || k === 'z') { e.preventDefault(); if (!e.repeat) onAction(); return; }
-      if (k === 'Escape' || k === 'x' || k === 'p' || k === 'Backspace') { e.preventDefault(); bButton(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    PX.keyMode = true;
+    if (locked && st.mode !== 'play') return; /* the name box is open (focus moves into it a moment later) */
+    var k = keyOf(e), arrow = k === 'ArrowUp' || k === 'ArrowDown' || k === 'ArrowLeft' || k === 'ArrowRight'; kick();
+    if (k === 'm') { toggleMute(); return; }
+    if (MENUS[st.mode]) {
+      if (arrow) { e.preventDefault(); dpad(k.slice(5).toLowerCase()); }
+      else if (jumpKey(k)) { e.preventDefault(); if (!e.repeat) onAction(); }
+      else if (k === 'z' || k === 'Escape' || k === 'Backspace') { e.preventDefault(); bButton(); }
+      return;
     }
     if (st.mode === 'paused') {
-      if (k === 'ArrowUp' || k === 'ArrowDown') { e.preventDefault(); dpad(k === 'ArrowUp' ? 'up' : 'down'); return; }
-      if (k === ' ' || k === 'Enter' || k === 'z') { e.preventDefault(); if (!e.repeat) pauseChoose(); return; }
-      if (k === 'Escape' || k === 'x' || k === 'p') { st.mode = 'play'; return; }
+      if (k === 'ArrowUp' || k === 'ArrowDown') { e.preventDefault(); dpad(k === 'ArrowUp' ? 'up' : 'down'); }
+      else if (jumpKey(k)) { e.preventDefault(); if (!e.repeat) pauseChoose(); }
+      else if (pauseKey(k) || k === 'z') { e.preventDefault(); if (!e.repeat) { autoPaused = false; st.mode = 'play'; } }
+      return;
     }
-    if (k === ' ' || k === 'ArrowUp' || k === 'Enter' || k === 'z') {
-      e.preventDefault(); if (!e.repeat) onAction();
-    } else if (st.mode === 'play' && (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowDown')) {
-      e.preventDefault();
-      if (k === 'ArrowDown') { if (!e.repeat) downPressed = true; downHeld = true; }
-      else if (k === 'ArrowLeft') leftHeld = true; else rightHeld = true;
-    } else if (st.mode === 'play' && k === 'x') { e.preventDefault(); if (!e.repeat) skill(); }
-    else if (st.mode === 'play' && k === 'a') { e.preventDefault(); if (!e.repeat) { fireHeld = true; fire(); } }
-    else if (k === 's') { e.preventDefault(); if (!e.repeat) yPress(); }
-    else if (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowDown') {
-      e.preventDefault(); dpad(k === 'ArrowLeft' ? 'left' : k === 'ArrowRight' ? 'right' : 'down');
-    } else if (st.mode === 'title' && '123'.indexOf(k) >= 0) { st.sel = +k - 1; SFX.select(); }
-    else if (k === 'Escape' || k === 'p') { if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } else if (k === 'Escape') { if (st.mode !== 'title') { st.mode = 'title'; st.t = 0; } } else bButton(); }
-    else if (k === 'x') { e.preventDefault(); if (!e.repeat) bButton(); }
-    else if (k === 'm') toggleMute();
+    if (st.mode === 'play') {
+      if (jumpKey(k)) { e.preventDefault(); if (!e.repeat) onAction(); }
+      else if (k === 'ArrowUp') { e.preventDefault(); if (!e.repeat) yPress(); }
+      else if (k === 'ArrowDown') { e.preventDefault(); if (!e.repeat) downPressed = true; downHeld = true; }
+      else if (k === 'ArrowLeft') { e.preventDefault(); leftHeld = true; }
+      else if (k === 'ArrowRight') { e.preventDefault(); rightHeld = true; }
+      else if (k === 'x') { e.preventDefault(); if (!e.repeat) { fireHeld = true; fire(); } }
+      else if (k === 'z') { e.preventDefault(); if (!e.repeat) skill(); }
+      else if (pauseKey(k)) { e.preventDefault(); if (!e.repeat) { st.mode = 'paused'; st.psel = 0; } }
+      return;
+    }
+    /* title, game over, dying */
+    if (jumpKey(k)) { e.preventDefault(); if (!e.repeat) onAction(); }
+    else if (k === 'ArrowUp') { e.preventDefault(); if (st.mode === 'title' && st.trow === 1) dpad('up'); }
+    else if (arrow) { e.preventDefault(); dpad(k.slice(5).toLowerCase()); }
+    else if (k === 'z') { e.preventDefault(); if (!e.repeat) bButton(); }
+    else if (k === 'Escape') { if (st.mode === 'over') { st.mode = 'title'; st.t = 0; } }
+    else if (st.mode === 'title' && '123'.indexOf(k) >= 0) { st.sel = +k - 1; SFX.select(); }
   });
   cv.addEventListener('keyup', function (e) {
     var k = keyOf(e);
-    if (k === ' ' || k === 'ArrowUp' || k === 'Enter' || k === 'z') release();
+    if (jumpKey(k)) release();
     if (k === 'ArrowDown') downHeld = false;
     if (k === 'ArrowLeft') leftHeld = false;
     if (k === 'ArrowRight') rightHeld = false;
-    if (k === 'a') fireHeld = false;
+    if (k === 'x') fireHeld = false;
   });
   window.addEventListener('blur', function () { downHeld = leftHeld = rightHeld = fireHeld = holding = false; });
   document.addEventListener('visibilitychange', function () { if (document.hidden && st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } });
@@ -1633,7 +1652,7 @@
     var w = 80, x = W / 2 - w / 2, y = 35;
     hudPanel(x - 3, y - 2, w + 6, 13);
     PX.text(g, M.D.name, x, y, M.D.col, '#1a0f30');
-    if (M.id === 'butler') { g.fillStyle = '#1a0f30'; g.fillRect(x, y + 6, w, 3); g.fillStyle = M.flash ? '#ffffff' : '#c8b8ff'; g.fillRect(x, y + 6, Math.round(w * M.hp / M.maxHp), 3); var bt = ATK[atkStyle(G)].melee ? 'X: SWAT' : 'X: ATK'; PX.text(g, bt, x + w - PX.textWidth(bt), y, '#ffd45e', '#1a0f30'); }
+    if (M.id === 'butler') { g.fillStyle = '#1a0f30'; g.fillRect(x, y + 6, w, 3); g.fillStyle = M.flash ? '#ffffff' : '#c8b8ff'; g.fillRect(x, y + 6, Math.round(w * M.hp / M.maxHp), 3); var bt = ATK[atkStyle(G)].melee ? '{X}: SWAT' : '{X}: ATK'; PX.text(g, bt, x + w - PX.textWidth(bt), y, '#ffd45e', '#1a0f30'); }
     else { var pr = clamp((wprog(G) - MB_START) / (MB_END - MB_START), 0, 1); g.fillStyle = '#1a0f30'; g.fillRect(x, y + 6, w, 3); g.fillStyle = '#ff9a3a'; g.fillRect(x, y + 6, Math.round(w * (1 - pr)), 3); PX.text(g, 'DODGE!', x + w - PX.textWidth('DODGE!'), y, '#ffd45e', '#1a0f30'); }
   }
   function eliteHint(G, kind) { var k = G.loop + ':' + G.slot; if (G.eliteAt !== k) { G.eliteAt = k; popText(ELITE_TXT[kind], '#ffd45e'); } }
@@ -2055,7 +2074,7 @@
   var HOUSE_COL = { apt: ['#9aa8d0', '#4a5a9a', '#5a6aaa'], tea: ['#efe2c4', '#3a3a4a', '#4a4a5a'], lodge: ['#8a6a48', '#e8f0ff', '#ffffff'], cabin: ['#a86a3a', '#6a3a2a', '#7a4a32'] };
   function drawHouse(o) {
     var x = Math.round(o.x), y = GY, f = G_frame(), hc = HOUSE_COL[o.theme] || HOUSE_COL.apt;
-    if (!o.done && o.near) { var ht = 'Y: ENTER', hw = PX.textWidth(ht) + 10, hx = Math.round(x + o.w / 2 - hw / 2); hudPanel(hx, y - 82, hw, 11, f % 30 < 15 ? '#ffd47a' : '#ffffff'); PX.text(g, ht, hx + 5, y - 79, '#ffd47a', '#1a0f30'); }
+    if (!o.done && o.near) { var ht = '{Y}: ENTER', hw = PX.textWidth(ht) + 10, hx = Math.round(x + o.w / 2 - hw / 2); hudPanel(hx, y - 82, hw, 11, f % 30 < 15 ? '#ffd47a' : '#ffffff'); PX.text(g, ht, hx + 5, y - 79, '#ffd47a', '#1a0f30'); }
     g.fillStyle = '#100a1c'; g.fillRect(x - 1, y - 39, o.w + 2, 39);
     g.fillStyle = hc[0]; g.fillRect(x, y - 38, o.w, 38);
     g.fillStyle = 'rgba(0,0,0,.12)'; for (var yy = y - 34; yy < y; yy += 5) g.fillRect(x, yy, o.w, 1);
@@ -2353,7 +2372,7 @@
     R0.plats.forEach(function (p) { for (var i = 0; i < Math.floor(p.w / 12); i++) R0.items.push({ x: p.x + 4 + i * 12, y: p.y - 14 }); });
     for (var i = 0; i < 6; i++) R0.items.push({ x: 640 + i * 10, y: GY - 60 - Math.sin(i / 5 * Math.PI) * 40 });
     G.roam = R0; G.obs = []; G.plats = []; G.items = []; G.shots = []; G.sliding = false; G.onPlat = null; G.fadeIn = 24; G.rocket = 0; G.oasisAsk = false; G.oasisIn = false;
-    popText('< > MOVE   A JUMP', '#ffffff');
+    popText('< > MOVE   {A} JUMP', '#ffffff');
   }
   /* ================= themed rest rooms: every location has its own house with 5-8 toys (Y / key S = use; DOWN works too) ================= */
   function rr(x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); }
@@ -2638,7 +2657,7 @@
     G.roam = R0; G.obs = []; G.plats = []; G.items = []; G.shots = []; G.sliding = false; G.onPlat = null; G.fadeIn = 24; G.rocket = 0; G.climb = null;
     cp(G, 'H:' + theme);
     showBanner(T.name, T.en);
-    popText(theme === 'party' ? 'LOOP CLEAR!  Y: USE' : 'REST STOP  -  Y: USE', '#ffd47a');
+    popText(theme === 'party' ? 'LOOP CLEAR!  {Y}: USE' : 'REST STOP  -  {Y}: USE', '#ffd47a');
     if (theme === 'party') tune([72, 76, 79, 84, 79, 84, 88], 110, 'square', 0.04);
   }
   function mmss(s) { return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
@@ -2823,7 +2842,7 @@
     star: PX.fromRows(['...k...', '..kyk..', 'kkkykkk', 'kyyyyyk', '.kyyyk.', 'kykkkyk', 'kk...kk'], { k: '#1a0f30', y: '#fff2a8' })
   };
   var FPERK = { roam: 'DOUBLE JUMP', climb: 'WALL GRIP', run: 'DOUBLE JUMP', fly: 'NIMBLE BODY', flip: 'AIR FLIP', jet: 'FEATHER FALL', swim: 'STRONG PAW' };
-  var MHINT = { roam: '< > WALK   EXIT AT RIGHT', balloon: 'A: PUFF UP', sword: 'HOLD A: RISE  FLY THRU RINGS', climb: 'A: WALL JUMP', run: 'DOWN: SLIDE', fly: 'HOLD A: RISE', jet: 'HOLD A: THRUST', flip: 'A: FLIP GRAVITY', swim: 'A: SWIM' };
+  var MHINT = { roam: '< > WALK   EXIT AT RIGHT', balloon: '{A}: PUFF UP', sword: 'HOLD {A}: RISE  FLY THRU RINGS', climb: '{A}: WALL JUMP', run: 'DOWN: SLIDE', fly: 'HOLD {A}: RISE', jet: 'HOLD {A}: THRUST', flip: '{A}: FLIP GRAVITY', swim: '{A}: SWIM' };
   var hintSeen = {}; try { hintSeen = JSON.parse(localStorage.getItem('runner-hints') || '{}') || {}; } catch (e) { }
   function countHint(G) { /* called once per world entry */
     var b = BIOMES[G.biome], mode = b.mode || 'run', hk = b.sub && MHINT[b.sub] ? b.sub : (b.roam ? 'roam' : mode);
@@ -2838,7 +2857,7 @@
     if (G.id === 'C0') {
       if (G.slowT > 0) return { fill: G.slowT / 150, label: 'OVERCLOCK!!', active: true };
       if (G.slowCd > 0) return { fill: 1 - G.slowCd / 600, label: 'OVERCLOCK ' + Math.ceil(G.slowCd / 60) + 'S' };
-      return { fill: 1, label: 'B: OVERCLOCK', ready: true };
+      return { fill: 1, label: '{B}: OVERCLOCK', ready: true };
     }
     if (G.id === 'X0') {
       if (G.shield) return { fill: 1, label: 'SHIELD READY', ready: true };
@@ -2887,7 +2906,7 @@
     /* bottom-left: one compact hint line. Shown for 10 s after entering a world, and only until the player has seen it 3 times */
     var lines = [], since = G.frame - (G.hintF || 0), narrow = cvW && cvW < 420;
     var hk = BIOMES[G.biome].sub && MHINT[BIOMES[G.biome].sub] ? BIOMES[G.biome].sub : mode, gun = GUN[BIOMES[G.biome].key];
-    var seenN = hintSeen[hk] || 0, ctl = (MHINT[hk] || '') + (mode !== 'roam' && hk !== 'climb' ? '  X: ATTACK' : '');
+    var seenN = hintSeen[hk] || 0, ctl = (MHINT[hk] || '') + (mode !== 'roam' && hk !== 'climb' ? '  {X}: ATTACK' : '');
     if (since < 240) {
       var perk = G.id === 'Feline1' ? 'PERK: ' + FPERK[mode] : G.id === 'C0' && mode === 'run' ? 'HOLD IN AIR: GLIDE' : G.id === 'X0' ? 'MINI MAGNET' : '';
       if (perk && !narrow && seenN <= 3) lines.push([perk, d.color]);
@@ -3269,7 +3288,7 @@
   }
   function drawRestPrompt(G) {
     if (G.roam || G.climb) return;
-    var t = G.oasisIn ? 'OASIS: YOU WILL REST' : (G.oasisNear || G.oasisAsk) ? 'Y: REST AT THE OASIS   (OR RUN ON)' : null; if (!t) return;
+    var t = G.oasisIn ? 'OASIS: YOU WILL REST' : (G.oasisNear || G.oasisAsk) ? '{Y}: REST AT THE OASIS   (OR RUN ON)' : null; if (!t) return;
     var w = PX.textWidth(t) + 10, x = Math.round(W / 2 - w / 2), c = G.oasisIn || G.frame % 30 < 15 ? '#5dff8f' : '#ffffff'; hudPanel(x, 66, w, 11, c); PX.text(g, t, x + 5, 69, c, '#1a0f30');
   }
   function practiceTick(G) {
@@ -3429,7 +3448,7 @@
       box(mx, 134, 52, 11, on ? '#2a1648' : 'rgba(20,13,38,.85)', on ? '#ffd45e' : '#4a3a6a');
       PX.text(g, lb, mx + 26 - PX.textWidth(lb) / 2, 137, on ? '#ffffff' : '#9a8cc0', '#000');
     });
-    var hint = st.trow === 1 ? '< >: PICK   A: OPEN   B: BACK' : (Math.floor(t / 120) % 2 ? '< > OR B: CHOOSE  A: START  Y: MORE' : 'CLICK / Z / SPACE TO START');
+    var hint = st.trow === 1 ? '< >: PICK   {A}: OPEN   {B}: BACK' : (Math.floor(t / 120) % 2 ? '< > OR {B}: CHOOSE  {A}: START  DOWN: MORE' : 'TAP SCREEN / {A} / SPACE TO START');
     if (Math.floor(t / 30) % 4 !== 3) PX.text(g, hint, W / 2 - PX.textWidth(hint) / 2, 150, '#ffd45e', '#3a1a40');
   }
   /* ---------- G10 / G6 / G7 screens ---------- */
@@ -3473,8 +3492,8 @@
       var bits2 = BADGES[sb.key] || 0, txt = BADGE_DEF.map(function (d) { return (bits2 & d.bit ? '* ' : '- ') + d.n; }).join('  ');
       PX.text(g, txt, W / 2 - PX.textWidth(txt) / 2, 150, '#c8bce8', '#000');
     } else {
-      var en = st.menuMsg && st.t - st.menuMsg.t < 90 ? st.menuMsg.s : lockd ? 'LOCKED · REACH IT IN A RUN' : sb.en + '   A: GO  B: BACK';
-      PX.text(g, en.length > 52 ? sb.en.split(' · ')[0] + '   A: GO  B: BACK' : en, W / 2 - PX.textWidth(en.length > 52 ? sb.en.split(' · ')[0] + '   A: GO  B: BACK' : en) / 2, 150, '#ffd45e', '#000');
+      var en = st.menuMsg && st.t - st.menuMsg.t < 90 ? st.menuMsg.s : lockd ? 'LOCKED · REACH IT IN A RUN' : sb.en + '   {A}: GO  {B}: BACK';
+      PX.text(g, PX.keys(en).length > 52 ? sb.en.split(' · ')[0] + '   {A}: GO  {B}: BACK' : en, W / 2 - PX.textWidth(PX.keys(en).length > 52 ? sb.en.split(' · ')[0] + '   {A}: GO  {B}: BACK' : en) / 2, 150, '#ffd45e', '#000');
     }
   }
   var PHOTOS = {};
@@ -3505,7 +3524,7 @@
       else { g.fillStyle = '#2a2244'; g.fillRect(x + 2, y + 2, 68, 45); PX.text(g, '?', x + 33, y + 20, '#6a5a8a', null, 2); PX.text(g, ROOM_EN[th], x + 3, y + 48, '#6a5a8a'); }
     });
     var th = ALBUM_ROOMS[st.acur], a = ALBUM[th];
-    var info = a ? a.d + '  ' + ROOM_EN[th] + '  Z: ZOOM' : (th === 'court' ? 'LIGHT ALL TORCHES, RING THE BELL, PET THE CAT, OPEN THE CHEST' : 'USE EVERY TOY IN THIS ROOM IN ONE VISIT');
+    var info = a ? a.d + '  ' + ROOM_EN[th] + '  {A}: ZOOM' : (th === 'court' ? 'LIGHT ALL TORCHES, RING THE BELL, PET THE CAT, OPEN THE CHEST' : 'USE EVERY TOY IN THIS ROOM IN ONE VISIT');
     PX.text(g, info, W / 2 - PX.textWidth(info) / 2, 150, a ? '#ffd45e' : '#c8bce8', '#000');
     if (st.zoom && a) { g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(0, 0, W, H); g.fillStyle = '#f4efe6'; g.fillRect(48, 16, 144, 112); g.imageSmoothingEnabled = false; g.drawImage(photo(th), 52, 20, 136, 90); PX.text(g, ROOM_EN[th] + ' · ' + a.d, 54, 115, '#3a2a4a'); }
   }
@@ -3684,7 +3703,8 @@
     if (st.mode === 'paused') {
       TQ.length = 0;
       g.fillStyle = 'rgba(10,6,30,.6)'; g.fillRect(0, 0, W, H);
-      PX.text(g, 'PAUSE', W / 2 - PX.textWidth('PAUSE', 3) / 2, 38, '#ffffff', '#ff4fa3', 3);
+      PX.text(g, 'PAUSED', W / 2 - PX.textWidth('PAUSED', 3) / 2, 22, '#ffffff', '#ff4fa3', 3);
+      drawCN('已暂停', W / 2, 40, 10, '#ffd45e', 'center');
       if (autoPaused) PX.text(g, 'AUTO-PAUSED (SCREEN SCROLLED AWAY)', W / 2 - PX.textWidth('AUTO-PAUSED (SCREEN SCROLLED AWAY)') / 2, 56, '#7fe0ff', '#000');
       ['继续游戏', '重新开始', '返回选人'].forEach(function (s, i) {
         var y = 66 + i * 18, sel = i === (st.psel || 0);
@@ -3692,7 +3712,7 @@
         drawCN(s, W / 2, y + 3, 8, sel ? '#ffffff' : '#9a8cc0', 'center');
         if (sel && st.t % 30 < 20) PX.text(g, '>', W / 2 - 40, y + 5, '#ffd45e');
       });
-      PX.text(g, 'UP/DOWN: SELECT   A: OK   B: RESUME', W / 2 - PX.textWidth('UP/DOWN: SELECT   A: OK   B: RESUME') / 2, 128, '#ffd45e', '#000');
+      PX.text(g, 'UP/DOWN: SELECT  {A}: OK  {+}: RESUME', W / 2 - PX.textWidth('UP/DOWN: SELECT  {A}: OK  {+}: RESUME') / 2, 128, '#ffd45e', '#000');
     }
   }
   function drawOver() {
@@ -3709,7 +3729,7 @@
       PX.text(g, 'LV ' + G.practice.lv + (G.practice.lv >= PR_MAX ? ' (MAX)' : '') + '   LOOPS ' + G.practice.n + '   TIME ' + mmss(Math.floor(G.practice.t / 60)), 52, y + 50, '#7fe0ff', '#000');
       if (G.newBadges.length) PX.text(g, 'NEW BADGE: ' + G.newBadges.join(', '), W / 2 - PX.textWidth('NEW BADGE: ' + G.newBadges.join(', ')) / 2, y + 62, t % 30 < 20 ? '#ff6fa6' : '#ffffff', '#000');
       else PX.text(g, 'PRACTICE RUNS ARE NOT SCORED', W / 2 - PX.textWidth('PRACTICE RUNS ARE NOT SCORED') / 2, y + 62, '#8a7ab8', '#000');
-      if (t > 30 && t % 40 < 28) PX.text(g, 'A: AGAIN    B: WORLD LIST', W / 2 - PX.textWidth('A: AGAIN    B: WORLD LIST') / 2, y + 80, '#ffffff', '#000');
+      if (t > 30 && t % 40 < 28) PX.text(g, '{A}: AGAIN    {B}: WORLD LIST', W / 2 - PX.textWidth('{A}: AGAIN    {B}: WORLD LIST') / 2, y + 80, '#ffffff', '#000');
       return;
     }
     g.fillStyle = 'rgba(10,6,30,.55)'; g.fillRect(0, 0, W, H);
@@ -3722,7 +3742,7 @@
     PX.text(g, 'BEST  ' + best, 52, y + 60, '#ffd45e', '#000');
     PX.text(g, Math.floor(G.dist) + 'M  *' + G.shards, 188 - PX.textWidth(Math.floor(G.dist) + 'M  *' + G.shards), y + 50, '#7fe0ff', '#000');
     if (G.isBest && t % 30 < 20) PX.text(g, 'NEW RECORD!', 188 - PX.textWidth('NEW RECORD!'), y + 60, '#ff6fa6', '#000');
-    if (t > 30 && t % 40 < 28) PX.text(g, 'A: RETRY    B: CHANGE CHARACTER', W / 2 - PX.textWidth('A: RETRY    B: CHANGE CHARACTER') / 2, y + 80, '#ffffff', '#000');
+    if (t > 30 && t % 40 < 28) PX.text(g, '{A}: RETRY    {B}: CHANGE CHARACTER', W / 2 - PX.textWidth('{A}: RETRY    {B}: CHANGE CHARACTER') / 2, y + 80, '#ffffff', '#000');
   }
 
   var acc = 0, last = performance.now(), lastMode = null;

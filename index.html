@@ -179,14 +179,13 @@
   .dpad button[data-d=left]::after { border-right-color: #8a7ab8; } .dpad button[data-d=right]::after { border-left-color: #8a7ab8; }
   .help { font-size: 11px; margin-top: 6px; }
   .gba, .gba * { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-  .gba { cursor: pointer; }
+  .gba { cursor: default; }
   #game { overscroll-behavior: contain; }
   html, body { max-width: 100%; overflow-x: hidden; }
   @media (max-width: 920px) {
     .gba { gap: 12px; }
     .help { display: none; }
   }
-  .key { display: block; font: 10px/1 "DotGothic16", monospace; opacity: .78; margin-top: 3px; letter-spacing: 0; }
   @media (max-width: 380px) { .dpad { --c: 46px; } .gba { padding: 10px 6px 16px; } .screenwrap { padding: 8px 8px 6px; } }
   /* phase3 F1: phones. The screen takes (almost) the full width: thinner bezel, no side padding; buttons stay below */
   @media (max-width: 520px) {
@@ -252,7 +251,6 @@
   .gba.sw .dpad button[data-d=left]::after { border-right-color: #c8c0e8; left: calc(50% - 12px); } .gba.sw .dpad button[data-d=right]::after { border-left-color: #c8c0e8; left: calc(50% - 4px); }
   .gba.sw .dpad button:active, .xyab button:active { transform: translateY(2px); box-shadow: inset 0 -1px 0 #07050c; }
   .xyab button { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .xyab .key { font-size: 13px; margin-top: 2px; opacity: .85; }
   .xyab .x { color: #ffd45e; } .xyab .y { color: #5dff8f; } .xyab .a { color: #ff9fc4; } .xyab .b { color: #7fe0ff; }
   /* music / sound tab sticking out of the bezel's top-left corner */
   .mtab { position: absolute; left: 14px; top: -34px; z-index: 2; height: 36px; padding: 0 18px; border: 2px solid #4fe3ff; border-bottom: 0; border-radius: 10px 10px 0 0;
@@ -266,7 +264,7 @@
     .gba.sw .dpad button::after { border-width: 10px; left: calc(50% - 10px); top: calc(50% - 10px); }
     .gba.sw .dpad button[data-d=up]::after { top: calc(50% - 15px); } .gba.sw .dpad button[data-d=down]::after { top: calc(50% - 5px); }
     .gba.sw .dpad button[data-d=left]::after { left: calc(50% - 15px); } .gba.sw .dpad button[data-d=right]::after { left: calc(50% - 5px); }
-    .xyab button { font-size: 26px; } .xyab .key { font-size: 13px; }
+    .xyab button { font-size: 26px; }
     .gba.sw.stack .jc { flex-direction: column; gap: 8px; padding: 10px 4px 18px; }
     .gba.sw.stack .jl .jmini { align-self: flex-end; margin-right: 10px; } .gba.sw.stack .jr .jmini { align-self: flex-start; margin-left: 10px; order: 0; }
     .jmini { width: 48px; height: 48px; font-size: 28px; line-height: 48px; }
@@ -323,7 +321,7 @@
       <div class="ph"><h2>▶ ARCADE · KITTY RUNNER</h2><span class="tag" style="color:var(--gold)">PLAYABLE</span></div>
       <div class="gba sw">
         <div class="jc jl">
-          <button class="jmini" id="minusBtn" type="button" aria-label="−：返回 / 换人">−</button>
+          <button class="jmini" id="minusBtn" type="button" aria-label="−：返回 / 换人" title="−：返回 / 换人">−</button>
           <div class="dpad jdp">
             <button data-d="up" aria-label="上：跳跃"></button>
             <button data-d="left" aria-label="左：向左 / 上一个角色"></button>
@@ -335,22 +333,22 @@
         <div class="scr">
           <button class="mtab" id="bgmBtn" type="button" aria-pressed="false" aria-label="打开或关闭游戏音乐和音效（M）">♪ 音乐 关</button>
           <div class="screenwrap">
-            <canvas id="game" tabindex="0" aria-label="KITTY RUNNER 小游戏：点击开始，Z 跳跃，A 攻击，X 技能，S 互动"></canvas>
+            <canvas id="game" tabindex="0" aria-label="KITTY RUNNER 小游戏：点屏幕开始 / 跳跃，C 跳跃，X 攻击，Z 技能，↑ 互动，S 暂停"></canvas>
             <div class="scrlabel"><span>C0 SWITCH</span><span>● POWER</span></div>
           </div>
         </div>
         <div class="jc jr">
-          <button class="jmini" id="plusBtn" type="button" aria-label="+：暂停 / 开始（P / Esc）">+</button>
+          <button class="jmini" id="plusBtn" type="button" aria-label="+：暂停 / 继续（键盘 S、P、Esc）" title="+：暂停 / 继续（键盘 S、P、Esc）">+</button>
           <div class="xyab">
-            <button class="fbtn x" id="xBtn" type="button" aria-label="X：攻击（键盘 A）">X<small class="key">A</small></button>
-            <button class="fbtn y" id="yBtn" type="button" aria-label="Y：互动（键盘 S）">Y<small class="key">S</small></button>
-            <button class="fbtn a" id="aBtn" type="button" aria-label="A：跳跃 / 确认（键盘 Z、空格、↑）">A<small class="key">Z</small></button>
-            <button class="fbtn b" id="bBtn" type="button" aria-label="B：技能 / 返回（键盘 X）">B<small class="key">X</small></button>
+            <button class="fbtn x" id="xBtn" type="button" aria-label="X：攻击（键盘 X）" title="X：攻击（键盘 X）">X</button>
+            <button class="fbtn y" id="yBtn" type="button" aria-label="Y：互动（键盘 ↑）" title="Y：互动（键盘 ↑）">Y</button>
+            <button class="fbtn a" id="aBtn" type="button" aria-label="A：跳跃 / 确认（键盘 C、空格、回车）" title="A：跳跃 / 确认（键盘 C、空格、回车）">A</button>
+            <button class="fbtn b" id="bBtn" type="button" aria-label="B：技能 / 返回（键盘 Z）" title="B：技能 / 返回（键盘 Z）">B</button>
           </div>
           <div class="jstick" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="help"><kbd>Z</kbd>/<kbd>空格</kbd> A 跳·确认 · <kbd>X</kbd> B 技能 · <kbd>A</kbd> X 攻击（猫娘按住切换 爪/毛线球） · <kbd>S</kbd> Y 互动 · <kbd>↓</kbd> 按住蹲 · <kbd>← →</kbd> 移动 · <kbd>P</kbd> + 暂停 · <kbd>M</kbd> 音乐</p>
+      <p class="help">跳跃·确认 <kbd>C</kbd>/<kbd>空格</kbd> · A键 ｜ 攻击 <kbd>X</kbd> · X键（按住连发，猫娘按住切换 爪/毛线球） ｜ 技能·返回 <kbd>Z</kbd> · B键 ｜ 互动·进休息站 <kbd>↑</kbd> · Y键 ｜ 暂停 <kbd>S</kbd>·<kbd>P</kbd>·<kbd>Esc</kbd> · +键 ｜ 下蹲 按住<kbd>↓</kbd> · 十字键↓ ｜ 移动 <kbd>←</kbd><kbd>→</kbd> · 十字键 ｜ 返回·换人 −键 ｜ 音乐 <kbd>M</kbd> ｜ 点屏幕：开始 / 跳</p>
     </div>
   </section>
 
@@ -397,13 +395,13 @@
     <p class="lb-msg" id="lbMsg"></p>
   </div>
 </div>
-<script src="js/pixel.js?v=20261018j"></script>
-<script src="js/audio.js?v=20261018j"></script>
-<script src="js/game.js?v=20261018j"></script>
-<script src="js/music.js?v=20261018j"></script>
-<script src="js/logs.js?v=20261018j"></script>
-<script src="js/dash.js?v=20261018j"></script>
-<script src="js/spider.js?v=20261018j"></script>
-<script src="js/board.js?v=20261018j"></script>
+<script src="js/pixel.js?v=20261018k"></script>
+<script src="js/audio.js?v=20261018k"></script>
+<script src="js/game.js?v=20261018k"></script>
+<script src="js/music.js?v=20261018k"></script>
+<script src="js/logs.js?v=20261018k"></script>
+<script src="js/dash.js?v=20261018k"></script>
+<script src="js/spider.js?v=20261018k"></script>
+<script src="js/board.js?v=20261018k"></script>
 </body>
 </html>

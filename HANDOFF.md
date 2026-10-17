@@ -72,7 +72,7 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - build.log capped at 40 lines.
 
 ## Keys
-- (Phase 3C, Switch layout) Z = **A** jump / confirm (Space, ↑, Enter also work) · X = **B** skill in a run (C0 overclock), back / select in menus · A = **X** attack (Feline1: hold ~0.6 s to switch claw ↔ yarn ball) · S = **Y** interact (enter a rest house / the oasis, use toys, leave by the exit door; on the title it opens the menu row) · ↓ hold to crouch · ← → move · P / Esc = **+** pause · M = music. **−** on the left Joy-Con = the old B (select / pause). 1/2/3 pick a character on the title screen. Arrows only, no WASD. Keys are case-insensitive. Tapping / clicking the game screen does nothing in a run (it only focuses the game and starts it from the title).
+- (fix2, `?v=20261018k`) C = **A** jump / confirm (Space and Enter also work) · Z = **B** skill in a run (C0 overclock), back / change character elsewhere · X = **X** attack (hold = auto attack; Feline1: hold ~0.6 s to switch claw ↔ yarn ball) · ↑ = **Y** interact (enter a rest house / the oasis, use toys) · S = **+** pause / resume (P and Esc too) · ↓ hold to crouch · ← → move · M = music. Menus: arrows navigate, C / Space / Enter confirm, Z / Esc / Backspace back; on the title ↓ goes to the menu row. 1/2/3 pick a character on the title screen. No WASD; the old keys (↑ jump, A attack, S interact, Z jump, X skill) are gone. Keys are case-insensitive and only reach the game while the canvas has focus (typing in the name box / country search never does). On-screen hints are written with button tokens (`{A}` `{B}` `{X}` `{Y}` `{+}`, see `PX.keys`) and show Joy-Con names, or keyboard names after the last input was a key. Tapping the game screen: start on the title, A (jump) in a run, again on game over.
 
 ## Phase 2（2026-10-17）
 - 排行榜区：左 TOP100（固定高度、内部滚动、超长名字省略号），右"广告位招租"（像素风车；小八碰到风车会被甩飞，晕一下再爬起来）。不是真广告，没有第三方脚本。
@@ -154,3 +154,11 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - 练习模式：左上角不再显示分数，改成大字 `LV n`（满级 `LV MAX`）+ 小字 `PRACTICE`；顶部中间的进度条标签改为 `NEXT LV n+1` / `MAX LEVEL`。
 - 手柄按键加大：桌面十字键和 XYAB 30→48 px（Joy-Con 宽 108→152 px，横排时屏幕两侧边框 16→10 px 把屏幕尽量留大），键位字母 8→13 px，按钮字 15→24 px，−/+ 26→38 px；手机按钮按屏宽取 48–60 px（320 px 宽也有 48 px），−/+ 48 px；「♪ 音乐 开/关」标签 26→36 px 高、14→19 px 字、更亮。
 - `dash.js` 屏幕尺寸：边框宽度改用计算样式（padding + border），以前用"外框宽 − 画布宽"，竖排时外框会被拉宽，320 px 手机会卡在 160 px 宽的屏幕上；现在是 284 px。
+
+## fix2（2026-10-18，`?v=20261018k`，只换前端）
+- 点击范围：只有落在游戏画面（canvas）本身上的点击 / 触摸才算。主机外壳、Joy-Con 机身、屏幕四周的黑边框和缝隙都没有处理函数，点了什么都不会发生（去掉了 `dash.js` 里外壳的 click 处理，外壳指针改回默认箭头）。
+  - 点屏幕：标题画面开始一局普通跑酷（不管当时高亮的是哪一项）；游戏中等于 A（点一下跳，按住跳得更高）；结算画面短暂延迟后再来一局（名字框打开时不会）；菜单和暂停中点屏幕不触发任何操作。
+  - 按钮（十字键、XYAB、−/+、音乐标签）各自处理：只用 pointerdown（左键 / 触点），并且 `stopPropagation`；主机上没有别的 click 处理，所以一次点击只触发一次，按 + 不会同时算作点屏幕跳跃。
+- 暂停：右 Joy-Con 的 + 在游戏中切换暂停 / 继续（没有新增按钮；− 不变：返回 / 换人）；键盘 S、P、Esc 也切换。画面显示 PAUSED / 已暂停，菜单「继续游戏 / 重新开始 / 返回选人」照旧。切到别的标签页、或游戏画面滚出视野时自动暂停（原有）。暂停时 `G.frame`、距离和分数都不走，继续时没有时间 / 分数跳变（帧循环每帧最多补 100 ms）。服务器只要求 帧数 ≤ 实际经过时间 × 60 × 1.08 + 120，暂停只会让实际时间更长，所以成绩照样有效；但从 /start 到提交超过 3 小时会被拒（原有规则）。
+- 键盘重新映射（见上面 Keys 一节）：C 跳 / 确认，X 攻击，Z 技能 / 返回，↑ 互动，S 暂停（P、Esc 也行）。画面提示随最后一次输入切换：用键盘时显示 C / Z / UP / S，点按钮或屏幕时显示 A / B / Y / +。Joy-Con 按钮上只留按钮本身的字（A/B/X/Y、+、−、十字键箭头），去掉了按钮下面的键位小字（悬停有 title，读屏有 aria-label）；主机下方的说明是唯一讲操作的地方，每个动作同时列出键盘键和 Joy-Con 按钮。服务器不记录按键（cps 里只有世界 / 休息站的标记），不用改。
+- 布局规则：面板内宽 ≥ 700 px（且屏幕至少 360 px 宽）就用横排「左手柄 | 屏幕 | 右手柄」，即使竖排屏幕会更大（例如 1920×1080 的中栏：横排 601 px，竖排原本 889 px）；只有更窄的面板和手机才竖排。实测：1024×663、1280×800、1366×768、1440×900、1920@125%（1536×864）、1920@150%（1280×720）、1920×1080 都是横排；760×900 和 390×844 竖排。

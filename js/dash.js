@@ -93,7 +93,8 @@
 
   /* A / B / D-pad */
   function bindBtn(el, fn) {
-    el.addEventListener('pointerdown', function (e) { e.preventDefault(); $('game').focus({ preventScroll: true }); fn(); });
+    /* pointerdown only (no click handler anywhere on the console, so a tap can't fire twice); left button / primary touch only */
+    el.addEventListener('pointerdown', function (e) { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); $('game').focus({ preventScroll: true }); fn(); });
   }
   /* Switch layout: A = jump / confirm, B = skill (back in menus), X = attack (hold: auto / Feline1 switches claw-yarn), Y = interact,
      - = back / change character, + = pause / start */
@@ -109,16 +110,10 @@
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, false); }); });
   });
 
-  /* tapping anywhere on the console shell focuses the game; on the title screen it also starts.
-     Buttons and the screen handle themselves (no double trigger); during play the shell only focuses. */
+  /* the console shell / Joy-Con bodies do nothing when clicked: only the real buttons act, and the screen starts a run from the title */
   var shell = document.querySelector('.gba');
-  if (shell) shell.addEventListener('click', function (e) {
-    if (e.target.closest('button, canvas, a, input')) return;
-    $('game').focus({ preventScroll: true });
-    if (KittyRunner.state && KittyRunner.state.mode === 'title') KittyRunner.action();
-  });
 
-  /* phase3C: Switch console. Picks "row" (Joy-Cons beside the screen) unless stacking gives a clearly (15 %) bigger screen than
+  /* phase3C: Switch console. Picks "row" (Joy-Cons beside the screen) whenever the panel is >= 700 px wide, else
      "stack" (screen on top, Joy-Cons below), then sizes the screen: as wide as the panel allows while the screen (with the
      panel title and its bezel) still fits the window height. Desktop snaps to an integer device-pixel scale of 240 px
      when that costs less than 10 %, so the pixels stay crisp. Phones (<= 520 px) always stack and use the full width. */
@@ -140,7 +135,9 @@
       /* stacked: the Joy-Cons sit below the screen, so they take height too (~200 px incl. gaps) */
       var jcH = shell.classList.contains('stack') && jc ? jc.offsetHeight + 12 : 200;
       var sW = Math.min(stackW, Math.max(360, (availH - jcH) * 1.5)), rW = Math.min(rowW, hW);
-      row = rW >= 300 && sW < rW * 1.15; maxW = row ? rW : sW; /* the full Switch look unless stacking gives a clearly bigger screen */
+      /* the full Switch look (Joy-Cons beside the screen) whenever the panel is at least ~700 px wide and the screen still gets
+         >= 360 px; stacked only on narrow panels and phones, even if stacking would give a bigger screen */
+      row = innerW >= 700 && rW >= 360; maxW = row ? rW : sW;
     }
     shell.classList.toggle('row', row); shell.classList.toggle('stack', !row);
     var dpr = window.devicePixelRatio || 1, s = Math.floor(maxW * dpr / 240), iw = s * 240 / dpr;

@@ -57,9 +57,14 @@
     '%': '101001010100101', '?': '111001010000010', '#': '101111101111101', '_': '000000000000111', "'": '010010000000000',
     '@': '101111111010000', '·': '000000010000000', '(': '010100100100010', ')': '010001001001010', ',': '000000000010100', ' ': '000000000000000'
   };
-  PX.textWidth = function (s, k) { return (String(s).length * 4 - 1) * (k || 1); };
+  /* control hints are written with button tokens ({A} {B} {X} {Y} {+}); they show the Joy-Con button, or the keyboard key
+     after the player last used the keyboard (PX.keyMode, set by game.js) */
+  PX.keyMode = false;
+  var KEYS = { A: ['A', 'C'], B: ['B', 'Z'], X: ['X', 'X'], Y: ['Y', 'UP'], '+': ['+', 'S'] };
+  PX.keys = function (s) { s = String(s); return s.indexOf('{') < 0 ? s : s.replace(/\{([ABXY+])\}/g, function (m, c) { return KEYS[c][PX.keyMode ? 1 : 0]; }); };
+  PX.textWidth = function (s, k) { return (PX.keys(s).length * 4 - 1) * (k || 1); };
   PX.text = function (g, s, x, y, color, shadow, k) {
-    k = k || 1; s = String(s).toUpperCase(); x = Math.round(x); y = Math.round(y);
+    k = k || 1; s = PX.keys(s).toUpperCase(); x = Math.round(x); y = Math.round(y);
     function pass(ox, oy, col) {
       g.fillStyle = col;
       for (var i = 0; i < s.length; i++) {
@@ -287,7 +292,7 @@
         c: '#ffd6e8', C: '#eaa6c4', k: '#ffffff', a: '#ff5a9e', A: '#c0306a', l: '#ffffff', n: '#e2d0e4', b: '#b8487e', B: '#ff8ab8', t: '#fbeef5', T: '#d2a8c6', r: '#ff6fa6', y: '#ffd45e', g: '#ffffff' }
     },
     C0: {
-      cat: false, headset: true, label: 'C0', cn: '程序 C0', perk: '超频：按 A 慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
+      cat: false, headset: true, label: 'C0', cn: '程序 C0', perk: '超频：按 B（键盘 Z）慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
       pal: { o: '#08060c', h: '#2e2534', H: '#1a141e', L: '#5a4a6e', s: '#f3d2c4', S: '#deb0a4', E: '#241c2c', w: '#ffffff', p: '#f4a0a8', m: '#9c4a5a',
         c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#3a5a8a', n: '#26406a', b: '#e8e8f0', B: '#4fe3ff', r: '#4fe3ff', g: '#aab6d4' }
     },
