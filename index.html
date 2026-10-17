@@ -10,13 +10,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <script>
-/* fixed-aspect page frame: 16:9 in landscape (1280x720 design px; phones in landscape 720x405), 9:16 in portrait (405x720).
-   The pink .frame is laid out at the design size and scaled to the largest box that fits the window, so text and panels look
-   the same at every window size. */
+/* Phones use a fixed-aspect frame; desktop and tablet layouts flow naturally at every window size and aspect ratio. */
 (function () {
   var R = document.documentElement;
   window.KR_FIT = function () {
     var vw = window.innerWidth, vh = window.innerHeight, mode = vw >= vh ? (vh < 500 ? 'phl' : 'land') : 'port';
+    var ua = navigator.userAgent || '';
+    var phone = (navigator.userAgentData && navigator.userAgentData.mobile) ||
+      /iPhone|iPod|Windows Phone|Android.*Mobile|Mobile.*Android/i.test(ua);
+    if (!phone) {
+      var wasFixed = R.classList.contains('fx');
+      R.classList.remove('fx', 'fx-land', 'fx-port', 'fx-phl', 'dock', 'dock-shown');
+      R.style.removeProperty('--fw'); R.style.removeProperty('--fh'); R.style.removeProperty('--fs');
+      document.querySelectorAll('.tp, .tab-on').forEach(function (el) { el.classList.remove('tp', 'tab-on'); });
+      document.querySelectorAll('.dock-tabs button[hidden]').forEach(function (el) { el.hidden = false; });
+      window.KR_FRAME = null;
+      return wasFixed;
+    }
     var D = mode === 'land' ? [1280, 720] : mode === 'phl' ? [720, 405] : [405, 720], m = mode === 'land' ? 12 : 0;
     var s = Math.max(0.2, Math.min((vw - m) / D[0], (vh - m) / D[1]));
     R.classList.add('fx'); ['land', 'phl', 'port'].forEach(function (k) { R.classList.toggle('fx-' + k, k === mode); });
@@ -43,7 +53,10 @@
     padding: 14px;
   }
   a { color: var(--cyan); }
-  .frame { max-width: 1180px; margin: 0 auto; border: 2px solid var(--pink); box-shadow: 0 0 0 4px #2a0a20, 0 0 40px rgba(255,79,163,.25); padding: 10px; background: #0a0712; }
+  .frame { position: relative; max-width: 1180px; margin: 0 auto; border: 2px solid var(--pink); box-shadow: 0 0 0 4px #2a0a20, 0 0 40px rgba(255,79,163,.25); padding: 10px; background: #0a0712; }
+  @media (min-width: 641px) {
+    html:not(.fx) .frame > .spider-snd { position: absolute; left: 6px; right: auto; top: auto; bottom: 6px; }
+  }
   .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border: 1px solid var(--line); padding: 8px 12px; background: var(--panel); }
   .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; letter-spacing: 1px; font-weight: bold; }
   .logo canvas { width: 32px; height: 32px; image-rendering: pixelated; background: #1d1430; border: 1px solid var(--pink); }
