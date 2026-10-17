@@ -1230,36 +1230,38 @@
     if (st.mode === 'title' && (dir === 'left' || dir === 'right')) { st.sel = (st.sel + (dir === 'left' ? 2 : 1)) % 3; SFX.select(); }
     else if (st.mode === 'over' && dir === 'down') { st.mode = 'title'; st.t = 0; }
   }
+  /* keyboard: Z = A (jump / confirm), X = B (select / pause), A = SKILL, S = FIRE, arrows move, DOWN crouches.
+     Space / Up / Enter also jump-confirm; P / Esc also pause; M toggles sound. No WASD aliases. */
+  function keyOf(e) { return e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key; }
   cv.addEventListener('keydown', function (e) {
-    var k = e.key;
+    var k = keyOf(e);
     if (st.mode === 'paused') {
-      if (k === 'ArrowUp' || k === 'w' || k === 'ArrowDown' || k === 's') { e.preventDefault(); dpad(k === 'ArrowUp' || k === 'w' ? 'up' : 'down'); return; }
+      if (k === 'ArrowUp' || k === 'ArrowDown') { e.preventDefault(); dpad(k === 'ArrowUp' ? 'up' : 'down'); return; }
       if (k === ' ' || k === 'Enter' || k === 'z') { e.preventDefault(); if (!e.repeat) pauseChoose(); return; }
       if (k === 'Escape' || k === 'x' || k === 'p') { st.mode = 'play'; return; }
     }
-    if (k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'Enter' || k === 'z') {
+    if (k === ' ' || k === 'ArrowUp' || k === 'Enter' || k === 'z') {
       e.preventDefault(); if (!e.repeat) onAction();
-    } else if (st.mode === 'play' && (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowDown' || k === 'a' || k === 'd' || k === 's')) {
+    } else if (st.mode === 'play' && (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowDown')) {
       e.preventDefault();
-      if (k === 'ArrowDown' || k === 's') { if (!e.repeat) downPressed = true; downHeld = true; }
-      else if (k === 'ArrowLeft' || k === 'a') leftHeld = true; else rightHeld = true;
-    } else if (st.mode === 'play' && (k === 'c' || k === 'Shift' || k === 'k')) { e.preventDefault(); if (!e.repeat) skill(); }
-    else if (st.mode === 'play' && (k === 'f' || k === 'x' || k === 'j')) { e.preventDefault(); fireHeld = true; if (!e.repeat) fire(); }
+      if (k === 'ArrowDown') { if (!e.repeat) downPressed = true; downHeld = true; }
+      else if (k === 'ArrowLeft') leftHeld = true; else rightHeld = true;
+    } else if (st.mode === 'play' && k === 'a') { e.preventDefault(); if (!e.repeat) skill(); }
+    else if (st.mode === 'play' && k === 's') { e.preventDefault(); fireHeld = true; if (!e.repeat) fire(); }
     else if (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowDown') {
       e.preventDefault(); dpad(k === 'ArrowLeft' ? 'left' : k === 'ArrowRight' ? 'right' : 'down');
     } else if (st.mode === 'title' && '123'.indexOf(k) >= 0) { st.sel = +k - 1; SFX.select(); }
-    else if (k === 'Escape') { if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } else if (st.mode !== 'title') { st.mode = 'title'; st.t = 0; } }
-    else if (k === 'x' || k === 'p') bButton();
-    else if (k === 'f' && st.mode !== 'play') { }
+    else if (k === 'Escape' || k === 'p') { if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } else if (k === 'Escape') { if (st.mode !== 'title') { st.mode = 'title'; st.t = 0; } } else bButton(); }
+    else if (k === 'x') { e.preventDefault(); if (!e.repeat) bButton(); }
     else if (k === 'm') toggleMute();
   });
   cv.addEventListener('keyup', function (e) {
-    var k = e.key;
-    if (k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'Enter' || k === 'z') release();
-    if (k === 'ArrowDown' || k === 's') downHeld = false;
-    if (k === 'ArrowLeft' || k === 'a') leftHeld = false;
-    if (k === 'ArrowRight' || k === 'd') rightHeld = false;
-    if (k === 'f' || k === 'x' || k === 'j') fireHeld = false;
+    var k = keyOf(e);
+    if (k === ' ' || k === 'ArrowUp' || k === 'Enter' || k === 'z') release();
+    if (k === 'ArrowDown') downHeld = false;
+    if (k === 'ArrowLeft') leftHeld = false;
+    if (k === 'ArrowRight') rightHeld = false;
+    if (k === 's') fireHeld = false;
   });
   window.addEventListener('blur', function () { downHeld = leftHeld = rightHeld = fireHeld = holding = false; swDown = false; });
   /* touch: swipe down on the screen = down action */
@@ -1466,7 +1468,7 @@
       else { pwItem(x + 10, 50 + Math.floor(R() * 60)); shardRow(x + 30, 60 + Math.floor(R() * 40), 4, 10); }
       G.gap = 130;
     } else if (name === 'arena') {
-      tip('gun', 'SHOOT!  F / FIRE');
+      tip('gun', 'SHOOT!  S / FIRE');
       var fl = mode === 'run' ? [GY - 34, GY - 52, GY] : [50, 80, 110];
       for (i = 0; i < 5; i++) {
         var ey = fl[i % 3], walker = mode === 'run' && ey === GY;
@@ -1924,7 +1926,7 @@
     if (G.id === 'C0') {
       if (G.slowT > 0) return { fill: G.slowT / 150, label: 'OVERCLOCK!!', active: true };
       if (G.slowCd > 0) return { fill: 1 - G.slowCd / 600, label: 'OVERCLOCK ' + Math.ceil(G.slowCd / 60) + 'S' };
-      return { fill: 1, label: 'C: OVERCLOCK', ready: true };
+      return { fill: 1, label: 'A: OVERCLOCK', ready: true };
     }
     if (G.id === 'X0') {
       if (G.shield) return { fill: 1, label: 'SHIELD READY', ready: true };
@@ -1955,7 +1957,7 @@
     else if (G.id === 'X0') lines.push(['MINI MAGNET', d.color]);
     var hk = BIOMES[G.biome].sub && MHINT[BIOMES[G.biome].sub] ? BIOMES[G.biome].sub : mode;
     if (MHINT[hk]) lines.push([MHINT[hk], '#ffffff']);
-    if (GUN[BIOMES[G.biome].key]) lines.push(['GUN: F / FIRE', '#ffb84f']);
+    if (GUN[BIOMES[G.biome].key]) lines.push(['GUN: S / FIRE', '#ffb84f']);
     if (G.frame - (G.hintF || 0) > 600) lines = lines.slice(-1); /* after 10s only the most useful line stays */
     if (lines.length) {
       var lw = 0; lines.forEach(function (l) { lw = Math.max(lw, PX.textWidth(l[0])); });
@@ -2370,7 +2372,7 @@
     });
     var d = PX.CHARS[PX.ORDER[st.sel]];
     drawCN(d.cn + ' · ' + d.perk, W / 2, 125, 6, '#ffffff', 'center', '#000');
-    var hint = Math.floor(t / 120) % 2 ? '< > OR B: CHOOSE   A: START' : 'CLICK / SPACE TO START';
+    var hint = Math.floor(t / 120) % 2 ? '< > OR X: CHOOSE   Z: START' : 'CLICK / Z / SPACE TO START';
     if (Math.floor(t / 30) % 4 !== 3) PX.text(g, hint, W / 2 - PX.textWidth(hint) / 2, 148, '#ffd45e', '#3a1a40');
   }
 

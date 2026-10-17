@@ -123,7 +123,7 @@
         c: '#ffd6e8', C: '#eaa6c4', k: '#ffffff', a: '#ff5a9e', A: '#c0306a', l: '#ffffff', n: '#e2d0e4', b: '#b8487e', B: '#ff8ab8', t: '#fbeef5', T: '#d2a8c6', r: '#ff6fa6' }
     },
     C0: {
-      cat: false, headset: true, body: 'hoodie', label: 'C0', cn: '程序 C0', perk: '超频：按 C 慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
+      cat: false, headset: true, body: 'hoodie', label: 'C0', cn: '程序 C0', perk: '超频：按 A 慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
       pal: { o: '#08060c', h: '#2e2534', H: '#1a141e', L: '#5a4a6e', s: '#f3d2c4', S: '#deb0a4', E: '#241c2c', w: '#ffffff', p: '#f4a0a8', m: '#9c4a5a',
         c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#1c1824', n: '#110e16', b: '#4fe3ff', B: '#ffffff', r: '#4fe3ff' }
     },
