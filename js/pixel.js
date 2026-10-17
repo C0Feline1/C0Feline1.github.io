@@ -361,13 +361,6 @@
   };
 
   /* ---------- enemies & props ---------- */
-  var WOLF = {
-    top: ['..............o.o.', '.............owowo', 'o...ooooooooowwwwo', 'wo.owwwwwwwwwwwewo', '.owwwwwwwwwwwwwwwo',
-      '..owwwwgwwwwwwwwo.', '..ogwwgggwwwwwwo..', '..oggggggggggggo..'],
-    a: ['..owo.owo..owo.owo', '.owo...owo.owo..ow', '.oo....oo..oo...oo'],
-    b: ['...owowo....owowo.', '...owowo....owowo.', '...oo.oo....oo.oo.']
-  };
-  var WOLF_PAL = { o: '#24304f', w: '#e8f0ff', g: '#9fb0d0', e: '#ff4060' };
   var BEETLE = {
     top: ['....oooooo....', '...obbhhbbo...', '..obbhbbbbbo..', '.obbbbBbbbbboo', '.oBbbbBbbbBboe', '.oBBBBBBBBBBoo', '..oooooooooo..'],
     a: ['..o.o..o..o.o.', '.o..o.o..o.o..'], b: ['...o.o..o.o...', '...o..o..o.o..']
@@ -375,10 +368,6 @@
   var BEETLE_PAL = { o: '#1d2a44', b: '#6fd3ff', B: '#3a8fc4', h: '#e6fbff', e: '#ffe14d' };
   var CONE = ['...oo...', '..oaAo..', '..owwo..', '.oaaaAo.', '.owwwwo.', '.oaaaaAo', 'oaaaaaAo', 'oooooooo'];
   var CONE_PAL = { o: '#3a1a10', a: '#ff7a2a', A: '#c24e18', w: '#fff4e8' };
-  var BIRD = {
-    a: ['oo........', '.ooo..oo..', '..oooooooo', '.oeooooo..', 'yo........'],
-    b: ['..........', '..........', 'o.oooooooo', 'oeoooooo..', 'yooooo....']
-  };
   /* enemies v2: painted on a grid with auto outline (see session notes) */
   var WOLF2 = [['ooo..........owowo....', 'Twwo.........oWwWwo...', 'Twwwo........owwwwo...', 'owwwwoooooooowwwwewo.o', '.owwwwLLLLLLLwwwwwwwon', '..oowwwwwwwwwwwwwwmWWo', '...owwwwwwwwwwwwWWWoo.', '...owwWWWWWWWWwoooo...', '....owWWWWWWWwo.......', '....oWogooogoWo.......', '...oWoogo.ogooWo......', '..ofo..ofofo..ofo.....', '...o....o.o....o......'], ['ooo..........owowo....', 'Twwo.........oWwWwo...', 'Twwwo........owwwwo...', 'owwwwoooooooowwwwewo.o', '.owwwwLLLLLLLwwwwwwwon', '..oowwwwwwwwwwwwwwmWWo', '...owwwwwwwwwwwwWWWoo.', '...owwWWWWWWWWwoooo...', '....owWWWWWWWwo.......', '.....oWogooWogo.......', '.....oWogooWogo.......', '.....ofofoofofo.......', '......o.o..o.o........']];
   var FOX2 = [['oooo.........owowo....', 'TTwwo........oWwWwo...', 'Twwwwo.......owwwwo...', 'Twwwwwooooooowwwwewo.o', 'owwwwwLLLLLLLwwwwwwwon', '.owwwwwwwwwwwwwwwwmkko', '..oowwwwwwwwwwwwkkWoo.', '...owwWWWWWWWkkoooo...', '....owWWWWWWWwo.......', '....oWogooogoWo.......', '...oWoogo.ogooWo......', '..ofo..ofofo..ofo.....', '...o....o.o....o......'], ['oooo.........owowo....', 'TTwwo........oWwWwo...', 'Twwwwo.......owwwwo...', 'Twwwwwooooooowwwwewo.o', 'owwwwwLLLLLLLwwwwwwwon', '.owwwwwwwwwwwwwwwwmkko', '..oowwwwwwwwwwwwkkWoo.', '...owwWWWWWWWkkoooo...', '....owWWWWWWWwo.......', '.....oWogooWogo.......', '.....oWogooWogo.......', '.....ofofoofofo.......', '......o.o..o.o........']];
@@ -394,7 +383,6 @@
     P.fox = FOX2.map(function (r) { return PX.flip(PX.fromRows(r, FOX2_PAL)); });
     P.beetle = [PX.fromRows(BEETLE.top.concat(BEETLE.a), BEETLE_PAL), PX.fromRows(BEETLE.top.concat(BEETLE.b), BEETLE_PAL)].map(PX.flip);
     P.cone = PX.fromRows(CONE, CONE_PAL);
-    var birdPal = { o: '#1b1430', e: '#ff4f7a', y: '#ffb84f' }, batPal = { o: '#d8ecff', e: '#2a5fd8', y: '#7fb8ff' };
     P.crow = CROW2.map(function (r) { return PX.fromRows(r, CROW2_PAL); });
     P.bat = BAT2.map(function (r) { return PX.fromRows(r, BAT2_PAL); });
     P.box = (function () {

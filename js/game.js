@@ -775,7 +775,7 @@
   var caneCoral = spikePal(4, 22, ['#8a1a2a', '#ffffff', '#ff4f6a', '#ffd0d8'], 241);
   var icing = spikePal(4, 18, ['#c87aa0', '#fff0f6', '#ffd0e8', '#ffb0d0'], 251).map(vflip);
   var asteroid = (function () {
-    var c = PX.make(22, 22), x = c.getContext('2d'), r = PX.rng(7);
+    var c = PX.make(22, 22), x = c.getContext('2d');
     for (var yy = 0; yy < 22; yy++) for (var xx = 0; xx < 22; xx++) {
       var dx = xx - 10.5, dy = yy - 10.5, a = Math.atan2(dy, dx), rr = 9 + Math.sin(a * 3) * 1.5 + Math.cos(a * 5) * 0.8, d = Math.sqrt(dx * dx + dy * dy);
       if (d < rr) { x.fillStyle = d > rr - 1.2 ? '#2a2430' : (dx + dy < -4 ? '#9a8a9a' : '#6a5a6a'); x.fillRect(xx, yy, 1, 1); }
@@ -1075,10 +1075,9 @@
     ground: { top: ['#f0d090', '#d8b070'], dirt: '#e0b878', dirt2: '#b08850', speck: '#ffffff' }, particle: 'sand'
   };
   BIOMES = [HOME, byKey.park, MARKET, XIAN, INK, SAKURA, CYBER, BIT8, STEAM, DESERT, COURT, SEA, SKYCITY, VOLCANO, SPACE, MIRROR, CANDY, HAUNT, byKey.snow, CABIN, RIDGE, CAVE, byKey.peak, LAKE];
-  var LENS = [200, 200, 180, 240, 200, 180, 240, 180, 240, 180, 220, 220, 200, 220, 220, 200, 200, 220, 180, 220, 220, 300, 200];
   var RAMP = 2600;
   function baseSpeed(d, loop) { return Math.min(4.2, 1.6 + Math.min(2.2, d / RAMP) + (loop || 0) * 0.15); }
-  (function () { var acc = 0; BIOMES.forEach(function (b, i) { var sp = baseSpeed(acc) * (b.speedMul || 1); b.len = b.roam ? 10 : Math.round(25 * 60 * sp / 8 / 10) * 10; LENS[i] = b.len; acc += b.len; }); })();
+  (function () { var acc = 0; BIOMES.forEach(function (b) { var sp = baseSpeed(acc) * (b.speedMul || 1); b.len = b.roam ? 10 : Math.round(25 * 60 * sp / 8 / 10) * 10; acc += b.len; }); })();
   if (window.SND) SND.setWorlds(BIOMES.map(function (b) { return b.key; }));
   BIOMES.forEach(function (b) { byKey[b.key] = b; });
   /* A3: a third parallax layer (between far and mid, scroll 0.3) for four worlds that looked flat */
@@ -1173,16 +1172,16 @@
     return true;
   }
   function plan(loop) { while (PLANS.length <= loop) PLANS.push(makePlan(PLANS.length)); return PLANS[loop]; }
-  function slotEnd(loop, slot) { var P = plan(loop); return loop * CYCLE + P.starts[slot] + BIOMES[P.order[slot]].len; }
+  function slotEnd(loop, slot) { var PL = plan(loop); return loop * CYCLE + PL.starts[slot] + BIOMES[PL.order[slot]].len; }
   function biomeAt(d) {
-    var loop = Math.floor(d / CYCLE), p = d - loop * CYCLE, P = plan(loop);
-    for (var s = 0; s < P.order.length; s++) { var L = BIOMES[P.order[s]].len; if (p < L) return [loop, s, P.order[s]]; p -= L; }
-    return [loop, P.order.length - 1, P.order[P.order.length - 1]];
+    var loop = Math.floor(d / CYCLE), p = d - loop * CYCLE, PL = plan(loop);
+    for (var s = 0; s < PL.order.length; s++) { var L = BIOMES[PL.order[s]].len; if (p < L) return [loop, s, PL.order[s]]; p -= L; }
+    return [loop, PL.order.length - 1, PL.order[PL.order.length - 1]];
   }
   function cp(G, key) { G.cps.push([Math.floor(G.dist), G.frame, key, G.shards]); }
   function armHouse(G) {
-    var P = plan(G.loop), th = P.houses[G.slot];
-    G.houseAt = th ? { theme: th, at: G.loop * CYCLE + P.starts[G.slot] + BIOMES[P.order[G.slot]].len * (0.3 + R() * 0.2) } : null;
+    var PL = plan(G.loop), th = PL.houses[G.slot];
+    G.houseAt = th ? { theme: th, at: G.loop * CYCLE + PL.starts[G.slot] + BIOMES[PL.order[G.slot]].len * (0.3 + R() * 0.2) } : null;
   }
 
   function drawBoss(alpha) {
@@ -1273,10 +1272,21 @@
   var GBP = [[15, 56, 15], [48, 98, 48], [139, 172, 15], [155, 188, 15]];
   var GBD = new Float32Array(W * H); for (var gi = 0; gi < W * H; gi++) GBD[gi] = (PX.dither(gi % W, (gi / W) | 0) - 0.5) * 0.7;
   var GBR = GBP.map(function (c) { return c[0]; }), GBG = GBP.map(function (c) { return c[1]; }), GBB = GBP.map(function (c) { return c[2]; });
+  /* P2: the full-strength case writes each pixel as one 32-bit word (RGB from the palette, alpha kept); little-endian only */
+  var GBLE = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1, GB32 = new Uint32Array(GBP.map(function (c) { return c[0] | c[1] << 8 | c[2] << 16; }));
   function gbMap(k) {
-    var im = g.getImageData(0, 0, W, H), d = im.data, n = W * H, full = k >= 0.999;
-    for (var i = 0, p = 0; i < n; i++, p += 4) {
-      var q = ((d[p] * 0.01176 + d[p + 1] * 0.02314 + d[p + 2] * 0.004314) + GBD[i]) | 0; /* = floor(luma * 4 + dither) */
+    var im = g.getImageData(0, 0, W, H), d = im.data, n = W * H, full = k >= 0.999, i, p, q;
+    if (full && GBLE) {
+      var d32 = new Uint32Array(d.buffer, d.byteOffset, n);
+      for (i = 0, p = 0; i < n; i++, p += 4) {
+        q = ((d[p] * 0.01176 + d[p + 1] * 0.02314 + d[p + 2] * 0.004314) + GBD[i]) | 0;
+        if (q < 0) q = 0; else if (q > 3) q = 3;
+        d32[i] = (d32[i] & 0xff000000) | GB32[q];
+      }
+      g.putImageData(im, 0, 0); return;
+    }
+    for (i = 0, p = 0; i < n; i++, p += 4) {
+      q = ((d[p] * 0.01176 + d[p + 1] * 0.02314 + d[p + 2] * 0.004314) + GBD[i]) | 0; /* = floor(luma * 4 + dither) */
       if (q < 0) q = 0; else if (q > 3) q = 3;
       if (full) { d[p] = GBR[q]; d[p + 1] = GBG[q]; d[p + 2] = GBB[q]; }
       else { d[p] += (GBR[q] - d[p]) * k; d[p + 1] += (GBG[q] - d[p + 1]) * k; d[p + 2] += (GBB[q] - d[p + 2]) * k; }
@@ -1370,29 +1380,17 @@
   function release() { holding = false; }
   var locked = false; /* set by the leaderboard while its name box is open: no new run can start */
   function kick() { if (!loopOn) { loopOn = true; last = performance.now(); acc = 0; requestAnimationFrame(frame); } } /* input while off-screen restarts the loop */
-  function onAction(px, py) {
+  function onAction() {
     kick();
     if (locked && st.mode !== 'play') return;
-    if (MENUS[st.mode]) { if (py !== undefined) menuTap(px, py); else menuConfirm(); return; }
+    if (MENUS[st.mode]) { menuConfirm(); return; }
     if (st.mode === 'title') {
-      if (py !== undefined && py >= 132 && py < 147) { var mi = Math.floor((px - 34) / 60); if (mi >= 0 && mi < 3 && px - 34 - mi * 60 < 54) { st.trow = 1; st.msel = mi; openMenu(mi); } return; }
-      if (py !== undefined && py > 52 && py < 128) {
-        var slot = Math.floor((px - 30) / 60);
-        if (slot >= 0 && slot < 3) { st.trow = 0; if (slot !== st.sel) { st.sel = slot; SFX.select(); return; } }
-      }
-      if (py === undefined && st.trow === 1) { openMenu(st.msel); return; }
+      if (st.trow === 1) { openMenu(st.msel); return; }
       st.pbi = -1; newGame(); return;
     }
     if (st.mode === 'over') { if (st.t > 30) newGame(); return; } /* st.pbi still set after practice: AGAIN replays that world */
-    if (st.mode === 'paused') {
-      if (py !== undefined) { var pi2 = Math.floor((py - 66) / 18); if (pi2 >= 0 && pi2 < 3) st.psel = pi2; else return; }
-      pauseChoose(); return;
-    }
+    if (st.mode === 'paused') { pauseChoose(); return; }
     press();
-  }
-  function canvasPos(e) {
-    var r = cv.getBoundingClientRect(), p = e.touches ? e.touches[0] : e;
-    return [(p.clientX - r.left) / r.width * W, (p.clientY - r.top) / r.height * H];
   }
   /* phase3C: the screen itself has no gameplay actions any more (it fought with "tap the console to start").
      A click / tap on it only focuses the game and, on the title screen, starts a run. Everything else: buttons / keys. */
@@ -1468,8 +1466,7 @@
     if (k === 'ArrowRight') rightHeld = false;
     if (k === 'a') fireHeld = false;
   });
-  window.addEventListener('blur', function () { downHeld = leftHeld = rightHeld = fireHeld = holding = false; swDown = false; });
-  var swDown = false;
+  window.addEventListener('blur', function () { downHeld = leftHeld = rightHeld = fireHeld = holding = false; });
   document.addEventListener('visibilitychange', function () { if (document.hidden && st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } });
   function toggleMute() { if (window.SND) SND.toggle(); }
 
@@ -1799,7 +1796,15 @@
     var k = Math.floor(R() * spikes.length), sp = spikes[k];
     game.obs.push({ type: 'ice', img: sp, fall: icicles[k], x: W + 4 + R() * 30, y: -2, w: sp.width, h: sp.height, vy: 1, warn: 28, hb: [2, 3, 2, 0] });
   }
-  function particle(x, y, vx, vy, life, col, size, grav) { game.parts.push({ x: x, y: y, vx: vx, vy: vy, life: life, max: life, col: col, s: size || 1, gr: grav === undefined ? 0.08 : grav }); }
+  /* P2: particles are recycled through a small free list (same fields, same order, no extra R() calls) */
+  var PPOOL = [];
+  function pAdd(ps, x, y, vx, vy, life, col, s, gr, tall) {
+    var p = PPOOL.length ? PPOOL.pop() : {};
+    p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = life; p.max = life; p.col = col; p.s = s; p.gr = gr; p.tall = tall;
+    ps.push(p);
+  }
+  function pFree(p) { if (PPOOL.length < 300) PPOOL.push(p); }
+  function particle(x, y, vx, vy, life, col, size, grav) { pAdd(game.parts, x, y, vx, vy, life, col, size || 1, grav === undefined ? 0.08 : grav, 0); }
   function burst(x, y, n, cols, spd) { for (var i = 0; i < n; i++) { var a = R() * Math.PI * 2, s = (spd || 1.6) * (0.3 + R()); particle(x, y, Math.cos(a) * s, Math.sin(a) * s - 0.6, 20 + R() * 20, cols[i % cols.length], R() < 0.3 ? 2 : 1); } }
 
   /* ================= overhaul: set pieces, platforms, wall-climb, shooting, power-ups, skills ================= */
@@ -1906,9 +1911,9 @@
       tip('valves', 'VENTS FIRE IN A ROW');
       G.gap = 2 * 46 + 130 + G.speed * 10;
     } else if (name === 'geartunnel') { /* a short pipe tunnel that bends; from lap 2 a gear waits behind it */
-      var pd = b.pipeDraw || drawPipe, gapH = Math.max(66, 80 - G.loop * 4), c0 = 54 + R() * 30;
+      var pd = b.pipeDraw || drawPipe, gapH = Math.max(66, 80 - G.loop * 4), cy0 = 54 + R() * 30;
       for (i = 0; i < 3; i++) {
-        var c = Math.round(c0 + Math.sin(i * 1.2) * 9), tb = Math.round(c - gapH / 2), bt = Math.round(c + gapH / 2);
+        var c = Math.round(cy0 + Math.sin(i * 1.2) * 9), tb = Math.round(c - gapH / 2), bt = Math.round(c + gapH / 2);
         G.obs.push({ type: 'pipe', x: x + i * 18, y: tb, w: 16, h: tb, cap: 'bottom', hb: [0, 0, 0, 0], draw: pd });
         G.obs.push({ type: 'pipe', x: x + i * 18, y: GY, w: 16, h: GY - bt, cap: 'top', hb: [0, 0, 0, 0], draw: pd });
         shardRow(x + i * 18 + 4, c - 4, 1, 0);
@@ -2000,7 +2005,7 @@
     });
   }
   function drawBar(o) {
-    var x = Math.round(o.x), y0 = Math.round(o.y - o.h);
+    var x = Math.round(o.x);
     g.fillStyle = '#100a1c'; g.fillRect(x - 1, 0, o.w + 2, Math.round(o.y) + 1);
     g.fillStyle = '#ff4f6a'; g.fillRect(x, 0, o.w, Math.round(o.y));
     g.fillStyle = '#ffd45e'; for (var yy = (G_frame() >> 1) % 8 - 8; yy < o.y; yy += 8) g.fillRect(x, Math.round(yy), o.w, 3);
@@ -2095,34 +2100,34 @@
     else burst(cx, cy, 14, ['#ffd45e', '#ffffff', '#ff4fa3'], 1.8);
   }
   function meleeTick(G) {
-    var S = G.swing; if (!S) return; S.t++;
-    var pb = pbox(), A = ATK[S.k], x0 = pb[0] + pb[2] - 4, x1 = x0 + A.reach, y0 = pb[1] - 10, y1 = pb[1] + pb[3] + 6;
-    if (S.k === 'brush' && !LOWFX && S.t < 10) { var ang = -1.2 + S.t * 0.28; G.paint = G.paint || []; G.paint.push({ x: pb[0] + 8 + Math.cos(ang) * 20, y: pb[1] + 9 + Math.sin(ang) * 16, c: PAINT[S.t % 4], l: 24 }); }
-    if (S.t <= 7) {
+    var sw = G.swing; if (!sw) return; sw.t++;
+    var pb = pbox(), A = ATK[sw.k], x0 = pb[0] + pb[2] - 4, x1 = x0 + A.reach, y0 = pb[1] - 10, y1 = pb[1] + pb[3] + 6;
+    if (sw.k === 'brush' && !LOWFX && sw.t < 10) { var ang = -1.2 + sw.t * 0.28; G.paint = G.paint || []; G.paint.push({ x: pb[0] + 8 + Math.cos(ang) * 20, y: pb[1] + 9 + Math.sin(ang) * 16, c: PAINT[sw.t % 4], l: 24 }); }
+    if (sw.t <= 7) {
       for (var j = G.obs.length - 1; j >= 0; j--) {
         var o = G.obs[j]; if (o.x > x1 || o.x + o.w < x0 || o.y - o.h > y1 || o.y < y0) continue;
         if (o.type === 'plate') { G.obs.splice(j, 1); G.shots.push({ k: 'plate', x: o.x + 4, y: o.y - 2, vx: 5.5, life: 70, dmg: 2 }); SFX.shield(); burst(o.x, o.y - 2, 8, ['#ffffff', '#c8b8ff'], 1.4); popText('SWAT!', '#c8b8ff'); continue; }
-        if (canHit(o)) killObs(G, j, S.k);
+        if (canHit(o)) killObs(G, j, sw.k);
       }
     }
-    if (S.t > 12) G.swing = null;
+    if (sw.t > 12) G.swing = null;
   }
   function drawSwing(G) {
     if (G.paint) G.paint = G.paint.filter(function (p) { p.x -= G.speed * 0.6; p.l--; if (p.l > 0) { g.globalAlpha = Math.min(1, p.l / 12); g.fillStyle = p.c; g.fillRect(Math.round(p.x), Math.round(p.y), 3, 2); g.globalAlpha = 1; } return p.l > 0; });
-    var S = G.swing; if (!S || S.t > 9) return;
+    var sw = G.swing; if (!sw || sw.t > 9) return;
     var pb = pbox(), cx = pb[0] + 8, cy = pb[1] + 9, fl = G.gdir < 0 ? -1 : 1, i, a;
-    if (S.k === 'claw') {
-      g.globalAlpha = 1 - S.t / 10;
-      var pr = Math.min(1, (S.t + 1) / 4), pass; /* three bold claw marks: dark outline first, then white with a pink tip */
+    if (sw.k === 'claw') {
+      g.globalAlpha = 1 - sw.t / 10;
+      var pr = Math.min(1, (sw.t + 1) / 4), pass; /* three bold claw marks: dark outline first, then white with a pink tip */
       for (pass = 0; pass < 2; pass++) for (i = 0; i < 3; i++) for (a = 0; a <= 10; a++) { var u = a / 10; if (u > pr) break;
         var X = Math.round(cx + 9 + i * 6 + Math.sin(u * Math.PI) * 7), Y = Math.round(cy + fl * (-15 + u * 28));
         if (pass === 0) { g.fillStyle = '#1a0f30'; g.fillRect(X - 1, Y - 1, 4, 4); } else { g.fillStyle = u > pr - 0.25 ? '#ff6fa6' : '#ffffff'; g.fillRect(X, Y, 2, 2); } }
       g.globalAlpha = 1;
-    } else if (S.k === 'brush') {
-      var na = Math.min(14, (S.t + 2) * 2); /* a thick painted arc: outline, then colour */
+    } else if (sw.k === 'brush') {
+      var na = Math.min(14, (sw.t + 2) * 2); /* a thick painted arc: outline, then colour */
       for (a = 0; a <= na; a++) { var an = -1.25 + a * 0.18; g.fillStyle = '#1a0f30'; g.fillRect(Math.round(cx + Math.cos(an) * 23) - 1, Math.round(cy + fl * Math.sin(an) * 18) - 1, 7, 6); }
       for (a = 0; a <= na; a++) { var an2 = -1.25 + a * 0.18; g.fillStyle = PAINT[Math.floor(a / 2) % 4]; g.fillRect(Math.round(cx + Math.cos(an2) * 23), Math.round(cy + fl * Math.sin(an2) * 18), 5, 4); }
-      var en = -1.2 + Math.min(9, S.t + 2) * 0.28; g.fillStyle = '#7a4a28'; g.fillRect(Math.round(cx + Math.cos(en) * 14), Math.round(cy + fl * Math.sin(en) * 11), 3, 3); /* the brush handle */
+      var en = -1.2 + Math.min(9, sw.t + 2) * 0.28; g.fillStyle = '#7a4a28'; g.fillRect(Math.round(cx + Math.cos(en) * 14), Math.round(cy + fl * Math.sin(en) * 11), 3, 3); /* the brush handle */
     }
   }
   function updateShots(G) {
@@ -2644,9 +2649,9 @@
     delete PHOTOS[th]; toast(G, 'PHOTO UNLOCKED!  (TITLE > ALBUM)', '#ff9fc4'); SFX.power();
   }
   function nearToy(Rm) {
-    var best = null, bd = 1e9;
-    Rm.toys.forEach(function (t) { if (!t.d.use) return; var c = t.x + t.w / 2, d = Math.abs(Rm.px + 8 - c); if (d < t.w / 2 + 8 && d < bd) { bd = d; best = t; } });
-    return best;
+    var near = null, bd = 1e9;
+    Rm.toys.forEach(function (t) { if (!t.d.use) return; var c = t.x + t.w / 2, d = Math.abs(Rm.px + 8 - c); if (d < t.w / 2 + 8 && d < bd) { bd = d; near = t; } });
+    return near;
   }
   function houseToys(G, Rm, use) {
     Rm.toys.forEach(function (t) { if (t.d.step) t.d.step(t, G, Rm, Math.abs(Rm.px + 8 - (t.x + t.w / 2)) < t.w / 2 + 4, G.frame); });
@@ -2847,8 +2852,14 @@
     drawPowers(G);
     if (G.mb && mode !== 'roam') drawMBBar(G, G.mb);
     hudPanel(3, 3, 64, 24);
-    PX.text(g, String(score()).padStart(5, '0'), 6, 6, '#ffffff', '#1a0f30', 2);
-    PX.text(g, 'HI ' + String(best).padStart(5, '0'), 6, 19, '#ffd45e', '#1a0f30');
+    if (G.practice) { /* practice runs are not scored: the counter shows the difficulty level instead */
+      var pmax = G.practice.lv >= PR_MAX;
+      PX.text(g, pmax ? 'LV MAX' : 'LV ' + G.practice.lv, 6, 6, pmax ? '#ff6f8a' : '#7fe0ff', '#1a0f30', 2);
+      PX.text(g, 'PRACTICE', 6, 19, '#ffd45e', '#1a0f30');
+    } else {
+      PX.text(g, String(score()).padStart(5, '0'), 6, 6, '#ffffff', '#1a0f30', 2);
+      PX.text(g, 'HI ' + String(best).padStart(5, '0'), 6, 19, '#ffd45e', '#1a0f30');
+    }
     hudPanel(W - 48, 3, 45, 32);
     g.drawImage(P.shard[0], W - 45, 5);
     PX.text(g, 'X' + G.shards, W - 33, 7, '#ffffff', '#1a0f30');
@@ -2858,7 +2869,7 @@
        the boss and the party room; below it the slot number and lap */
     var PL = plan(G.loop), n = PL.order.length, dx = Math.round(W / 2 - n * 2), ft = st.t;
     if (G.practice) { /* practice HUD: difficulty level + progress to the next one */
-      var PR = G.practice, plb = 'PRACTICE  LV ' + PR.lv + (PR.lv >= PR_MAX ? ' MAX' : ''), pw0 = PX.textWidth(plb), pfr = PR.lv >= PR_MAX ? 1 : (PR.t % PR_STEP) / PR_STEP;
+      var PR = G.practice, plb = PR.lv >= PR_MAX ? 'MAX LEVEL' : 'NEXT LV ' + (PR.lv + 1), pw0 = PX.textWidth(plb), pfr = PR.lv >= PR_MAX ? 1 : (PR.t % PR_STEP) / PR_STEP;
       hudPanel(W / 2 - pw0 / 2 - 4, 3, pw0 + 8, 13); PX.text(g, plb, W / 2 - pw0 / 2, 5, PR.lv >= PR_MAX ? '#ff6f8a' : '#7fe0ff', '#1a0f30');
       g.fillStyle = '#05030a'; g.fillRect(W / 2 - pw0 / 2, 12, pw0, 2); g.fillStyle = PR.lv >= PR_MAX ? '#ff4f6a' : '#ffd45e'; g.fillRect(W / 2 - pw0 / 2, 12, Math.round(pw0 * pfr), 2);
     }
@@ -2905,11 +2916,6 @@
       }
     }
     if (s.ready) { var sh = (st.t * 1.5) % (segs * 6 + 30); if (sh < segs * 6) { g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(bx + sh, by, 2, 5); } }
-  }
-  function skillLabel(G, mode) {
-    if (G.id === 'C0') return G.slowT > 0 ? 'OVERCLOCK!' : (G.slowCd > 0 ? 'OVERCLOCK ' + Math.ceil(G.slowCd / 60) + 'S' : 'OVERCLOCK READY');
-    if (G.id === 'X0') return G.shield ? 'SHIELD ON + MAGNET' : 'SHIELD ' + Math.max(0, Math.ceil(150 - (G.dist - G.shieldAt))) + 'M';
-    return { run: 'DOUBLE JUMP', fly: 'NIMBLE: SMALL HITBOX', flip: 'AIR FLIP', jet: 'FEATHER FALL', swim: 'STRONG PAW' }[mode];
   }
   function pbox() {
     var G = game, sm = G.id === 'Feline1' && (BIOMES[G.biome].mode || 'run') !== 'run';
@@ -3078,8 +3084,8 @@
 
     var gk = G.loop + ':' + G.slot, tb0 = toBoundary();
     if (G.gateFor !== gk && !G.practice && !G.climb && tb0 <= (W + 12 - G.x) / 8 && tb0 > 0) {
-      G.gateFor = gk; var nx = nextSlot(G);
-      G.obs.push({ type: 'gate', gate: 1, safe: true, x: G.x + tb0 * 8 - 13, y: GY, w: 42, h: 70, bi: nx.bi, style: gateStyle(BIOMES[nx.bi]), draw: drawGate });
+      G.gateFor = gk; var nsl = nextSlot(G);
+      G.obs.push({ type: 'gate', gate: 1, safe: true, x: G.x + tb0 * 8 - 13, y: GY, w: 42, h: 70, bi: nsl.bi, style: gateStyle(BIOMES[nsl.bi]), draw: drawGate });
     }
     var ba = biomeAt(G.dist), nb = ba[2];
     if ((ba[1] !== G.slot || ba[0] !== G.loop) && !pitNear(G)) {
@@ -3204,10 +3210,10 @@
     if (b.particle === 'petal' && R() < 0.12) particle(W + 2, R() * 100, -0.8 - R(), 0.2 + R() * 0.3, 400, R() < 0.5 ? '#ffb3cf' : '#ffd6e6', 1, 0);
     if (b.particle === 'sand' && R() < 0.5) particle(W + 2, 40 + R() * (GY - 40), -3 - R() * 2 - G.speed, (R() - 0.5) * 0.3, 80, R() < 0.5 ? 'rgba(255,220,160,.7)' : 'rgba(230,180,120,.6)', 1, 0);
     if (b.particle === 'ash' && R() < 0.35) particle(R() * W * 1.2, GY, -G.speed * 0.4 - R() * 0.5, -0.6 - R() * 0.8, 120, R() < 0.6 ? '#ff7a2a' : '#5a4a4a', 1, -0.002);
-    if (b.particle === 'star') for (var sx2 = 0; sx2 < 2; sx2++) G.parts.push({ x: W + 2, y: R() * H, vx: -4 - R() * 4 - G.speed, vy: 0, life: 70, max: 70, col: 'rgba(255,255,255,.7)', s: 3, gr: 0, tall: 1 });
+    if (b.particle === 'star') for (var sx2 = 0; sx2 < 2; sx2++) pAdd(G.parts, W + 2, R() * H, -4 - R() * 4 - G.speed, 0, 70, 'rgba(255,255,255,.7)', 3, 0, 1);
     if (b.particle === 'sprinkle' && R() < 0.25) particle(R() * W * 1.3, -2, -0.5, 0.5 + R() * 0.4, 300, ['#ff6fa6', '#5ad0ff', '#ffd45e', '#5dff8f', '#ffffff'][Math.floor(R() * 5)], 1, 0);
     if (b.particle === 'gold' && R() < 0.15) particle(R() * W * 1.2, -2, -0.7, 0.3 + R() * 0.3, 400, R() < 0.5 ? '#ffe8a0' : '#ffffff', 1, 0);
-    if (b.particle === 'rain') for (var rn = 0; rn < 3; rn++) G.parts.push({ x: R() * W * 1.4, y: -4, vx: -1.5 - G.speed * 0.5, vy: 5, life: 40, max: 40, col: R() < 0.7 ? 'rgba(140,200,255,.55)' : 'rgba(255,120,220,.5)', s: 1, gr: 0, tall: 3 });
+    if (b.particle === 'rain') for (var rn = 0; rn < 3; rn++) pAdd(G.parts, R() * W * 1.4, -4, -1.5 - G.speed * 0.5, 5, 40, R() < 0.7 ? 'rgba(140,200,255,.55)' : 'rgba(255,120,220,.5)', 1, 0, 3);
     if (b.particle === 'steam' && R() < 0.12) particle(R() * W, GY - R() * 10, -G.speed * 0.45, -0.3 - R() * 0.3, 90, 'rgba(240,230,215,.35)', 3, -0.002);
     if (b.particle === 'bubble' && R() < 0.15) particle(R() * W, H, -G.speed * 0.3, -0.5 - R() * 0.6, 260, 'rgba(200,240,255,.6)', R() < 0.3 ? 2 : 1, 0);
     if (mode === 'swim' && G.frame % 45 === 0) particle(G.x + 14, G.y - 18, 0.3, -0.7, 80, 'rgba(220,250,255,.8)', 1, 0);
@@ -3216,12 +3222,13 @@
     updateParts();
   }
   function updateParts() {
-    var ps = game.parts;
-    for (var i = ps.length - 1; i >= 0; i--) {
+    var ps = game.parts, n = ps.length, k = 0, i;
+    for (i = 0; i < n; i++) { /* in-place compaction keeps the draw order, without splice() per dead particle */
       var p = ps[i]; p.x += p.vx; p.y += p.vy; p.vy += p.gr; p.life--;
-      if (p.life <= 0 || p.y > H + 4 || p.x < -6) ps.splice(i, 1);
+      if (p.life <= 0 || p.y > H + 4 || p.x < -6) pFree(p); else ps[k++] = p;
     }
-    var cap = LOWFX ? 110 : 240; if (ps.length > cap) ps.splice(0, ps.length - cap);
+    ps.length = k;
+    var cap = LOWFX ? 110 : 240; if (k > cap) { for (i = 0; i < k - cap; i++) pFree(ps[i]); ps.splice(0, k - cap); }
   }
   function score() { return Math.floor(game.dist) + game.shards * 25; }
   /* G7: per-world challenges, judged when the world is left */
@@ -3247,7 +3254,7 @@
   /* phase3C: the oasis is optional too. Approaching its gate (last 48 m of the world before) or inside its short 10 m stretch,
      press Y to enter; otherwise the run just passes through. Either way the world order and the checkpoint log stay the same
      (the 'court' world entry is always logged; the free-roam part simply happens or not). */
-  function nextIsRoam(G) { var P = plan(G.loop), k = P.order[G.slot + 1]; return k != null && !!BIOMES[k].roam; }
+  function nextIsRoam(G) { var PL = plan(G.loop), k = PL.order[G.slot + 1]; return k != null && !!BIOMES[k].roam; }
   function restTick(G) {
     if (G.practice) return false;
     var b = BIOMES[G.biome];
@@ -3298,7 +3305,7 @@
     } catch (e) { x.fillStyle = '#2a1648'; x.fillRect(0, 0, tw, th); }
     return (THUMBS[k] = c);
   }
-  function nextSlot(G) { var P = plan(G.loop); return G.slot + 1 < P.order.length ? { bi: P.order[G.slot + 1], loop: G.loop } : { bi: plan(G.loop + 1).order[0], loop: G.loop + 1 }; }
+  function nextSlot(G) { var PL = plan(G.loop); return G.slot + 1 < PL.order.length ? { bi: PL.order[G.slot + 1], loop: G.loop } : { bi: plan(G.loop + 1).order[0], loop: G.loop + 1 }; }
   /* A4: a themed gate stands exactly on every world boundary */
   function gateStyle(b) { var m = b.mode || 'run'; return b.roam ? 'oasis' : m === 'flip' ? 'neon' : (m === 'swim' || m === 'fly' || m === 'jet') ? 'ring' : 'arch'; }
   function drawGate(o) {
@@ -3436,12 +3443,6 @@
     SFX.select();
   }
   function menuConfirm() { if (st.mode === 'practice') { var pb0 = PRACTICE_LIST[st.pcur]; if (!SEEN[BIOMES[pb0].key]) { popMenuMsg('LOCKED: REACH IT IN A RUN FIRST'); beep(160, 0.12, 'square', 0.04); return; } st.pbi = pb0; newGame(); } else if (st.mode === 'album') { st.zoom = !st.zoom; SFX.select(); } }
-  function menuTap(px, py) {
-    if (py < 16) { menuBack(); return; }
-    if (st.mode === 'album') { if (st.zoom) { st.zoom = false; return; } var c = Math.floor((px - 9) / 76), r = Math.floor((py - 22) / 62); if (c >= 0 && c < 3 && r >= 0 && r < 2) { var k = r * 3 + c; if (k === st.acur) menuConfirm(); else { st.acur = k; SFX.select(); } } return; }
-    var cc = Math.floor((px - 6) / 38), rr0 = Math.floor((py - 20) / 29);
-    if (cc >= 0 && cc < 6 && rr0 >= 0 && rr0 < 4) { var q = rr0 * 6 + cc; if (q < PRACTICE_LIST.length) { if (q === st.pcur && st.mode === 'practice') menuConfirm(); else { st.pcur = q; SFX.select(); } } }
-  }
   function menuBg() {
     var t = st.t, tb = BIOMES[Math.floor(t / 600) % BIOMES.length];
     drawBiome(tb, t * 0.3, 1); g.fillStyle = 'rgba(10,6,30,.78)'; g.fillRect(0, 0, W, H);
@@ -3572,7 +3573,7 @@
     });
     drawShots(G);
 
-    var mode = b.mode || 'run', dl = Math.round(20 / G.speed), dl2 = Math.round(38 / G.speed), others = PX.ORDER.filter(function (x) { return x !== G.id; });
+    var dl = Math.round(20 / G.speed), dl2 = Math.round(38 / G.speed), others = PX.ORDER.filter(function (x) { return x !== G.id; });
     if (st.mode === 'play') {
       [[others[1], 38, dl2], [others[0], 20, dl]].forEach(function (c, ci) {
         if (G.climb) { var ct = G.climb.trail, tr = ct[16 - ci * 8] || ct[ct.length - 1] || [G.x, 0]; drawRider(c[0], tr[0], GY - tr[1], G.frame + c[1], mode, 1, tr[1] > 0, false, 0); return; }
@@ -3762,6 +3763,6 @@
   }
   requestAnimationFrame(frame);
   window.KittyRunner = { lock: function (v) { locked = !!v; }, version: GAME_VERSION, lowfx: function (v) { if (v !== undefined) setLowFx(v); return LOWFX; },
-    meta: function () { var rm = {}; Object.keys(ROOMS).forEach(function (k) { rm[k] = roomMax(k); }); return { v: GAME_VERSION, keys: BIOMES.map(function (b) { return b.key; }), lens: BIOMES.map(function (b) { return b.len; }), speedMul: BIOMES.map(function (b) { return b.speedMul || 1; }), modes: BIOMES.map(function (b) { return b.mode || 'run'; }), boss: BIOMES.filter(function (b) { return b.boss; }).map(function (b) { return b.key; }), houseTheme: HOUSE_THEME, loop1Houses: Object.keys(LOOP1_HOUSES), roomMax: rm, courtMax: COURT_MAX, roomMaxF: ROOM_MAX_F, climbMaxF: CLIMB_MAX_F, climbMax: [0, 1, 2].map(function (l) { return shaftLayout(l).coins.length * 2 + 3; }), cycle: CYCLE }; }, lens: LENS, action: function () { onAction(); }, release: release, b: bButton, dpad: dpad, state: st, best: function () { return best; },
-    skill: function () { if (st.mode === 'play') skill(); }, y: yPress, plus: plusPress, bPress: bPress, hold: function (d, on) { if (d === 'down') downHeld = !!on; else if (d === 'left') leftHeld = !!on; else if (d === 'right') rightHeld = !!on; }, fire: function (on) { fireHeld = !!on; if (on && st.mode === 'play') fire(); }, biomes: BIOMES.map(function (b) { return b.key; }) };
+    meta: function () { var rm = {}; Object.keys(ROOMS).forEach(function (k) { rm[k] = roomMax(k); }); return { v: GAME_VERSION, keys: BIOMES.map(function (b) { return b.key; }), lens: BIOMES.map(function (b) { return b.len; }), speedMul: BIOMES.map(function (b) { return b.speedMul || 1; }), modes: BIOMES.map(function (b) { return b.mode || 'run'; }), boss: BIOMES.filter(function (b) { return b.boss; }).map(function (b) { return b.key; }), houseTheme: HOUSE_THEME, loop1Houses: Object.keys(LOOP1_HOUSES), roomMax: rm, courtMax: COURT_MAX, roomMaxF: ROOM_MAX_F, climbMaxF: CLIMB_MAX_F, climbMax: [0, 1, 2].map(function (l) { return shaftLayout(l).coins.length * 2 + 3; }), cycle: CYCLE }; }, action: function () { onAction(); }, release: release, b: bButton, dpad: dpad, state: st, best: function () { return best; },
+    skill: function () { if (st.mode === 'play') skill(); }, y: yPress, plus: plusPress, bPress: bPress, hold: function (d, on) { if (d === 'down') downHeld = !!on; else if (d === 'left') leftHeld = !!on; else if (d === 'right') rightHeld = !!on; }, fire: function (on) { fireHeld = !!on; if (on && st.mode === 'play') fire(); } };
 })();

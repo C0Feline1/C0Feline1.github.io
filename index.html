@@ -43,7 +43,6 @@
   .ph { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
   .ph h2 { margin: 0; font-size: 13px; letter-spacing: 1px; font-weight: normal; display: flex; align-items: center; gap: 8px; }
   .tag { font-size: 10px; border: 1px solid currentColor; padding: 0 5px; color: var(--pink); white-space: nowrap; }
-  .ico { width: 16px; height: 16px; display: inline-block; image-rendering: pixelated; }
   .card .big { font-size: 22px; color: #fff; }
   .card .sub { color: var(--dim); font-size: 11px; }
   .card .meter { height: 4px; background: #241a35; margin-top: 6px; }
@@ -66,7 +65,6 @@
   #game { display: block; width: 100%; aspect-ratio: 3 / 2; image-rendering: pixelated; background: #000; outline: none; cursor: pointer; touch-action: none; }
   #game:focus-visible { box-shadow: 0 0 0 2px var(--cyan); }
   .scrlabel { display: flex; justify-content: space-between; font-size: 10px; color: #6a6090; margin-top: 6px; letter-spacing: 2px; }
-  .side { display: flex; flex-direction: column; align-items: center; gap: 12px; color: #8a7ab8; font-size: 11px; text-align: center; }
   .dpad { width: 72px; height: 72px; position: relative; }
   .dpad i { position: absolute; background: #120d20; box-shadow: inset 0 -3px 0 #07050c; }
   .dpad i:nth-child(1) { left: 24px; top: 0; width: 24px; height: 72px; border-radius: 4px; }
@@ -78,12 +76,7 @@
   .dpad button[data-d=left]::after { border-right-color: #3d2a66; left: 4px; }
   .dpad button[data-d=right]::after { border-left-color: #3d2a66; left: 12px; }
   .dpad button:active { background: rgba(255,255,255,.08); }
-  .ab { display: flex; gap: 10px; align-items: flex-start; transform: rotate(-18deg); }
-  .abtn.b { margin-top: 22px; background: #8a3cd4; box-shadow: inset 0 -5px 0 #4e1f8a, 0 3px 0 #120a20; }
   .gba button { -webkit-tap-highlight-color: transparent; outline: none; user-select: none; -webkit-user-select: none; }
-  .abtn { width: 54px; height: 54px; border-radius: 50%; border: 0; background: #d43c7c; color: #ffe0ee; font: 16px "DotGothic16", monospace; box-shadow: inset 0 -5px 0 #8a1f4e, 0 3px 0 #120a20; cursor: pointer; touch-action: none; }
-  .abtn:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 #8a1f4e; }
-  .smallbtn { background: #120d20; color: #b8a8e0; border: 1px solid #3d2a66; font: 11px "DotGothic16", monospace; padding: 3px 10px; border-radius: 10px; cursor: pointer; }
   .help { color: var(--dim); font-size: 12px; margin-top: 8px; text-align: center; }
   .help kbd { color: var(--text); border: 1px solid var(--line); padding: 0 4px; font-family: inherit; }
 
@@ -159,15 +152,9 @@
   .flag { margin-right: 5px; font-family: "Twemoji Country Flags", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
   .flag-cc { display: inline-block; margin-right: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--dim); font: 10px/13px monospace; vertical-align: 1px; letter-spacing: .5px; }
   .lb-msg { min-height: 1.4em; margin: 8px 0 0 !important; color: var(--cyan) !important; font-size: 12px; }
-
-  .xbtns { display: flex; gap: 6px; }
-  .xbtn { width: 46px; height: 26px; border-radius: 13px; border: 0; background: #3a6ad4; color: #e0ecff; font: 10px "DotGothic16", monospace; box-shadow: inset 0 -3px 0 #1f3a8a, 0 2px 0 #120a20; cursor: pointer; touch-action: none; }
-  .xbtn.fire { background: #d47a3c; box-shadow: inset 0 -3px 0 #8a4a1f, 0 2px 0 #120a20; }
-  .xbtn:active { transform: translateY(1px); }
   /* mobile: no tap highlight / selection / long-press callout on the console */
   .gba, .gba *, #game { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   #game, .gba button { touch-action: none; }
-  .smallbtn { touch-action: manipulation; }
   @keyframes tick { to { transform: translateX(-100%); } }
   @keyframes blink { 50% { opacity: 0; } }
   @media (max-width: 920px) {
@@ -175,7 +162,6 @@
     .main, .lower { grid-template-columns: 1fr; }
     .lbrow { grid-template-columns: 1fr; }
     .gba { padding: 12px 10px 18px; border-radius: 14px 14px 34px 34px; }
-    .gba .side .note { display: none; }
   }
   @media (max-width: 520px) { body { padding: 6px; } .frame { padding: 6px; } .logo { font-size: 17px; } .ticker { order: 3; flex-basis: 100%; border: 0; padding: 0; } }
   /* ---------- round3: big touch targets (>=48px) ---------- */
@@ -191,11 +177,6 @@
   .dpad button[data-d]::after { border-color: transparent; }
   .dpad button[data-d=up]::after { border-bottom-color: #8a7ab8; } .dpad button[data-d=down]::after { border-top-color: #8a7ab8; }
   .dpad button[data-d=left]::after { border-right-color: #8a7ab8; } .dpad button[data-d=right]::after { border-left-color: #8a7ab8; }
-  .abtn { width: 66px; height: 66px; font-size: 20px; }
-  .abtn.b { margin-top: 28px; }
-  .xbtns { gap: 10px; }
-  .xbtn { width: 72px; height: 50px; border-radius: 25px; font-size: 14px; }
-  .smallbtn { min-height: 48px; min-width: 120px; font-size: 13px; padding: 6px 14px; border-radius: 24px; }
   .help { font-size: 11px; margin-top: 6px; }
   .gba, .gba * { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
   .gba { cursor: pointer; }
@@ -203,13 +184,10 @@
   html, body { max-width: 100%; overflow-x: hidden; }
   @media (max-width: 920px) {
     .gba { gap: 12px; }
-    .ab { transform: rotate(-12deg); }
     .help { display: none; }
   }
-  .abtn, .xbtn { position: relative; line-height: 1.1; }
   .key { display: block; font: 10px/1 "DotGothic16", monospace; opacity: .78; margin-top: 3px; letter-spacing: 0; }
-  .key.under { color: #8a7ab8; margin-top: -6px; } .gba .side .note.dk { display: block; font-size: 11px; color: #8a7ab8; } @media (max-width: 920px) { .gba .side .note.dk { display: none; } }
-  @media (max-width: 380px) { .dpad { --c: 46px; } .abtn { width: 58px; height: 58px; } .xbtn { width: 62px; height: 48px; } .gba { padding: 10px 6px 16px; } .screenwrap { padding: 8px 8px 6px; } }
+  @media (max-width: 380px) { .dpad { --c: 46px; } .gba { padding: 10px 6px 16px; } .screenwrap { padding: 8px 8px 6px; } }
   /* phase3 F1: phones. The screen takes (almost) the full width: thinner bezel, no side padding; buttons stay below */
   @media (max-width: 520px) {
     .arcade > .panel { padding: 8px 2px 10px; margin: 0 -5px; }
@@ -232,7 +210,6 @@
     .main, .arcade, .lower { min-height: 0; }
     .arcade > .panel { display: flex; flex-direction: column; min-height: 0; }
     .arcade .gba { margin: auto; } /* centred in the tall middle column, title stays on top */
-    .gba .side .note { font-size: 10px; }
     .lower { grid-area: lower; grid-template-columns: 1fr; grid-template-rows: 1fr auto auto; }
     .chart-box { flex: 1 1 0; height: auto; min-height: 150px; }
     .chart { display: flex; flex-direction: column; }
@@ -242,60 +219,62 @@
      Wide panel ("row"): blue Joy-Con | screen in a dark bezel | red Joy-Con. Narrow ("stack"): screen on top, the two Joy-Cons
      side by side below. dash.js picks the layout and the screen width (--scrw): as large as the panel allows while the screen
      still fits the window height, snapped to an integer device-pixel scale on desktop when that costs < 10 %. */
-  .arcade .gba.sw { display: grid; grid-template-areas: "jl scr jr"; grid-template-columns: auto auto auto; gap: 0; width: max-content; max-width: 100%;
-    margin: auto auto 0; padding: 24px 0 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
+  .arcade .gba.sw { --jcw: 152px; --bc: 48px; display: grid; grid-template-areas: "jl scr jr"; grid-template-columns: auto auto auto; gap: 0; width: max-content; max-width: 100%;
+    margin: auto auto 0; padding: 34px 0 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
   .arcade .gba.sw.stack { grid-template-areas: "scr scr" "jl jr"; grid-template-columns: 1fr 1fr; }
   .gba.sw #game { width: var(--scrw, 100%); }
   .gba.sw .scr { grid-area: scr; position: relative; background: #15121f; padding: 16px 16px 8px; border: 2px solid #2a2440; box-shadow: inset 0 0 0 3px #0a0812, 0 0 18px rgba(79,227,255,.08); min-width: 0; }
-  .gba.sw.row .scr { border-left: 0; border-right: 0; }
+  .gba.sw.row .scr { border-left: 0; border-right: 0; padding-left: 10px; padding-right: 10px; }
   .gba.sw.stack .scr { border-radius: 14px 14px 0 0; }
   .gba.sw .screenwrap { padding: 0; background: none; box-shadow: none; border-radius: 0; }
   .gba.sw .scrlabel { margin-top: 6px; }
-  .jc { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; gap: 14px; width: 108px; padding: 16px 8px; box-sizing: border-box;
+  .jc { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; gap: 18px; width: var(--jcw); padding: 18px 4px; box-sizing: border-box;
     border: 2px solid rgba(0,0,0,.35); box-shadow: inset 0 3px 0 rgba(255,255,255,.35), inset 0 -4px 0 rgba(0,0,0,.25); }
   .jl { grid-area: jl; background: linear-gradient(180deg, #19c3f2, #0a9bd0); border-radius: 46px 0 0 46px; border-right: 0; }
   .jr { grid-area: jr; background: linear-gradient(180deg, #ff5a6a, #e23a4c); border-radius: 0 46px 46px 0; border-left: 0; }
-  .gba.sw.stack .jc { width: auto; flex-direction: row; justify-content: space-around; padding: 14px 10px 18px; }
+  .gba.sw.stack .jc { width: auto; flex-direction: row; justify-content: space-around; padding: 14px 10px 20px; }
   .gba.sw.stack .jl { border-radius: 0 0 0 46px; border-right: 1px solid rgba(0,0,0,.4); }
   .gba.sw.stack .jr { border-radius: 0 0 46px 0; border-left: 1px solid rgba(0,0,0,.4); }
   .gba.sw.stack .jr .jmini { order: 3; } .gba.sw.stack .jr .jstick { order: -1; }
-  .jstick { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #4a4458, #1a1622 70%); box-shadow: 0 2px 0 rgba(0,0,0,.4), inset 0 0 0 3px #0e0b14; flex: none; }
-  .jmini { width: 26px; height: 26px; border-radius: 50%; border: 0; padding: 0; background: #1a1622; color: #e8e4f8; font: 18px/26px "DotGothic16", monospace; box-shadow: 0 2px 0 rgba(0,0,0,.45); cursor: pointer; touch-action: none; flex: none; }
+  .jstick { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #4a4458, #1a1622 70%); box-shadow: 0 2px 0 rgba(0,0,0,.4), inset 0 0 0 3px #0e0b14; flex: none; }
+  .jmini { width: 38px; height: 38px; border-radius: 50%; border: 0; padding: 0; background: #1a1622; color: #e8e4f8; font: 24px/38px "DotGothic16", monospace; box-shadow: 0 2px 0 rgba(0,0,0,.45); cursor: pointer; touch-action: none; flex: none; }
   .jmini:active { transform: translateY(1px); }
   /* the four direction buttons and the X/Y/A/B diamond: same geometry, round buttons */
-  .gba.sw .dpad, .xyab { --c: 30px; position: relative; width: calc(var(--c) * 3); height: calc(var(--c) * 3); flex: none; }
+  .gba.sw .dpad, .xyab { --c: var(--bc); position: relative; width: calc(var(--c) * 3); height: calc(var(--c) * 3); flex: none; }
   .gba.sw .dpad button, .xyab button { position: absolute; width: var(--c); height: var(--c); border-radius: 50%; border: 0; padding: 0; background: #1a1622; color: #e8e4f8;
-    box-shadow: inset 0 -3px 0 #07050c, 0 2px 0 rgba(0,0,0,.35); cursor: pointer; touch-action: none; font: 15px/1 "DotGothic16", monospace; }
+    box-shadow: inset 0 -3px 0 #07050c, 0 2px 0 rgba(0,0,0,.35); cursor: pointer; touch-action: none; font: 24px/1 "DotGothic16", monospace; }
   .gba.sw .dpad button[data-d=up], .xyab .x { left: var(--c); top: 0; }
   .gba.sw .dpad button[data-d=down], .xyab .b { left: var(--c); top: calc(var(--c) * 2); }
   .gba.sw .dpad button[data-d=left], .xyab .y { left: 0; top: var(--c); }
   .gba.sw .dpad button[data-d=right], .xyab .a { left: calc(var(--c) * 2); top: var(--c); }
-  .gba.sw .dpad button::after { content: ""; position: absolute; left: calc(50% - 6px); top: calc(50% - 6px); border: 6px solid transparent; }
-  .gba.sw .dpad button[data-d=up]::after { border-bottom-color: #c8c0e8; top: calc(50% - 9px); } .gba.sw .dpad button[data-d=down]::after { border-top-color: #c8c0e8; top: calc(50% - 3px); }
-  .gba.sw .dpad button[data-d=left]::after { border-right-color: #c8c0e8; left: calc(50% - 9px); } .gba.sw .dpad button[data-d=right]::after { border-left-color: #c8c0e8; left: calc(50% - 3px); }
+  .gba.sw .dpad button::after { content: ""; position: absolute; left: calc(50% - 8px); top: calc(50% - 8px); border: 8px solid transparent; }
+  .gba.sw .dpad button[data-d=up]::after { border-bottom-color: #c8c0e8; top: calc(50% - 12px); } .gba.sw .dpad button[data-d=down]::after { border-top-color: #c8c0e8; top: calc(50% - 4px); }
+  .gba.sw .dpad button[data-d=left]::after { border-right-color: #c8c0e8; left: calc(50% - 12px); } .gba.sw .dpad button[data-d=right]::after { border-left-color: #c8c0e8; left: calc(50% - 4px); }
   .gba.sw .dpad button:active, .xyab button:active { transform: translateY(2px); box-shadow: inset 0 -1px 0 #07050c; }
   .xyab button { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .xyab .key { font-size: 8px; margin-top: 1px; opacity: .7; }
+  .xyab .key { font-size: 13px; margin-top: 2px; opacity: .85; }
   .xyab .x { color: #ffd45e; } .xyab .y { color: #5dff8f; } .xyab .a { color: #ff9fc4; } .xyab .b { color: #7fe0ff; }
   /* music / sound tab sticking out of the bezel's top-left corner */
-  .mtab { position: absolute; left: 14px; top: -24px; z-index: 2; height: 26px; padding: 0 12px; border: 2px solid #4fe3ff; border-bottom: 0; border-radius: 8px 8px 0 0;
-    background: #120d20; color: #9aa6c8; font: 14px/24px "DotGothic16", "Microsoft YaHei", monospace; letter-spacing: 1px; cursor: pointer; touch-action: manipulation; box-shadow: 0 -2px 10px rgba(79,227,255,.15); white-space: nowrap; }
+  .mtab { position: absolute; left: 14px; top: -34px; z-index: 2; height: 36px; padding: 0 18px; border: 2px solid #4fe3ff; border-bottom: 0; border-radius: 10px 10px 0 0;
+    background: #1a1430; color: #e8f4ff; font: 19px/34px "DotGothic16", "Microsoft YaHei", monospace; letter-spacing: 2px; cursor: pointer; touch-action: manipulation; box-shadow: 0 -2px 14px rgba(79,227,255,.35); white-space: nowrap; }
   .mtab[aria-pressed="true"] { color: #0a0812; background: #5dff8f; border-color: #5dff8f; box-shadow: 0 -2px 14px rgba(93,255,143,.45); }
   .mtab:hover { filter: brightness(1.15); }
   .arcade .help { display: block; margin-bottom: auto; } /* console + help line centred together in a tall panel */
   @media (max-width: 520px) {
-    .arcade .gba.sw { padding-top: 26px; }
+    .arcade .gba.sw { padding-top: 36px; --bc: clamp(48px, calc((50vw - 24px) / 3), 60px); }
     .gba.sw .scr { padding: 10px 4px 6px; }
-    .gba.sw .dpad, .xyab { --c: 46px; } .gba.sw .dpad button::after { border-width: 8px; left: calc(50% - 8px); top: calc(50% - 8px); }
-    .gba.sw .dpad button[data-d=up]::after { top: calc(50% - 12px); } .gba.sw .dpad button[data-d=down]::after { top: calc(50% - 4px); }
-    .gba.sw .dpad button[data-d=left]::after { left: calc(50% - 12px); } .gba.sw .dpad button[data-d=right]::after { left: calc(50% - 4px); }
-    .xyab button { font-size: 20px; } .xyab .key { font-size: 10px; }
+    .gba.sw .dpad button::after { border-width: 10px; left: calc(50% - 10px); top: calc(50% - 10px); }
+    .gba.sw .dpad button[data-d=up]::after { top: calc(50% - 15px); } .gba.sw .dpad button[data-d=down]::after { top: calc(50% - 5px); }
+    .gba.sw .dpad button[data-d=left]::after { left: calc(50% - 15px); } .gba.sw .dpad button[data-d=right]::after { left: calc(50% - 5px); }
+    .xyab button { font-size: 26px; } .xyab .key { font-size: 13px; }
     .gba.sw.stack .jc { flex-direction: column; gap: 8px; padding: 10px 4px 18px; }
     .gba.sw.stack .jl .jmini { align-self: flex-end; margin-right: 10px; } .gba.sw.stack .jr .jmini { align-self: flex-start; margin-left: 10px; order: 0; }
-    .jmini { width: 36px; height: 36px; font-size: 22px; line-height: 36px; }
+    .jmini { width: 48px; height: 48px; font-size: 28px; line-height: 48px; }
+    .mtab { top: -36px; height: 38px; font-size: 19px; line-height: 36px; }
     .jstick { display: none; }
     .arcade .help { display: none; }
   }
+  @media (max-width: 340px) { .gba.sw.stack .jc { padding-left: 1px; padding-right: 1px; } }
 </style>
 </head>
 <body>
@@ -418,13 +397,13 @@
     <p class="lb-msg" id="lbMsg"></p>
   </div>
 </div>
-<script src="js/pixel.js?v=20261018i"></script>
-<script src="js/audio.js?v=20261018i"></script>
-<script src="js/game.js?v=20261018i"></script>
-<script src="js/music.js?v=20261018i"></script>
-<script src="js/logs.js?v=20261018i"></script>
-<script src="js/dash.js?v=20261018i"></script>
-<script src="js/spider.js?v=20261018i"></script>
-<script src="js/board.js?v=20261018i"></script>
+<script src="js/pixel.js?v=20261018j"></script>
+<script src="js/audio.js?v=20261018j"></script>
+<script src="js/game.js?v=20261018j"></script>
+<script src="js/music.js?v=20261018j"></script>
+<script src="js/logs.js?v=20261018j"></script>
+<script src="js/dash.js?v=20261018j"></script>
+<script src="js/spider.js?v=20261018j"></script>
+<script src="js/board.js?v=20261018j"></script>
 </body>
 </html>

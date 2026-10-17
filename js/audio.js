@@ -11,7 +11,7 @@
   var NORM = { home: 1.02, park: 0.89, market: 1.02, xian: 1.2, ink: 1.22, sakura: 1.2, cyber: 0.9, bit8: 0.86, steam: 0.89, desert: 1.11, court: 1.06, sea: 1.1,
     skycity: 1.04, volcano: 0.79, space: 1.08, mirror: 0.94, candy: 0.91, haunt: 1.26, snow: 1.15, cabin: 1.22, ridge: 0.81, cave: 1.33, peak: 0.75, lake: 1.05 };
   var ctx = null, master, musicBus, sfxBus, spiderBus, pageGain, pageEl = null, pageSrc = null, noiseBuf = null, waves = {};
-  var outNode = null, players = [], gameState = 'title', wantWorld = -1, pageTimer = null, listeners = [];
+  var players = [], gameState = 'title', wantWorld = -1, pageTimer = null, listeners = [];
   var PAGE = { bpm: 92, root: 60, scale: [0, 2, 4, 5, 7, 9, 11] }; /* matches tools/compose_loop.py (C major, 92 BPM) */
 
   function init() {
@@ -19,7 +19,7 @@
     ctx = new AC();
     master = ctx.createGain(); master.gain.value = on ? 1 : 0;
     var comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
-    master.connect(comp); comp.connect(ctx.destination); outNode = comp;
+    master.connect(comp); comp.connect(ctx.destination);
     musicBus = ctx.createGain(); musicBus.gain.value = 0.55; duck = ctx.createGain(); duck.gain.value = 1; musicBus.connect(duck); duck.connect(master);
     sfxBus = ctx.createGain(); sfxBus.gain.value = 1.42; sfxBus.connect(master); /* +4 dB: jump / shard used to sit under the music */
     spiderBus = ctx.createGain(); spiderBus.gain.value = 0.42; spiderBus.connect(comp); /* not under master: the SOUND switch doesn't mute 小八 */
@@ -262,10 +262,7 @@
       else if (state === 'over') { stopGameMusic(1.5); setTimeout(function () { if (gameState === 'over' || gameState === 'title') { musicBus.gain.setTargetAtTime(0.55, ctx.currentTime, 0.1); page(true); } }, 2200); }
       else if (state === 'title') { stopGameMusic(0.6); musicBus.gain.setTargetAtTime(0.55, now, 0.1); page(true); }
     },
-    spider: spider, get spiderOn() { return spOn; }, setSpider: setSpider, toggleSpider: function () { setSpider(!spOn); }, onSpider: function (f) { spListeners.push(f); f(spOn); },
-    /* returns a MediaStream of everything audible (used for recording previews) */
-    capture: function () { if (!init()) return null; var d = ctx.createMediaStreamDestination(); outNode.connect(d); return d.stream; },
-    debug: function () { return { on: on, ctx: ctx && ctx.state, players: players.map(function (p) { return p.s.key; }), page: pageEl ? !pageEl.paused : false, state: gameState }; }
+    spider: spider, get spiderOn() { return spOn; }, setSpider: setSpider, toggleSpider: function () { setSpider(!spOn); }, onSpider: function (f) { spListeners.push(f); f(spOn); }
   };
   window.SND = SND;
   /* browsers need a gesture before audio: the first one anywhere unlocks it (小八 may talk even when the SOUND switch is off) */

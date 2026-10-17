@@ -123,7 +123,7 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
   - 目标高度、硬币、+3 奖励和 45 秒"HELPING PAW"都没变，所以服务器的 `CLIMB_MAX` 和时间上限不用改。陷阱在离开阶段和被帮助后都不会生效。
 
 ## Phase 3C（2026-10-18，玩法 + 主机外观 + 服务器 kr3，**要换服务器**）
-- 版本：所有脚本 `?v=20261018i`（建立在热修复 20a6714 / `?v=20261018h` 之上）；`GAME_VERSION = 'kr3-20261018'`（`js/game.js` 与 `server/kr_server.py` 一致）。**部署顺序：先换服务器并重启 `kittyrunner.service`，再推前端**。kr3 服务器会给旧页面（kr2）返回 426「请刷新」。提交格式（cc, cps, dist, frames, name, nonce, run, score, shards, v）没有变。
+- 版本：所有脚本 `?v=20261018i`（清理版起为 `?v=20261018j`，见下）（建立在热修复 20a6714 / `?v=20261018h` 之上）；`GAME_VERSION = 'kr3-20261018'`（`js/game.js` 与 `server/kr_server.py` 一致）。**部署顺序：先换服务器并重启 `kittyrunner.service`，再推前端**。kr3 服务器会给旧页面（kr2）返回 426「请刷新」。提交格式（cc, cps, dist, frames, name, nonce, run, score, shards, v）没有变。
 - `/top` 每行新增 `ts`（整数，Unix 秒），`date` 保留。排行榜在每行显示上榜时间，用看榜人自己的时区（"MM-DD HH:mm"，往年的显示日期），鼠标悬停显示完整时间；旧接口没有 `ts` 时退回显示 `date`。
 - G3 每圈打乱的规则（第 2 圈起，客户端 `lapOrderOk` 与服务器 `g3_step` 规则一样）：
   - 非跑步世界最多连续 2 个；
@@ -145,3 +145,12 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - 新 localStorage 键：`runner-seen`。
 - `SHARD_CAP` 重新标定（`server/test/measure.py`，约 1700 个种子 × 8 圈）：机器人全程开着双倍 + 磁铁（实际玩不到），每个世界都攻击，休息站随机进或跳。公式 `cap = ceil((最大值 + extra) × 1.08 / 0.8)`，后面的圈不低于前面的圈；extra：火山 +5（鳗鱼无伤奖励机器人拿不到），鬼屋 +6（击败管家和撑过去的奖励差）。机器人的最大值 ≤ 每格上限的 74%。另外用 1400 个种子算出的上限去检验另外 300 个种子，最高也只到 80%。
 - 测试：`server/test/test_server.py`（诚实成绩里包括"全部跳过休息站"和"随机进 / 跳"；G3 作弊会按正确的原因被拒；也测了 600 个真实生成的顺序）。前端测试脚本在 `/workspace/site/p3c/`（不在仓库里）。
+
+## 清理版（2026-10-18，`?v=20261018j`，**只换前端，服务器不用动**）
+- 不改玩法、不改服务器校验的任何东西：`GAME_VERSION` 仍是 `kr3-20261018`，世界长度 / 星砂 / 时间不变，提交格式不变，`server/kr_server.py` 没改。
+- 删掉的死代码：`canvasPos`、`menuTap` 和 `onAction` 里按坐标点屏幕的分支（游戏里点屏幕早就不触发操作）、`swDown`、`skillLabel`、过时的 `LENS` 表、`KittyRunner.lens` / `.biomes`（没人用）、几个没用的变量；`pixel.js` 里旧的 `WOLF`/`WOLF_PAL`/`BIRD`/`birdPal`/`batPal`（早被 v2 敌人取代）；`board.js` 里只写不读的 `run`；`audio.js` 里调试用的 `SND.debug` / `SND.capture`；`index.html` 里没有任何元素再用的 CSS（`.ico .ab .abtn .smallbtn .xbtns .xbtn .side .key.under` 等）。
+- 修了同一作用域里的重复声明（和风车 `sg` 同一类问题）：`drawPlay` 的 `mode`、齿轮隧道的 `c0`→`cy0`、传送门的 `nx`→`nsl`；还把遮住全局名的局部变量改了名（plan 的 `P`→`PL`、挥击的 `S`→`sw`、`nearToy` 的 `best`→`near`）。ESLint：no-redeclare 3→0，no-unused-vars 11→0。
+- P2（只影响画面，逻辑 / 随机数不变）：8-BIT 的 `gbMap` 满强度时按 32 位整字写像素（和旧版逐字节比对完全一致）；粒子用对象池回收，`updateParts` 原地压缩（不再逐个 splice），顺序和字段完全一样。"预烘焙调色板图层"没做：精灵也要经过同一个映射，预烘焙出来不会逐像素一致。
+- 练习模式：左上角不再显示分数，改成大字 `LV n`（满级 `LV MAX`）+ 小字 `PRACTICE`；顶部中间的进度条标签改为 `NEXT LV n+1` / `MAX LEVEL`。
+- 手柄按键加大：桌面十字键和 XYAB 30→48 px（Joy-Con 宽 108→152 px，横排时屏幕两侧边框 16→10 px 把屏幕尽量留大），键位字母 8→13 px，按钮字 15→24 px，−/+ 26→38 px；手机按钮按屏宽取 48–60 px（320 px 宽也有 48 px），−/+ 48 px；「♪ 音乐 开/关」标签 26→36 px 高、14→19 px 字、更亮。
+- `dash.js` 屏幕尺寸：边框宽度改用计算样式（padding + border），以前用"外框宽 − 画布宽"，竖排时外框会被拉宽，320 px 手机会卡在 160 px 宽的屏幕上；现在是 284 px。

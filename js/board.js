@@ -4,7 +4,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var listEl = $('lbList'), statusEl = $('lbStatus');
   if (!listEl) return;
-  var run = null, pending = null, myName = localStorage.getItem('runner-name') || '';
+  var pending = null, myName = localStorage.getItem('runner-name') || '';
   var NAMES = { Feline1: 'FELINE1', C0: 'C0', X0: 'X0' };
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -162,8 +162,8 @@
     var d = e.detail;
     if (d.practice) return; /* practice runs never talk to the leaderboard server (no /start, /qualify or /submit) */
     if (d.type === 'start') {
-      run = null; noScore = false; setStatus(online);
-      startP = startRun(d.id).then(function (j) { run = j; return j; }, function () { return null; });
+      noScore = false; setStatus(online);
+      startP = startRun(d.id).then(function (j) { return j; }, function () { return null; });
     } else if (d.type === 'over') {
       var p = startP || Promise.resolve(null); startP = null;
       if (d.score <= 0) return;
@@ -174,7 +174,6 @@
         if (!r) return startRun(d.id).catch(function () { return null; });
         return r;
       }).then(function (r) {
-        run = null;
         if (pending !== mine) return;
         if (!r) { noScore = true; setStatus(online); pending = null; setMsg('排行榜连不上：本局不计分', true); sendBtn.disabled = true; skipBtn.textContent = '知道了'; return; }
         mine.run = r;

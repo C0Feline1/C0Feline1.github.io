@@ -127,9 +127,12 @@
     if (!shell || !scrCv) return;
     var panel = shell.parentElement, ph = panel.querySelector('.ph');
     var ps = getComputedStyle(panel), innerW = panel.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
-    var cw = scrCv.offsetWidth || 1, ch = scrCv.offsetHeight || 1, scr = shell.querySelector('.scr'), jc = shell.querySelector('.jc');
-    var bezelX = scr.offsetWidth - cw, jcW = jc ? jc.offsetWidth : 0;
-    if (shell.classList.contains('stack')) jcW = 108; /* joy-con width in the row layout (CSS .jc width) */
+    var ch = scrCv.offsetHeight || 1, scr = shell.querySelector('.scr'), jc = shell.querySelector('.jc');
+    /* bezel from the computed padding + border, not offsetWidth - canvas: in the stack layout the bezel stretches to the grid width,
+       which made a too-small screen a stable answer (320 px phones got a 160 px screen) */
+    var scs = getComputedStyle(scr), bezelX = parseFloat(scs.paddingLeft) + parseFloat(scs.paddingRight) + parseFloat(scs.borderLeftWidth) + parseFloat(scs.borderRightWidth);
+    var jcW = jc ? jc.offsetWidth : 0;
+    if (shell.classList.contains('stack')) jcW = parseFloat(getComputedStyle(shell).getPropertyValue('--jcw')) || 152; /* joy-con width in the row layout (CSS --jcw) */
     var extraY = scr.offsetHeight - ch + parseFloat(getComputedStyle(shell).paddingTop) + 12; /* never the (auto, centring) margin: no feedback */
     var stackW = Math.max(160, innerW - bezelX), rowW = innerW - bezelX - 2 * jcW, maxW = stackW, row = false;
     if (window.innerWidth > 520) {
