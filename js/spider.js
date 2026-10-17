@@ -15,13 +15,24 @@
     '.spider-dirt{position:absolute;left:0;top:0;width:' + K + 'px;height:' + K + 'px;z-index:41;pointer-events:none}' +
     '.spider-bub{position:absolute;left:0;top:0;z-index:41;pointer-events:none;background:#fff;color:#1a1030;font:13px/1.3 "DotGothic16",monospace;padding:3px 8px;border:2px solid #1a1030;box-shadow:3px 3px 0 #ff4fa3;white-space:nowrap;opacity:0;transition:opacity .15s}' +
     '.spider-bub::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-4px;border:4px solid transparent;border-top-color:#1a1030}' +
-    '.spider-bub.on{opacity:1}';
+    '.spider-bub.on{opacity:1}' +
+    '.spider-snd{position:fixed;left:10px;bottom:10px;z-index:60;width:34px;height:34px;border:2px solid #1a1030;background:#2a1648;color:#fff;font-size:17px;line-height:28px;padding:0;cursor:pointer;box-shadow:2px 2px 0 #ff4fa3;opacity:.75;-webkit-tap-highlight-color:transparent}' +
+    '.spider-snd:hover{opacity:1}.spider-snd.off{filter:grayscale(1);opacity:.45}.spider-snd.off::after{content:"";position:absolute;left:3px;right:3px;top:14px;height:2px;background:#ff4f6a;transform:rotate(-40deg)}' +
+    /* phones: keep it away from the console d-pad; it sits in the header corner and scrolls away */
+    '@media (max-width:640px){.spider-snd{position:absolute;left:auto;right:24px;top:22px;bottom:auto}}';
   document.head.appendChild(css);
   var cv = PX.make(LS, LS), g = cv.getContext('2d');
   cv.className = 'spider'; cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
   var silk = document.createElement('div'); silk.className = 'silk'; document.body.appendChild(silk);
   var bub = document.createElement('div'); bub.className = 'spider-bub'; document.body.appendChild(bub);
   cv.style.transform = 'translate(-400px,-400px)';
+  /* 小八's own little sound switch (independent of the game's SOUND switch) */
+  var sndBtn = document.createElement('button'); sndBtn.className = 'spider-snd'; sndBtn.type = 'button'; sndBtn.textContent = '🕷';
+  document.body.appendChild(sndBtn);
+  function sndLabel(v) { sndBtn.classList.toggle('off', !v); sndBtn.title = sndBtn.ariaLabel = '小八的声音：' + (v ? '开' : '关'); sndBtn.setAttribute('aria-pressed', v ? 'true' : 'false'); }
+  if (window.SND && SND.onSpider) SND.onSpider(sndLabel); else sndBtn.hidden = true;
+  sndBtn.addEventListener('click', function (e) { e.stopPropagation(); if (window.SND) SND.toggleSpider(); });
+  function snd(kind, opt) { if (window.SND && SND.spider) SND.spider(kind, opt); }
 
   var COL = { o: '#efe4ff', b: '#2a1648', B: '#4a2f7a', h: '#9a78e0', leg: '#d8c8ff', legD: '#a08cd8', knee: '#ff9fc4', eye: '#ffffff', mark: '#ff4fa3' };
   var S = { x: -300, y: -300, a: Math.PI / 2, v: 0, mode: 'off', t: 0, tx: 0, ty: 0, wait: 0, burst: 0, rest: 0, target: null, idleOff: 0, twitch: 0, look: 0,
@@ -113,7 +124,7 @@
 
   /* ---------- speech ---------- */
   var sayUntil = 0;
-  function say(text, ms) { if (window.SND) SND.spider('chirp'); bub.textContent = text; bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
+  function say(text, ms) { var n = String(text).replace(/[^\u4e00-\u9fffA-Za-z]/g, '').length; if (n <= 1) snd('chirp'); else snd('babble', { n: Math.ceil(n / 1.5) }); bub.textContent = text; bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
   function placeBubble() {
     var w = bub.offsetWidth, dw = document.documentElement.scrollWidth;
     var bx = clamp(S.x - w / 2, 4, dw - w - 4), by = S.y - S.hop - 26 * K;
@@ -167,7 +178,8 @@
     { sel: '#cards', lines: ['bug 怎么又多了', '咖啡喝太多啦'] },
     { sel: '.works', lines: ['星梦画廊！', '？？？是什么呀', '期待新作品'] },
     { sel: '.links', lines: ['全是绿灯 ✓', '验证通过！'] },
-    { sel: '#clock', lines: ['几点啦？', '该睡觉了吧'] }
+    { sel: '#clock', lines: ['几点啦？', '该睡觉了吧'] },
+    { sel: '#adBox', lines: ['这个风车好好看', '广告位？我能租吗', '小鱼干租金……付不起', '转啊转～'] }
   ];
   var IDLE = ['我叫小八', '这里风景不错', '八条腿也跑不过猫娘', '巡逻中', '嗯……', '今天也是好天气'];
   var CURIOUS = ['你在看什么？', '嗨～', '你的鼠标好大', '一起玩吗？'];
@@ -197,6 +209,8 @@
       var ang = Math.atan2(S.y - mouse.y, S.x - mouse.x);
       if (goto(mouse.x + Math.cos(ang) * 80, mouse.y + Math.sin(ang) * 80, { curious: true })) return;
     }
+    var pc = spinCenter();
+    if (pc && R() < 0.14 && pc[1] > v.y + 40 && pc[1] < v.y + v.h - 40 && goto(pc[0] + (R() - 0.5) * 30, pc[1] + (R() - 0.5) * 30, { lines: ['风车！', '让我摸摸看'] })) return;
     for (var k = 0; k < 10; k++) {
       var p, tgt = null;
       if (vis.length && R() < 0.8) { var c = pick(vis); p = spotPoint(c.sp, c.r, v); tgt = c.sp; } else { p = randomSpot(); if (!p) continue; }
@@ -209,7 +223,7 @@
     for (var k = 0; k < offs.length; k++) {
       var ang = base + offs[k], dist = 170 + R() * 140, x = S.x + Math.cos(ang) * dist, y = S.y + Math.sin(ang) * dist;
       if (okSpot(x, y) && !crosses(S.x, S.y, x, y, 30)) {
-        S.tx = x; S.ty = y; S.mode = 'flee'; S.target = null; S.rest = 0; S.tuck = false; S.act = null; S.hop = 0; say(text || pick(SCARED), 1300); return;
+        S.tx = x; S.ty = y; S.mode = 'flee'; S.target = null; S.rest = 0; S.tuck = false; S.act = null; S.hop = 0; snd('hop'); say(text || pick(SCARED), 1300); return;
       }
     }
     var p = randomSpot(true); if (p) { say(text || '挖洞逃跑！', 1300); startDig(p[0], p[1], null); }
@@ -411,10 +425,11 @@
     var now = performance.now(), dt = Math.max(1, now - mouse.t);
     mouse.vx = (e.pageX - mouse.x) / dt * 16; mouse.vy = (e.pageY - mouse.y) / dt * 16; mouse.x = e.pageX; mouse.y = e.pageY; mouse.t = now;
   }, { passive: true });
-  var CALM = { off: 1, dangle: 1, dig: 1, swing: 1 };
+  var CALM = { off: 1, dangle: 1, dig: 1, swing: 1, fling: 1 };
   document.addEventListener('pointerdown', function (e) {
     if (CALM[S.mode]) { if (S.mode === 'swing' && Math.hypot(e.pageX - S.x, e.pageY - S.y) < 50) say('别推我！', 1200); return; }
     if (Math.hypot(e.pageX - S.x, e.pageY - S.y) < 50) {
+      snd('squeak');
       if (S.mode === 'weave' && web) { var w = web; web = null; setTimeout(function () { removeWeb(w); }, 6000); }
       scare(e.pageX, e.pageY, pick(['别戳我！', '痒……', '我是好蜘蛛！', '不吃 bug，只看 bug']));
     }
@@ -426,6 +441,40 @@
   });
   window.addEventListener('leaderboard', function (e) { if (onScreen(S.x, S.y)) say('上榜啦！第 ' + e.detail.rank + ' 名！', 3000); });
 
+  /* ---------- the AD SPACE pinwheel: touch it and get flung away (toss physics), then recover ---------- */
+  var lastFling = -1e9;
+  function spinCenter() {
+    var el = window.AdSpin && AdSpin.el; if (!el) return null;
+    var r = el.getBoundingClientRect(); if (!r.width) return null;
+    return [r.left + window.scrollX + r.width / 2, r.top + window.scrollY + r.height / 2, r.width * 0.42];
+  }
+  function checkSpin(now) {
+    if (CALM[S.mode] || S.scale < 0.9 || now - lastFling < 3000) return;
+    var c = spinCenter(); if (!c || Math.hypot(S.x - c[0], S.y - c[1]) > c[2] + 6 * K) return;
+    lastFling = now; var dir = S.x < c[0] ? -1 : 1; if (Math.abs(S.x - c[0]) < 4) dir = R() < 0.5 ? -1 : 1;
+    if (web && S.mode === 'weave') { var w = web; web = null; removeWeb(w); }
+    S.mode = 'fling'; S.tuck = true; S.v = 0; S.hop = 0; S.target = null;
+    S.act = { vx: dir * (6 + R() * 3), vy: -10 - R() * 3, spin: dir * (0.3 + R() * 0.15), floor: Math.min(view().y + view().h - 50, S.y + 90 + R() * 140), bounce: 0, t: 0 };
+    if (window.AdSpin) AdSpin.kick = 0.6;
+    snd('whee'); say(pick(['哇啊啊——！', '呀～～飞了！', '风车好凶！']), 1500);
+  }
+  function stepFling(dt) {
+    var A = S.act, v = view(); A.t += dt;
+    A.vy += 0.45 * dt; S.x += A.vx * dt; S.y += A.vy * dt; S.a += A.spin * dt;
+    if (S.x < v.x + 20) { S.x = v.x + 20; A.vx = Math.abs(A.vx) * 0.7; snd('bonk'); }
+    if (S.x > v.x + v.w - 20) { S.x = v.x + v.w - 20; A.vx = -Math.abs(A.vx) * 0.7; snd('bonk'); }
+    if (A.vy > 0 && S.y >= A.floor) {
+      S.y = A.floor;
+      if (A.bounce < 1 && A.vy > 4) { A.bounce++; A.vy = -A.vy * 0.38; A.vx *= 0.6; A.spin *= 0.5; snd('bonk'); }
+      else {
+        S.mode = 'idle'; S.tuck = false; S.act = null; S.wait = 130; S.twitch = 60; S.a = Math.PI / 2 + (R() - 0.5) * 0.6; plantAll();
+        snd('dizzy'); say(pick(['头好晕……', '@_@ 转晕了', '再也不碰风车了……']), 2200);
+        if (inR(S.x, S.y, noGo(30))) { var o = nearestOutside(S.x, S.y) || randomSpot(); if (o) startDig(o[0], o[1], null); }
+      }
+    }
+    if (A.t > 400) { S.mode = 'idle'; S.tuck = false; S.act = null; S.wait = 60; plantAll(); }
+  }
+
   /* ---------- main loop ---------- */
   var lastT = performance.now(), chatter = 500, guard = 0, sndMode = null, sndT = 0;
   function tick(now) {
@@ -433,14 +482,17 @@
     var dt = Math.min(3, (now - lastT) / 16.67); lastT = now;
     if (document.hidden) return;
     refreshNoGo(); S.t += dt; updateDirt(dt);
-    if (window.SND && SND.on && onScreen(S.x, S.y)) {
-      if (S.mode !== sndMode) { var M = { swing: 'swing', dangle: 'swing', dig: 'dig', flee: 'hop', weave: 'web' }; if (M[S.mode]) SND.spider(M[S.mode]); sndMode = S.mode; }
+    if (onScreen(S.x, S.y)) {
+      if (S.mode !== sndMode) { var M = { swing: 'swing', dangle: 'swing', dig: 'dig', weave: 'web', wave: 'wave', dance: 'dance' }; if (M[S.mode]) snd(M[S.mode]); sndMode = S.mode; sndT = 0; }
       sndT += dt;
-      if ((S.mode === 'walk' || S.mode === 'flee') && S.v > 0.6) SND.spider('step');
-      if (S.mode === 'weave' && sndT > 22) { sndT = 0; SND.spider('web'); }
-      if (S.mode === 'dig' && sndT > 14) { sndT = 0; SND.spider('dig'); }
-      if (S.mode === 'sleep' && sndT > 110) { sndT = 0; SND.spider('snore'); }
+      if ((S.mode === 'walk' || S.mode === 'flee') && S.v > 0.6) snd('step');
+      if (S.mode === 'weave' && sndT > 22) { sndT = 0; snd('web'); }
+      if (S.mode === 'dig' && sndT > 14) { sndT = 0; snd('dig'); }
+      if (S.mode === 'sleep' && sndT > 150) { sndT = 0; snd('snore'); setTimeout(function () { if (S.mode === 'sleep') snd('pop'); }, 2300); }
+      if (S.mode === 'dance' && sndT > 48) { sndT = 0; snd('dance'); }
+      if (S.mode === 'swing' && S.act && S.act.phase === 'swing' && Math.abs(S.act.w) < 0.004 && sndT > 40) { sndT = 0; snd('swing'); }
     }
+    checkSpin(now);
     if (S.mode === 'dangle') {
       S.y += Math.max(0.6, (S.ty - S.y) * 0.05) * dt; S.a += angDiff(S.a, Math.PI / 2 + Math.sin(now / 300) * 0.15) * 0.1;
       if (S.y >= S.ty) { S.y = S.ty; S.wait += dt; if (S.wait > 40) { S.mode = 'idle'; S.wait = 40; S.twitch = 30; S.tuck = false; plantAll(); say(pick(['嗨～', '我来巡逻了', '大家在干嘛？']), 1800); } }
@@ -471,6 +523,7 @@
     } else if (S.mode === 'dig') stepDig(dt);
     else if (S.mode === 'weave') { if (web) stepWeave(dt); else { S.mode = 'idle'; S.act = null; } }
     else if (S.mode === 'swing') stepSwing(dt);
+    else if (S.mode === 'fling') stepFling(dt);
     else if (S.mode === 'sleep' || S.mode === 'dance' || S.mode === 'wave') stepMood(dt, now);
 
     if (S.mode !== 'off') {
@@ -508,6 +561,7 @@
       if (what === 'weave') return tryWeave();
       if (what === 'swing') return trySwing();
       if (what === 'dig') { var p = randomSpot(true); if (p) { startDig(p[0], p[1], null); return true; } return false; }
+      if (what === 'fling') { var c = spinCenter(); if (!c) return false; lastFling = -1e9; S.x = c[0] - 30; S.y = c[1]; S.mode = 'idle'; S.scale = 1; plantAll(); checkSpin(performance.now()); return S.mode === 'fling'; }
       if (what === 'sleep' || what === 'dance' || what === 'wave') { startMood(what, what === 'sleep' ? 400 : 200, ['…']); return true; }
       if (what === 'cross') {
         var Q = noGo(60); if (!Q) return false;

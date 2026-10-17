@@ -113,6 +113,28 @@
     if (KittyRunner.state && KittyRunner.state.mode === 'title') KittyRunner.action();
   });
 
+  /* ad box: a pixel pinwheel that never stops spinning (小八 gets flung if it touches it) */
+  var spin = $('adSpin');
+  if (spin) {
+    var sg = spin.getContext('2d'), sa = 0, SC = ['#ff4fa3', '#4fe3ff', '#ffd45e', '#5dff8f'];
+    window.AdSpin = { el: spin, speed: 0.09, kick: 0 }; /* spider.js adds a kick when 小八 bumps into it */
+    var drawSpin = function () {
+      requestAnimationFrame(drawSpin);
+      if (document.hidden) return;
+      sa += window.AdSpin.speed + window.AdSpin.kick; window.AdSpin.kick *= 0.97; sg.clearRect(0, 0, 40, 40);
+      sg.fillStyle = '#3d2a66'; sg.fillRect(19, 20, 2, 20); sg.fillStyle = '#2a1648'; sg.fillRect(14, 38, 12, 2);
+      for (var k = 0; k < 4; k++) {
+        var a0 = sa + k * Math.PI / 2;
+        for (var r = 2; r < 16; r++) for (var w = 0; w <= r * 0.7; w += 0.6) {
+          var a = a0 + w / r, x = Math.round(20 + Math.cos(a) * r), y = Math.round(20 + Math.sin(a) * r);
+          sg.fillStyle = w > r * 0.55 || r > 14 ? '#1a1030' : SC[k]; sg.fillRect(x, y, 1, 1);
+        }
+      }
+      sg.fillStyle = '#ffffff'; sg.fillRect(19, 19, 2, 2);
+    };
+    drawSpin();
+  }
+
   /* inspiration chart */
   var ch = $('chart'), cg = ch.getContext('2d'), data = [], v = 70000;
   for (var i = 0; i < 90; i++) { v += (R() - 0.46) * 1800; data.push(v); }

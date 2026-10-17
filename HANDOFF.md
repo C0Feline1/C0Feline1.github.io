@@ -73,3 +73,19 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 
 ## Keys
 - Z = A button (jump / confirm; Space, ↑, Enter also work), X = B button (select / pause; P and Esc also pause), A = SKILL, S = FIRE, ← → move, ↓ hold to crouch, M = sound, 1/2/3 pick a character on the title screen. No WASD aliases (A/S are SKILL/FIRE). Keys are case-insensitive.
+
+## Phase 2（2026-10-17）
+- 排行榜区：左 TOP100（固定高度、内部滚动、超长名字省略号），右"广告位招租"（像素风车；小八碰到风车会被甩飞，晕一下再爬起来）。不是真广告，没有第三方脚本。
+- 结算弹窗：死亡立刻弹出并锁住新开局；Esc = 确认（再按一次才放弃）；排行榜刷新不会盖掉"本局不计分"；提交失败会一直显示错误 + 重试按钮。
+- 国家 / 地区：弹窗里可搜索的 ISO 3166-1 alpha-2 列表（中文名 + 国旗 emoji，`Intl.DisplayNames` 生成名字），默认按 `navigator.language` 猜，可选"🏳️ 未选"。记在 `localStorage['runner-cc']`。Windows 不显示国旗 emoji：检测到后改为显示两位代码小徽章（如 `JP`），不下载任何图片。
+- 小八音效独立于游戏 SOUND：左下角 🕷 开关（手机上在页首右上角），`localStorage['spider-sound']`，首次点击/按键后解锁。
+- 游戏：休息屋按地点换主题（公寓 / 茶室 / 山屋 / 木屋），每屋 7 个可互动物件（↓ 使用，各给一次小奖励），最多停留 4 分钟；爬墙竖井更高（150/200/250 m 目标，第 1 圈无尖刺）并带纵向镜头；最后一个世界（湖）之后进入"一圈完成！"派对房间（本圈小结）；第 2 圈起世界顺序打乱（家在最前、湖在最后、Boss 在倒数第 2/3、庭院在中段、休息屋间隔 ≥ 4 个世界）。
+
+## 排行榜服务器 · 严格校验（重要）
+- 服务器代码不在本仓库里（防作弊规则不公开），交付文件：`server/kr_server.py`（替换 `/opt/kittyrunner/app/kr_server.py`），测试 `server/test/test_server.py`。
+- **`GAME_VERSION`**：`js/game.js` 里的 `GAME_VERSION` 与 `kr_server.py` 里的 `GAME_VERSION` 必须一致。客户端提交时带 `v`，版本不符服务器返回 426「游戏版本已更新，请刷新页面后再玩」。
+- **改了世界长度 / 顺序 / 速度 / 房间 / 星砂数量，就必须同时更新服务器的表**（`WORLDS`、`ROOM_MAX`、`COURT_MAX`、`SHARD_CAP`、`CLIMB_MAX` 等），并把两边的 `GAME_VERSION` 一起改掉，然后跑 `server/test/test_server.py`（会用真实游戏生成诚实成绩）。否则正常玩家的成绩会被拒。`KittyRunner.meta()` 会输出当前游戏的表，可直接对照。
+- 部署顺序：先换服务器、重启 `kittyrunner.service`，再推前端（或几乎同时）。旧页面在换服后提交会收到 426，提示刷新。
+- 数据库自动迁移：启动时对 `scores` 表 `ALTER TABLE ADD COLUMN cc`、`ver`（缺才加），旧数据保留，`/top` 多返回 `cc`（旧记录为空）。环境变量与原来一致（`KR_DB` / `KR_PORT` / `KR_SALT`），只用标准库。
+- 拒绝原因写到 stderr（journald：`journalctl -u kittyrunner.service`），格式 `kr: ip=<盐化哈希前 10 位> reject <原因> ...`，不记 IP 和名字。
+- 局限：游戏逻辑在浏览器里跑，服务器只能检查"这份成绩是否可能由真实游戏产生"；星砂上限按"全程双倍 + 磁铁"估算，作弊者最多只能刷到上限附近。

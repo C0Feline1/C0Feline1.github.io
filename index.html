@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>独立开发人C0 · C0 STUDIO</title>
-<meta name="description" content="独立开发人C0 的作品主页：星梦画廊 Stardream Gallery 等。Developer site (privacy policy, app-ads.txt).">
+<meta name="description" content="独立开发人C0 的作品主页：星梦画廊 Stardream Gallery 等。Developer site (games, privacy policies).">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff4fa3' d='M1 0h1v1h1v1h2V1h1V0h1v6H6v1H2V6H1z'/%3E%3Cpath fill='%23fff' d='M2 3h1v1H2zM5 3h1v1H5z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,8 +102,9 @@
   .about { color: #cfc3ea; font-size: 12px; margin: 10px 0 0; }
   footer { text-align: center; color: var(--dim); font-size: 11px; margin-top: 10px; }
 
-  .lb { grid-column: 1 / -1; display: flex; flex-direction: column; }
-  .lb-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; font-size: 13px; scrollbar-width: thin; scrollbar-color: var(--pink) transparent; }
+  .lbrow { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: inherit; gap: 8px; min-width: 0; }
+  .lb { display: flex; flex-direction: column; min-width: 0; margin: 0; }
+  .lb-list { list-style: none; margin: 0; padding: 0; height: 232px; max-height: 232px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; font-size: 13px; scrollbar-width: thin; scrollbar-color: var(--pink) transparent; }
   .lb-row { display: grid; grid-template-columns: 34px 1fr auto 70px; gap: 8px; padding: 3px 6px; border-bottom: 1px dashed var(--line); align-items: center; }
   .lb-row:nth-child(odd) { background: rgba(255,255,255,.02); }
   .lb-rank { color: var(--dim); text-align: right; }
@@ -115,6 +116,22 @@
   .lb-row.top3 .lb-rank, .lb-row.top3 .lb-name { color: #ffb07a; }
   .lb-row.me { background: rgba(255,79,163,.18); outline: 1px solid var(--pink); }
   .lb-empty { color: var(--dim); padding: 10px 4px; }
+  .lb-retry { margin: 6px 0 0; font-size: 12px; color: var(--red); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .lb-retry[hidden] { display: none; }
+  .lb-retry button, .lb-btns button.retry { background: var(--gold); color: #1a1030; border: 0; font: 12px "DotGothic16", monospace; padding: 4px 10px; cursor: pointer; }
+  .ad { display: flex; flex-direction: column; min-width: 0; margin: 0; }
+  .ad-body { flex: 1; display: flex; gap: 14px; align-items: center; justify-content: center; border: 2px dashed var(--line); padding: 12px; min-height: 200px;
+    background: repeating-linear-gradient(45deg, rgba(255,212,94,.04) 0 10px, transparent 10px 20px); }
+  #adSpin { width: 120px; height: 120px; image-rendering: pixelated; flex: none; }
+  .ad-copy b { color: var(--gold); font-size: 18px; font-weight: normal; letter-spacing: 2px; }
+  .ad-copy p { margin: 6px 0 0; color: #cfc3ea; font-size: 12px; line-height: 1.5; }
+  .ad-copy .dim, .ad-note { color: var(--dim) !important; font-size: 10px !important; }
+  .work-link a { display: block; color: inherit; text-decoration: none; }
+  .work-link:hover { border-color: var(--pink); background: rgba(255,79,163,.08); }
+  .work-link:hover b { color: var(--pink); }
+  .legal-h { margin: 0 0 4px; font-size: 12px; font-weight: normal; color: var(--gold); letter-spacing: 1px; }
+  .legal-apps { margin-bottom: 8px; }
+  .legal-apps .app { color: #fff; }
   .lb-tip { color: var(--dim); font-size: 11px; margin: 6px 0 0; }
   .lb-modal { position: fixed; inset: 0; background: rgba(7,5,13,.72); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
   .lb-modal[hidden] { display: none; }
@@ -129,6 +146,13 @@
   .lb-btns button { flex: 1; background: var(--pink); color: #fff; border: 0; font: 14px "DotGothic16", monospace; padding: 8px; cursor: pointer; box-shadow: inset 0 -3px 0 #a0205e; }
   .lb-btns button.ghost { background: transparent; color: var(--dim); border: 1px solid var(--line); box-shadow: none; }
   .lb-btns button:disabled { opacity: .5; cursor: default; }
+  .cc-label { margin-top: 10px; }
+  .cc-pick { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .cc-pick input { margin-top: 0 !important; flex: 1; min-width: 0; }
+  .cc-flag { min-width: 26px; text-align: center; font-size: 18px; }
+  .lb-box select { display: block; width: 100%; margin-top: 6px; background: #07050d; border: 1px solid var(--line); color: #fff; font: 14px "DotGothic16", monospace; padding: 5px 6px; }
+  .flag { margin-right: 5px; font-family: "Twemoji Country Flags", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+  .flag-cc { display: inline-block; margin-right: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--dim); font: 10px/13px monospace; vertical-align: 1px; letter-spacing: .5px; }
   .lb-msg { min-height: 1.4em; margin: 8px 0 0 !important; color: var(--cyan) !important; font-size: 12px; }
 
   .xbtns { display: flex; gap: 6px; }
@@ -144,6 +168,7 @@
   @media (max-width: 920px) {
     .cards { grid-template-columns: repeat(2, 1fr); }
     .main, .lower { grid-template-columns: 1fr; }
+    .lbrow { grid-template-columns: 1fr; }
     .gba { grid-template-columns: 1fr 1fr; padding: 12px 10px 18px; border-radius: 14px 14px 34px 34px; }
     .gba .scr { grid-column: 1 / -1; }
     .gba .side { flex-direction: row; justify-content: center; }
@@ -194,6 +219,7 @@
       grid-template-areas: "top top top" "cards cards cards" "main arcade lower" "foot foot foot"; align-items: stretch; }
     .top { grid-area: top; } .cards { grid-area: cards; } footer { grid-area: foot; }
     .main { grid-area: main; grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+    .lbrow { grid-template-columns: 1fr; }
     .arcade { grid-area: arcade; }
     .arcade > .panel { display: flex; flex-direction: column; }
     .gba { flex: 1; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; padding: 18px 10px; }
@@ -227,10 +253,24 @@
       <div class="ph"><h2>&gt;_ build.log</h2><span class="tag" style="color:var(--green)">TAIL -F</span></div>
       <pre id="log"></pre>
     </div>
-    <div class="panel lb">
-      <div class="ph"><h2>🏆 HALL OF FAME · 排行榜 TOP 100</h2><span class="tag" id="lbStatus" style="color:var(--dim)">…</span></div>
-      <ol class="lb-list" id="lbList"><li class="lb-empty">加载中……</li></ol>
-      <p class="lb-tip">任意一局得分进入全球前 100 名，就可以留下名字。</p>
+    <div class="lbrow">
+      <div class="panel lb">
+        <div class="ph"><h2>🏆 HALL OF FAME · 排行榜 TOP 100</h2><span class="tag" id="lbStatus" style="color:var(--dim)">…</span></div>
+        <ol class="lb-list" id="lbList"><li class="lb-empty">加载中……</li></ol>
+        <p class="lb-retry" id="lbRetry" hidden><span id="lbRetryMsg">上一局成绩没有提交成功</span> <button type="button" id="lbRetryBtn">重试提交</button></p>
+        <p class="lb-tip">任意一局得分进入全球前 100 名，就可以留下名字。</p>
+      </div>
+      <div class="panel ad" id="adBox">
+        <div class="ph"><h2>📢 广告位招租 · AD SPACE FOR RENT</h2><span class="tag" style="color:var(--gold)">VACANT</span></div>
+        <div class="ad-body">
+          <canvas id="adSpin" width="40" height="40" aria-label="一直在转的像素风车"></canvas>
+          <div class="ad-copy">
+            <b>此处广告位招租</b>
+            <p>日均曝光：小八 × 1<br>租金：一条小鱼干 / 月<br>风车由小八看守，<span class="dim">请勿靠近</span></p>
+            <p class="ad-note">* 这不是真广告，没有任何第三方内容</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -274,7 +314,7 @@
     <div class="panel">
       <div class="ph"><h2>WORKS · 作品</h2><span class="tag">3 SLOTS</span></div>
       <ul class="works">
-        <li><span class="st tag" style="color:var(--gold)">封闭测试中</span><b>星梦画廊 Stardream Gallery</b><p>竖屏拼图 · Android · <a href="/stardream-gallery-privacy/">隐私政策</a></p></li>
+        <li class="work-link"><a href="https://play.google.com/store/apps/details?id=com.stardreamgallery.game" target="_blank" rel="noopener"><span class="st tag" style="color:var(--gold)">封闭测试中</span><b>星梦画廊 Stardream Gallery ↗</b><p>竖屏拼图 · Android · 在 Google Play 查看</p></a></li>
         <li><span class="st tag" style="color:var(--cyan)">制作中</span><b>归途的余温</b><p>像素横版动作冒险 · 上面那个跑酷是它的小番外</p></li>
         <li class="locked"><span class="st tag">LOCKED</span><b>？？？</b><p>正在构思……</p></li>
       </ul>
@@ -282,9 +322,12 @@
     </div>
     <div class="panel">
       <div class="ph"><h2>LEGAL &amp; VERIFY · 法律与验证</h2><span class="tag" style="color:var(--green)">ALL GREEN</span></div>
+      <h3 class="legal-h">隐私政策 · Privacy Policies</h3>
+      <ul class="links legal-apps">
+        <!-- one <li> per app: add new apps here -->
+        <li><span class="app">星梦画廊 Stardream Gallery</span><a href="/stardream-gallery-privacy/">隐私政策 / Privacy ›</a></li>
+      </ul>
       <ul class="links">
-        <li><a href="/stardream-gallery-privacy/">星梦画廊 · 隐私政策</a><span class="ok">● 200</span></li>
-        <li><a href="/app-ads.txt">app-ads.txt · AdMob</a><span class="ok">● 200</span></li>
         <li><span>开发者网站</span><span class="ok">c0feline1.github.io</span></li>
       </ul>
       <p class="about" id="verifyNote">最近一次自检：<span id="verifyTime">--</span>　<span class="ok" style="color:var(--green)">OK</span></p>
@@ -297,17 +340,21 @@
     <h3 id="lbTitle">★ NEW RECORD ★</h3>
     <p>本局得分 <b id="lbScore">0</b>　<span id="lbRankHint"></span></p>
     <label>留下名字登上排行榜（1-12 个字）<input id="lbName" maxlength="12" autocomplete="nickname" spellcheck="false"></label>
+    <label class="cc-label">国家 / 地区（可以不选）
+      <span class="cc-pick"><span class="cc-flag" id="lbCcFlag" aria-hidden="true"></span><input id="lbCcFind" placeholder="搜索：中国 / Japan / JP" autocomplete="off" spellcheck="false" aria-label="搜索国家或地区"></span>
+      <select id="lbCc" aria-label="国家或地区"></select>
+    </label>
     <div class="lb-btns"><button id="lbSend">登上排行榜</button><button id="lbSkip" class="ghost">算了</button></div>
     <p class="lb-msg" id="lbMsg"></p>
   </div>
 </div>
-<script src="js/pixel.js?v=20261017a"></script>
-<script src="js/audio.js?v=20261017a"></script>
-<script src="js/game.js?v=20261017a"></script>
-<script src="js/music.js?v=20261017a"></script>
-<script src="js/logs.js?v=20261017a"></script>
-<script src="js/dash.js?v=20261017a"></script>
-<script src="js/spider.js?v=20261017a"></script>
-<script src="js/board.js?v=20261017a"></script>
+<script src="js/pixel.js?v=20261017c"></script>
+<script src="js/audio.js?v=20261017c"></script>
+<script src="js/game.js?v=20261017c"></script>
+<script src="js/music.js?v=20261017c"></script>
+<script src="js/logs.js?v=20261017c"></script>
+<script src="js/dash.js?v=20261017c"></script>
+<script src="js/spider.js?v=20261017c"></script>
+<script src="js/board.js?v=20261017c"></script>
 </body>
 </html>
