@@ -1393,14 +1393,52 @@
     press();
   }
   /* screen taps: only pointer events on the canvas itself count (the console shell, bezel and Joy-Con bodies have no handler).
-     Title: starts a normal run (whatever is highlighted). Play: the same as A (tap = jump, hold = higher jump, released on
-     pointerup anywhere). Game over: again (after the short delay; not while the name box is open). Menus and pause: buttons only. */
+     The tap is hit-tested in game pixels (240x160) against what is drawn:
+     Title: a character card selects it (tapping the selected card starts a run), PRACTICE / ALBUM / BADGES open, anywhere else
+     starts a normal run. Practice / badges: a world tile selects it, tapping it again = {A} (go); the header = back.
+     Album: a photo selects it, again = zoom; any tap closes the zoom. Pause: the three buttons. Play: the same as A (tap = jump,
+     hold = higher jump, released on pointerup anywhere). Game over: again (after the short delay; not while the name box is open). */
+  function inBox(p, x, y, w, h) { return p.x >= x - 2 && p.x < x + w + 2 && p.y >= y - 2 && p.y < y + h + 2; }
+  function tapAt(p) {
+    var i;
+    if (st.mode === 'title') {
+      if (locked) return;
+      for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 46, 52, 76)) {
+        if (i === st.sel && st.trow !== 1) { st.pbi = -1; newGame(); } else { st.sel = i; st.trow = 0; SFX.select(); }
+        return;
+      }
+      for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 134, 52, 11)) { st.trow = 1; st.msel = i; openMenu(i); return; }
+      st.pbi = -1; newGame(); return;
+    }
+    if (MENUS[st.mode]) {
+      if (st.mode === 'album') {
+        if (st.zoom) { st.zoom = false; SFX.select(); return; }
+        for (i = 0; i < ALBUM_ROOMS.length; i++) if (inBox(p, 9 + (i % 3) * 76, 22 + Math.floor(i / 3) * 62, 72, 56)) {
+          if (i === st.acur) menuConfirm(); else { st.acur = i; SFX.select(); }
+          return;
+        }
+      } else {
+        for (i = 0; i < PRACTICE_LIST.length; i++) if (inBox(p, 6 + (i % 6) * 38, 20 + Math.floor(i / 6) * 29, 34, 28)) {
+          if (i === st.pcur) { if (st.mode === 'practice') menuConfirm(); } else { st.pcur = i; SFX.select(); }
+          return;
+        }
+      }
+      if (p.y < 17) menuBack();
+      return;
+    }
+    if (st.mode === 'paused') {
+      for (i = 0; i < 3; i++) if (inBox(p, W / 2 - 46, 66 + i * 18, 92, 15)) { st.psel = i; pauseChoose(); return; }
+      return;
+    }
+    if (st.mode === 'play' || st.mode === 'over') onAction();
+  }
   cv.addEventListener('pointerdown', function (e) {
     if (e.button > 0) return;
     e.preventDefault(); e.stopPropagation(); cv.focus({ preventScroll: true }); kick();
-    if (st.mode === 'title') { if (!locked) { st.pbi = -1; newGame(); } }
-    else if (st.mode === 'play' || st.mode === 'over') onAction();
+    var r = cv.getBoundingClientRect();
+    tapAt({ x: (e.clientX - r.left) / (r.width || 1) * W, y: (e.clientY - r.top) / (r.height || 1) * H });
   });
+  cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
   function pauseChoose() { autoPaused = false; var s = st.psel || 0; if (s === 0) st.mode = 'play'; else if (s === 1) newGame(); else { st.mode = 'title'; st.t = 0; } SFX.select(); }
