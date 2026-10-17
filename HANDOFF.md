@@ -72,7 +72,7 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - build.log capped at 40 lines.
 
 ## Keys
-- Z = A button (jump / confirm; Space, ↑, Enter also work), X = B button (select / pause; P and Esc also pause), A = SKILL, S = FIRE, ← → move, ↓ hold to crouch, M = sound, 1/2/3 pick a character on the title screen. No WASD aliases (A/S are SKILL/FIRE). Keys are case-insensitive.
+- (Phase 3C, Switch layout) Z = **A** jump / confirm (Space, ↑, Enter also work) · X = **B** skill in a run (C0 overclock), back / select in menus · A = **X** attack (Feline1: hold ~0.6 s to switch claw ↔ yarn ball) · S = **Y** interact (enter a rest house / the oasis, use toys, leave by the exit door; on the title it opens the menu row) · ↓ hold to crouch · ← → move · P / Esc = **+** pause · M = music. **−** on the left Joy-Con = the old B (select / pause). 1/2/3 pick a character on the title screen. Arrows only, no WASD. Keys are case-insensitive. Tapping / clicking the game screen does nothing in a run (it only focuses the game and starts it from the title).
 
 ## Phase 2（2026-10-17）
 - 排行榜区：左 TOP100（固定高度、内部滚动、超长名字省略号），右"广告位招租"（像素风车；小八碰到风车会被甩飞，晕一下再爬起来）。不是真广告，没有第三方脚本。
@@ -111,7 +111,7 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - 版本：`?v=20261018b`；`GAME_VERSION` 仍是 `kr2-20261017`，提交格式不变，服务器不用换。
 - A2 三个人物（`js/pixel.js` "characters v3"）：每人有自己的头部、身体、腿部图块。先按图块画好，再自动描边，画布仍是 16×24。碰撞盒在 `game.js` 的 `pbox()` 里，和美术无关，这次没有改动。
   - C0（程序员）：刺猬头、眼镜、耳机 + 麦克风、连帽衫、牛仔裤、球鞋。跑步时身体前倾、摆臂，步频最快。超频时眼镜发青光（`s.glow`）。滑铲是脚先滑出、抱着笔记本。房间待机时敲键盘、喝咖啡、推眼镜。
-  - X0（画师）：长发和蝴蝶结。头发有 4 种状态（静止 / 两帧飘动 / 上扬），裙摆 3 帧摆动，步子轻、步频慢。跳跃和下落时头发上扬，翻转重力的空中也一样。待机时撩头发、拿画笔。护盾开着时身后留下彩色颜料点。滑铲是跪滑，长发向后飘。
+  - X0（女朋友，美少女）：长发和蝴蝶结。头发有 4 种状态（静止 / 两帧飘动 / 上扬），裙摆 3 帧摆动，步子轻、步频慢。跳跃和下落时头发上扬，翻转重力的空中也一样。待机时撩头发、拿画笔。护盾开着时身后留下彩色颜料点。滑铲是跪滑，长发向后飘。
   - Feline1（猫娘）：猫耳、短发、尾巴（4 种摆动 + 落地炸毛）、肉垫手套、粉裙、白丝袜。跑步一蹦一跳，耳朵会抖。二段跳时空翻一圈。受伤时耳朵下垂。滑铲是单膝低身滑。待机时舔爪子、甩尾巴。
   - 新增帧：`idle[]`、`slide`、`climb[2]`、`swim[2]`、`ride`（飞行）、`jet`、`land`、`cheer`、`skill`、`glow`。房间里主角站着不动约 1.5 秒后开始播待机动作；同伴到了玩具旁边也会播待机；派对房间里会欢呼；标题画面上没选中的人物也在做待机动作。
 - G9 爬墙：
@@ -121,3 +121,27 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
     - 集市 / 樱花 / 鬼屋：原有尖刺改成上下滑动。
     - 冰湖：冰踏点挂住约 0.6 秒就会碎，碎掉 2.5 秒后长回来。
   - 目标高度、硬币、+3 奖励和 45 秒"HELPING PAW"都没变，所以服务器的 `CLIMB_MAX` 和时间上限不用改。陷阱在离开阶段和被帮助后都不会生效。
+
+## Phase 3C（2026-10-18，玩法 + 主机外观 + 服务器 kr3，**要换服务器**）
+- 版本：所有脚本 `?v=20261018i`（建立在热修复 20a6714 / `?v=20261018h` 之上）；`GAME_VERSION = 'kr3-20261018'`（`js/game.js` 与 `server/kr_server.py` 一致）。**部署顺序：先换服务器并重启 `kittyrunner.service`，再推前端**。kr3 服务器会给旧页面（kr2）返回 426「请刷新」。提交格式（cc, cps, dist, frames, name, nonce, run, score, shards, v）没有变。
+- `/top` 每行新增 `ts`（整数，Unix 秒），`date` 保留。排行榜在每行显示上榜时间，用看榜人自己的时区（"MM-DD HH:mm"，往年的显示日期），鼠标悬停显示完整时间；旧接口没有 `ts` 时退回显示 `date`。
+- G3 每圈打乱的规则（第 2 圈起，客户端 `lapOrderOk` 与服务器 `g3_step` 规则一样）：
+  - 非跑步世界最多连续 2 个；
+  - 第 1–2 格不能是重力翻转世界，也不能是难世界（天空城、太空、镜湖）；
+  - 两个难世界至少隔 4 格，两个小 Boss 世界（火山、鬼屋）也至少隔 4 格；
+  - Boss（山顶）前一格不能是难世界或小 Boss 世界。
+  - 客户端先随机抽样，抽不到就用 `SAFE_ORDER` 兜底。测试用 600 个真实生成的顺序跑服务器规则，全部通过。
+- G4：第 2 圈起出现精英怪（金色闪光，击败掉更多星砂），短世界（≤480 m）在第 2 圈起障碍间距 ×0.78。
+- G5 小 Boss（世界进度 32%–80% 之间）：火山 LAVA EEL（突进 / 掠地 / 吐火，都有预警；无伤 +10，否则 +5）；鬼屋 BUTLER GHOST（扔高 / 低盘子，第 2 圈起还会扔两个低杯子；HP 20+6/圈；远程打它，或近战把盘子拍回去；击败 +10，撑过去 +4）。HUD 第 35 行有血条。
+- 键位 / 主机（Switch 风格）：见上面 Keys 一节。左 Joy-Con（蓝）：十字键 + −；右 Joy-Con（红）：X/Y/A/B 菱形（X 上、A 右、B 下、Y 左）+ +。默认是"左手柄 | 屏幕 | 右手柄"；如果竖排（屏幕在上，两个手柄并排在下）能让屏幕大 15% 以上，就用竖排（手机，以及 1920×1080 这种中栏窄而高的情况）。主机和键盘说明在高面板里一起垂直居中。画面保持 3:2 并尽量放大（桌面上差 10% 以内会对齐到整数倍）。左上角突出的标签按钮「♪ 音乐 开 / 关」切换音乐。键盘说明在主机下方（≤520px 隐藏）。点主机任意位置只会在标题画面开始游戏；游戏中点屏幕不会触发任何操作。SKILL/FIRE 按钮已去掉。
+- 攻击（X / 键 A）：每个世界都能攻击。能被打的是动物 / 敌人 / 符咒 / 齿轮，尖刺和坑打不掉。击败掉 1 星砂（高潮段的不掉）。
+  - Feline1：猫爪近战（伤害高、范围大、距离短）。按住约 0.6 秒切换成毛线球远程，会弹字提示当前模式。
+  - C0：代码弹 `{ }` `</>`。
+  - X0：画笔近战，挥出彩色弧线并留下颜料拖尾。
+  - 每种攻击有自己的音效和命中特效。近战可以把管家的盘子拍回去。
+  - 徽章"5 杀"现在每个世界都有，每个世界 3 个徽章。
+- 休息站可选：路边的休息屋出现时，经过门口按 Y（键 S）进屋，直接跑过去就跳过。绿洲也一样：在它前一个世界的最后 48 m 或绿洲那 10 m 里按 Y 进入，否则直接穿过。世界顺序和检查点（`court` 世界照常记录）都不变。圈末派对房间仍然必进。服务器本来就把 `H:<房间>` 当可选；绿洲的检查只限制时间和星砂上限，所以进不进都能通过。测试里有"全部跳过"和"随机进 / 跳"两种诚实成绩，都被接受。
+- PRACTICE 重做：只有正式跑到过的世界能选（`localStorage['runner-seen']`；旧存档里有徽章的世界也算到过），没到过的显示锁和"？？？"。选中的世界无限循环，每 20 秒升一级，最高 LV 10（之后保持）：障碍更密（间距最多 ×0.6）、精英怪、片段更频繁、LV 5 起有落物。速度不加，只随世界内的距离小幅变化，每圈重置。HUD 显示 `PRACTICE LV n` 和升级进度条。结算页显示 LV / 圈数 / 时间。练习**不调用 /start 或 /submit**。
+- 新 localStorage 键：`runner-seen`。
+- `SHARD_CAP` 重新标定（`server/test/measure.py`，约 1700 个种子 × 8 圈）：机器人全程开着双倍 + 磁铁（实际玩不到），每个世界都攻击，休息站随机进或跳。公式 `cap = ceil((最大值 + extra) × 1.08 / 0.8)`，后面的圈不低于前面的圈；extra：火山 +5（鳗鱼无伤奖励机器人拿不到），鬼屋 +6（击败管家和撑过去的奖励差）。机器人的最大值 ≤ 每格上限的 74%。另外用 1400 个种子算出的上限去检验另外 300 个种子，最高也只到 80%。
+- 测试：`server/test/test_server.py`（诚实成绩里包括"全部跳过休息站"和"随机进 / 跳"；G3 作弊会按正确的原因被拒；也测了 600 个真实生成的顺序）。前端测试脚本在 `/workspace/site/p3c/`（不在仓库里）。

@@ -44,13 +44,22 @@
   }
 
   var highlight = null;
+  /* phase3C: when the score was set, in the viewer's own time zone: "MM-DD HH:mm" (this year) or "YYYY-MM-DD" (older);
+     hover shows the full local date/time. Falls back to the server's UTC date for old API responses without ts. */
+  var TF = null; try { TF = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); } catch (e) { }
+  function when(r) {
+    if (!r.ts || !TF || !TF.formatToParts) return { s: r.date ? String(r.date).slice(5) : '', t: r.date || '' };
+    var d = new Date(r.ts * 1000), p = {}; TF.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+    var hh = p.hour === '24' ? '00' : p.hour;
+    return { s: +p.year === new Date().getFullYear() ? p.month + '-' + p.day + ' ' + hh + ':' + p.minute : p.year + '-' + p.month + '-' + p.day, t: d.toLocaleString() };
+  }
   function render(top) {
     if (!top.length) { listEl.innerHTML = '<li class="lb-empty">还没有人上榜，第一名等你来拿！</li>'; return; }
     listEl.innerHTML = top.map(function (r) {
       var cls = r.rank <= 3 ? ' top' + r.rank : '';
       if (highlight && r.name === highlight.name && r.score === highlight.score) cls += ' me';
       return '<li class="lb-row' + cls + '"><span class="lb-rank">' + r.rank + '</span><span class="lb-name">' + flagHTML(r.cc) + esc(r.name) +
-        '</span><span class="lb-char">' + (NAMES[r.char] || '') + '</span><span class="lb-score">' + r.score + '</span></li>';
+        '</span><span class="lb-char">' + (NAMES[r.char] || '') + '</span><span class="lb-time" title="' + esc(when(r).t) + '">' + esc(when(r).s) + '</span><span class="lb-score">' + r.score + '</span></li>';
     }).join('');
     var me = listEl.querySelector('.me'); if (me) me.scrollIntoView({ block: 'nearest' });
   }

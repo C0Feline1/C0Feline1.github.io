@@ -23,7 +23,7 @@
 
   $('ticker').innerHTML = [
     '<em>BUILD</em> 归途的余温 v0.7.3 编译通过', '<em>星梦画廊</em> 封闭测试进行中', '<em>Feline1</em> 又把咖啡打翻了',
-    '<em>X0</em> 今日已画 512 像素', '<em>C0</em> 提交了 17 次 "fix typo"', '<em>app-ads.txt</em> ✓ 200 OK',
+    '<em>X0</em> 今日份可爱已送达 ♥', '<em>C0</em> 提交了 17 次 "fix typo"', '<em>app-ads.txt</em> ✓ 200 OK',
     '<em>猫猫</em> 已连续睡眠 6 小时', '<em>天气</em> 霜脊方向有异常降雪', '<em>提示</em> 下面的跑酷可以玩'
   ].join('　·　');
 
@@ -95,10 +95,14 @@
   function bindBtn(el, fn) {
     el.addEventListener('pointerdown', function (e) { e.preventDefault(); $('game').focus({ preventScroll: true }); fn(); });
   }
+  /* Switch layout: A = jump / confirm, B = skill (back in menus), X = attack (hold: auto / Feline1 switches claw-yarn), Y = interact,
+     - = back / change character, + = pause / start */
   bindBtn($('aBtn'), function () { KittyRunner.action(); });
-  bindBtn($('bBtn'), function () { KittyRunner.b(); });
-  if ($('sBtn')) bindBtn($('sBtn'), function () { KittyRunner.skill(); });
-  if ($('fBtn')) { bindBtn($('fBtn'), function () { KittyRunner.fire(true); }); ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('fBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); }); }
+  bindBtn($('bBtn'), function () { KittyRunner.bPress(); });
+  if ($('yBtn')) bindBtn($('yBtn'), function () { KittyRunner.y(); });
+  if ($('minusBtn')) bindBtn($('minusBtn'), function () { KittyRunner.b(); });
+  if ($('plusBtn')) bindBtn($('plusBtn'), function () { KittyRunner.plus(); });
+  if ($('xBtn')) { bindBtn($('xBtn'), function () { KittyRunner.fire(true); }); ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('xBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); }); }
   document.querySelectorAll('.dpad button').forEach(function (b) { bindBtn(b, function () { KittyRunner.dpad(b.dataset.d); }); });
   document.querySelectorAll('.dpad button[data-d=left], .dpad button[data-d=right], .dpad button[data-d=down]').forEach(function (b) {
     b.addEventListener('pointerdown', function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, true); });
@@ -113,6 +117,40 @@
     $('game').focus({ preventScroll: true });
     if (KittyRunner.state && KittyRunner.state.mode === 'title') KittyRunner.action();
   });
+
+  /* phase3C: Switch console. Picks "row" (Joy-Cons beside the screen) unless stacking gives a clearly (15 %) bigger screen than
+     "stack" (screen on top, Joy-Cons below), then sizes the screen: as wide as the panel allows while the screen (with the
+     panel title and its bezel) still fits the window height. Desktop snaps to an integer device-pixel scale of 240 px
+     when that costs less than 10 %, so the pixels stay crisp. Phones (<= 520 px) always stack and use the full width. */
+  var scrCv = $('game'), lastScr = 0;
+  function sizeScreen() {
+    if (!shell || !scrCv) return;
+    var panel = shell.parentElement, ph = panel.querySelector('.ph');
+    var ps = getComputedStyle(panel), innerW = panel.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
+    var cw = scrCv.offsetWidth || 1, ch = scrCv.offsetHeight || 1, scr = shell.querySelector('.scr'), jc = shell.querySelector('.jc');
+    var bezelX = scr.offsetWidth - cw, jcW = jc ? jc.offsetWidth : 0;
+    if (shell.classList.contains('stack')) jcW = 108; /* joy-con width in the row layout (CSS .jc width) */
+    var extraY = scr.offsetHeight - ch + parseFloat(getComputedStyle(shell).paddingTop) + 12; /* never the (auto, centring) margin: no feedback */
+    var stackW = Math.max(160, innerW - bezelX), rowW = innerW - bezelX - 2 * jcW, maxW = stackW, row = false;
+    if (window.innerWidth > 520) {
+      var availH = window.innerHeight - extraY - (ph ? ph.offsetHeight + 6 : 0) - parseFloat(ps.paddingTop) - 6, hW = Math.max(360, availH * 1.5);
+      /* stacked: the Joy-Cons sit below the screen, so they take height too (~200 px incl. gaps) */
+      var jcH = shell.classList.contains('stack') && jc ? jc.offsetHeight + 12 : 200;
+      var sW = Math.min(stackW, Math.max(360, (availH - jcH) * 1.5)), rW = Math.min(rowW, hW);
+      row = rW >= 300 && sW < rW * 1.15; maxW = row ? rW : sW; /* the full Switch look unless stacking gives a clearly bigger screen */
+    }
+    shell.classList.toggle('row', row); shell.classList.toggle('stack', !row);
+    var dpr = window.devicePixelRatio || 1, s = Math.floor(maxW * dpr / 240), iw = s * 240 / dpr;
+    var w = window.innerWidth > 520 && s >= 2 && iw >= maxW * 0.9 ? iw : Math.floor(maxW);
+    if (Math.abs(w - lastScr) < 0.5) return;
+    lastScr = w; shell.style.setProperty('--scrw', w + 'px'); shell.classList.add('sized');
+  }
+  if (shell && scrCv) {
+    var scrT = 0, kickScr = function () { cancelAnimationFrame(scrT); scrT = requestAnimationFrame(function () { sizeScreen(); requestAnimationFrame(sizeScreen); }); };
+    window.addEventListener('resize', kickScr);
+    if (window.ResizeObserver) new ResizeObserver(kickScr).observe(shell.parentElement);
+    sizeScreen(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(kickScr);
+  }
 
   /* ad box: a pixel pinwheel that never stops spinning (小八 gets flung if it touches it) */
   var spin = $('adSpin');
@@ -228,13 +266,13 @@
   })();
   var desks = [
     { id: 'C0', x: 22, role: 'CODE', screen: '#4fe3ff' },
-    { id: 'X0', x: 112, role: 'ART', screen: '#b48cff' },
+    { id: 'X0', x: 112, role: '', screen: '#b48cff' },
     { id: 'Feline1', x: 202, role: 'QA', screen: '#ff6fa6' }
   ];
   var bubbles = [], snow = [];
   for (var sn = 0; sn < 30; sn++) snow.push([R() * 60, R() * 54, 0.2 + R() * 0.4]);
   var codeLines = desks.map(function () { var a = []; for (var i = 0; i < 8; i++) a.push([Math.floor(R() * 4), 4 + Math.floor(R() * 14)]); return a; });
-  var SAY = { C0: ['BUG!', 'PUSH!', 'HMM...', 'LGTM', '404?'], X0: ['NICE', '+1 PX', 'COLOR!', 'HMM'], Feline1: ['MEOW!', 'JUMP!', 'NYA?', 'OK!', 'FISH?'] };
+  var SAY = { C0: ['BUG!', 'PUSH!', 'HMM...', 'LGTM', '404?'], X0: ['NICE', 'YAY!', 'CUTE!', 'HMM'], Feline1: ['MEOW!', 'JUMP!', 'NYA?', 'OK!', 'FISH?'] };
   setInterval(function () { var d = pick(desks); bubbles = bubbles.filter(function (b) { return b.d !== d; }); bubbles.push({ d: d, text: pick(SAY[d.id]), t: 0 }); if (bubbles.length > 2) bubbles.shift(); }, 2200);
   var steam = [], tk = 0, lastS = 0;
   var studioVis = true, scW = 0, studioOn = false;
@@ -304,7 +342,7 @@
       }
       if (dk.id === 'C0' && tk % 24 < 12) { sg.fillStyle = '#ffffff'; sg.fillRect(mx + 4, my + 18, 3, 1); }
       // name chip
-      var lab = dk.id + ' ' + dk.role, lw = PX.textWidth(lab) + 6, col = PX.CHARS[dk.id].color;
+      var lab = dk.role ? dk.id + ' ' + dk.role : dk.id, lw = PX.textWidth(lab) + 6, col = PX.CHARS[dk.id].color;
       sg.fillStyle = col; sg.fillRect(x + 4, 78, lw, 9); sg.fillStyle = '#0a0712'; sg.fillRect(x + 5, 79, lw - 2, 7);
       PX.text(sg, lab, x + 7, 80, col);
     });
