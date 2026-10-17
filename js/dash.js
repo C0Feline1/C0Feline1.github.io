@@ -104,6 +104,15 @@
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, false); }); });
   });
 
+  /* tapping anywhere on the console shell focuses the game; on the title screen it also starts.
+     Buttons and the screen handle themselves (no double trigger); during play the shell only focuses. */
+  var shell = document.querySelector('.gba');
+  if (shell) shell.addEventListener('click', function (e) {
+    if (e.target.closest('button, canvas, a, input')) return;
+    $('game').focus({ preventScroll: true });
+    if (KittyRunner.state && KittyRunner.state.mode === 'title') KittyRunner.action();
+  });
+
   /* inspiration chart */
   var ch = $('chart'), cg = ch.getContext('2d'), data = [], v = 70000;
   for (var i = 0; i < 90; i++) { v += (R() - 0.46) * 1800; data.push(v); }
