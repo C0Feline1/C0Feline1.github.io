@@ -71,93 +71,291 @@
     pass(0, 0, color);
   };
 
-  /* ---------- characters v2 (16x24, facing right, light from top-left) ---------- */
-  var TOP = {
-    cat: ['...o.......o....', '..oio.....oio...', '..oiio...oiio...', '..ohhhoooohhho..'],
-    human: ['................', '................', '....oooooooo....', '..oohhhhhhhhoo..']
+  /* ---------- characters v3 (16x24, facing right): three people with their own silhouettes ----------
+     C0 = programmer (spiky hair, glasses, headset, hoodie, jeans, sneakers)
+     X0 = painter (long flowing hair, ribbon, blouse + skirt, tights)
+     Feline1 = catgirl (cat ears, bob cut, tail, paw gloves, pink dress)
+     Sprites are painted from stamps, then outlined automatically. The hitbox lives in game.js (pbox) and does not depend on the art. */
+  function grid() { var r = []; for (var y = 0; y < 24; y++) r.push('................'.split('')); return r; }
+  function st(R, x, y, rows) {
+    for (var j = 0; j < rows.length; j++) for (var i = 0; i < rows[j].length; i++) {
+      var c = rows[j][i], X = x + i, Y = y + j;
+      if (c === '.' || X < 0 || X > 15 || Y < 0 || Y > 23) continue;
+      R[Y][X] = c === '_' ? '.' : c;
+    }
+  }
+  function pts(R, x, y, list) { list.forEach(function (p) { var X = x + p[0], Y = y + p[1]; if (X >= 0 && X < 16 && Y >= 0 && Y < 24) R[Y][X] = p[2] === '_' ? '.' : p[2]; }); }
+  function outline(R) {
+    var add = [];
+    for (var y = 0; y < 24; y++) for (var x = 0; x < 16; x++) {
+      if (R[y][x] !== '.') continue;
+      if ((x > 0 && R[y][x - 1] !== '.') || (x < 15 && R[y][x + 1] !== '.') || (y > 0 && R[y - 1][x] !== '.') || (y < 23 && R[y + 1][x] !== '.')) add.push([x, y]);
+    }
+    add.forEach(function (p) { R[p[1]][p[0]] = 'o'; });
+  }
+  /* eyes (relative to the face): open / blink / happy (^ ^) / glow (overclock) / wince */
+  function eyes(R, x, y, kind, glow) {
+    var a = x, b = x + 4;
+    if (kind === 'blink') { pts(R, 0, 0, [[a, y + 1, 'o'], [a + 1, y + 1, 'o'], [b, y + 1, 'o'], [b + 1, y + 1, 'o']]); return; }
+    if (kind === 'happy') { pts(R, 0, 0, [[a, y + 1, 'o'], [a + 1, y, 'o'], [b, y, 'o'], [b + 1, y + 1, 'o']]); return; }
+    if (kind === 'wince') { pts(R, 0, 0, [[a, y, 'o'], [a + 1, y + 1, 'o'], [b + 1, y, 'o'], [b, y + 1, 'o']]); return; }
+    var e = glow ? 'w' : 'E';
+    pts(R, 0, 0, [[a, y, 'w'], [a + 1, y, 'o'], [a, y + 1, e], [a + 1, y + 1, e], [b, y, 'w'], [b + 1, y, 'o'], [b, y + 1, e], [b + 1, y + 1, e]]);
+  }
+
+  /* ---- legs: rows 19..22, per person ---- */
+  var LEG = {
+    C0: { /* jeans + chunky sneakers, long strides */
+      stand: ['.....ln.ln......', '.....ln.ln......', '.....ln.ln......', '....bbBbbbB.....'],
+      r0: ['....ln...ln.....', '...ln.....ln....', '..ln.......ln...', '.bbB.......bbB..'],
+      r1: ['......lnln......', '......ln.ln.....', '......ln..bbB...', '.....bbB........'],
+      r2: ['.....ln.ln......', '....ln...ln.....', '...bbB....ln....', '..........bbB...'],
+      r3: ['......lnln......', '.....ln.ln......', '...bbB..ln......', '........bbB.....'],
+      jump: ['.....ln.ln......', '......ln.lnbB...', '......lnbB......', '......bB........'],
+      fall: ['....ln...ln.....', '...ln.....ln....', '..bbB......bbB..', '................'],
+      sit: ['.....lnnnnln....', '.........ln.....', '.........ln.....', '........bbB.....']
+    },
+    X0: { /* dark tights + slim boots, shorter graceful steps */
+      stand: ['......ln.l......', '......ln.l......', '......ln.l......', '.....bbB.bB.....'],
+      r0: ['.....ln..ln.....', '....ln....ln....', '...ln......l....', '..bB.......bbB..'],
+      r1: ['......ln.l......', '......ln..l.....', '......ln..bB....', '.....bbB........'],
+      r2: ['......ln.l......', '.....ln...l.....', '....bB....l.....', '..........bbB...'],
+      r3: ['......lnl.......', '......l.ln......', '....bB..ln......', '........bbB.....'],
+      jump: ['......ln.l......', '.......ln.lbB...', '.......lbB......', '.......bB.......'],
+      fall: ['.....ln...l.....', '....ln.....l....', '...bB.......bB..', '................'],
+      sit: ['......lnnnl.....', '.........l......', '.........l......', '........bbB.....']
+    },
+    Feline1: { /* white stockings + pink shoes, bouncy hops */
+      stand: ['.....ln..ln.....', '.....ln..ln.....', '.....ln..ln.....', '....bbB..bbB....'],
+      r0: ['.....ln..ln.....', '....ln....ln....', '...bbB.....ln...', '...........bbB..'],
+      r1: ['......ln.ln.....', '......lnln......', '......bbB.......', '................'],
+      r2: ['.....ln..ln.....', '....ln....ln....', '...ln.....bbB...', '..bbB...........'],
+      r3: ['......lnln......', '......lnln......', '......ln.ln.....', '.....bbB.bbB....'],
+      jump: ['.....ln.ln......', '......lnlnbB....', '......lnbB......', '......bB........'],
+      fall: ['....ln....ln....', '...ln......ln...', '...bB......bB...', '................'],
+      sit: ['.....lnnnnln....', '.........ln.....', '.........ln.....', '........bbB.....']
+    }
   };
-  var HEAD = [
-    '.ohLLhhhhhhhhho.',
-    'ohLhhhhhhhhhhhHo',
-    'ohhhhhhhhhhhhHHo',
-    'ohhhHhhhhhHhhhHo',
-    'ohHHsssHsssHshHo',
-    'ohHssswosswoshHo',
-    'ohHsssEEssEEShHo',
-    'ohHsspsssmssphHo',
-    'ohHoSsssssssohHo'
+
+  /* ---- bodies: 6 rows from y=13 ---- */
+  var BODY = {
+    C0: ['..CC.ss.........', '.CCcckkkcc......', '.CCcckakccC.....', '..cccckcccC.....', '..cckkkkkcC.....', '..AaaaaaaaA.....'],
+    X0: ['.....ss.........', '....kkaAk.......', '...ckcaAacC.....', '...cccccccC.....', '...ddddddddD....', '..dddddddddD....'],
+    Feline1: ['.....syys.......', '....kkyykk......', '....cckkcC......', '...ccccccCC.....', '..cccccccccC....', '..CkCkCkCkCC....']
+  };
+  /* skirt hems for X0: one row below the body, sways when running */
+  var X0HEM = ['..dDdDdDdDdD....', '...dDdDdDdDdD...', '.dDdDdDdDdD.....'];
+
+  /* ---- heads: rows 0..12 ---- */
+  var HEADS = {
+    C0: [
+      '................',
+      '....h..h..h.....',
+      '..hhhhhhhhhhh.h.',
+      '.hhhLhhhhhhhhhh.',
+      '.hhLhhhhhhhhhhh.',
+      '.hLhhhhhhhhhhhh.',
+      '.hhhhhhhhhhhhhh.',
+      '.hHhhhhhhhhhhhh.',
+      '.hHhhhshhhshhhs.',
+      '.hHhsssssssssss.',
+      '.hHhsssssssssss.',
+      '..HhsssssssssS..',
+      '...hSsssssssS...'
+    ],
+    X0: [
+      '................',
+      '................',
+      '....hhhhhhhh....',
+      '..hhLLhhhhhhhh..',
+      '.hhLhhhhhhhhhhh.',
+      '.hLhhhhhhhhhhhh.',
+      '.hhhhhhhhhhhhhh.',
+      '.hhhhhhhhhhhhhh.',
+      '.hhHhhhhhhhhhhh.',
+      '.hhHsshsssssshh.',
+      '.hhHssssssssshh.',
+      '.hhHssssssssshh.',
+      '.hhh.Ssssssssh..'
+    ],
+    Feline1: [
+      '................',
+      '...h.......h....',
+      '..hih.....hih...',
+      '..hiih...hiih...',
+      '..hhhhhhhhhhhh..',
+      '.hLLhhhhhhhhhhh.',
+      '.hLhhhhhhhhhhhh.',
+      '.hhhhhhhhhhhhhh.',
+      '.hhHhhhshhhhsHh.',
+      '.hHhhsssssssshh.',
+      '.hHhsssssssssHh.',
+      '.hHhsssssssssH..',
+      '..H..Sssssssss..'
+    ]
+  };
+
+  /* hair flow behind X0 (rows from 8): 0 = still, 1 / 2 = streaming back while running, 3 = lifted (falling) */
+  var X0HAIR = [
+    ['.hhh', 'hhhH', 'hhhH', 'hhHH', 'hhHH', 'hhHH', 'hhH.', 'hhH.', 'hHH.', '.hH.', '..H.'],
+    ['hhhh', 'hhhH', 'hhHH', 'hhHH', 'hHH.', 'hHH.', 'HH..', 'H...', '....', '....', '....'],
+    ['.hhh', 'hhhH', 'hhhH', 'hhHH', 'hHHH', 'hHH.', '.HH.', '.H..', '....', '....', '....'],
+    ['hhh.', 'hhH.', 'hH..', 'H...', '....', '....', '....', '....', '....', '....', '....']
   ];
-  var BODIES = {
-    dress: ['ohHokckkkkcCohHo', 'ohHokccaAacCohHo', 'ohHokccccccCohHo', '.oHokccccccCoHo.', '...oaaaaaaaao...', '..okccccccccCo..', '..oCcCcCcCcCco..'],
-    hoodie: ['...okcaccacCo...', '...okcaccacCo...', '...okccccccCo...', '...okcCCCCcCo...', '...okccccccCo...', '...oaaaaaaaao...', '...olllllllno...'],
-    blouse: ['ohHokckkkkcCohHo', 'ohHokccaAacCohHo', 'ohHokccccccCohHo', '.oHokccccccCoHo.', '...oddddddddo...', '..odddddddddDo..', '..odDdDdDdDdDo..']
-  };
-  var LEGS = {
-    stand: ['....olno.olno...', '....olno.olno...', '....obbo.obbBo..', '....oooo.ooooo..'],
-    r0: ['...olno...olno..', '..olno.....olno.', '..obbo.....obBo.', '..oooo.....oooo.'],
-    r1: ['....olno.olno...', '....olno.olno...', '....obbooobBo...', '....oooo.oooo...'],
-    r2: ['...olno...olno..', '...olno....olno.', '..obbo.....obBo.', '..oooo.....oooo.'],
-    jump: ['....olno.olno...', '.....olnolno....', '.....obbobBo....', '.....ooo.ooo....'],
-    fall: ['...olno..olno...', '..olno....olno..', '..obbo....obBo..', '..oooo....oooo..']
-  };
-  var ARMS = {
-    side: [[3, 14, 'C'], [3, 15, 'C'], [3, 16, 's'], [12, 14, 'c'], [12, 15, 'c'], [12, 16, 's']],
-    fwd: [[3, 14, 'C'], [2, 15, 'C'], [1, 16, 's'], [12, 14, 'c'], [13, 15, 'c'], [14, 15, 's']],
-    back: [[3, 14, 'c'], [2, 15, 'c'], [1, 16, 's'], [12, 14, 'C'], [13, 15, 'C'], [14, 15, 's']],
-    up: [[3, 13, 'C'], [2, 12, 'C'], [1, 11, 's'], [12, 13, 'c'], [13, 12, 'c'], [14, 11, 's']],
-    out: [[3, 14, 'C'], [2, 14, 'C'], [1, 14, 's'], [12, 14, 'c'], [13, 14, 'c'], [14, 14, 's']]
-  };
-  var TAILS = [
-    [[3, 19, 't'], [2, 19, 't'], [1, 18, 't'], [0, 17, 't'], [0, 16, 'T']],
-    [[3, 19, 't'], [2, 20, 't'], [1, 20, 't'], [0, 19, 't'], [0, 18, 'T']]
+  var X0HAIRX = [[0, 8], [0, 7], [0, 8], [0, 5]];
+  /* Feline1 tail: 4 phases (points relative to the hip at x=2, y=18) */
+  var TAIL = [
+    [[0, 0, 't'], [-1, 0, 't'], [-2, -1, 't'], [-2, -2, 't'], [-2, -3, 't'], [-1, -4, 'T']],
+    [[0, 0, 't'], [-1, 1, 't'], [-2, 1, 't'], [-3, 0, 't'], [-3, -1, 't'], [-2, -2, 'T']],
+    [[0, 0, 't'], [-1, 0, 't'], [-2, 0, 't'], [-3, -1, 't'], [-3, -2, 'T'], [-2, -3, 'T']],
+    [[0, 0, 't'], [-1, -1, 't'], [-1, -2, 't'], [-1, -3, 't'], [0, -4, 't'], [1, -5, 'T']],
+    [[0, 0, 't'], [-1, 0, 't'], [-1, -1, 't'], [-2, -1, 't'], [-1, -2, 't'], [-2, -2, 't'], [-1, -3, 't'], [-2, -3, 'T'], [-2, -4, 't'], [-1, -4, 'T'], [-1, -5, 'T'], [-3, -2, 'T']]
   ];
-  var HEADSET = [[4, 2, 'r'], [5, 2, 'r'], [6, 2, 'r'], [7, 2, 'r'], [8, 2, 'r'], [9, 2, 'r'], [10, 2, 'r'], [11, 2, 'r'], [3, 3, 'r'], [12, 3, 'r'], [2, 4, 'r'], [13, 4, 'r'], [1, 5, 'r'], [14, 5, 'r'],
-    [0, 6, 'r'], [0, 7, 'r'], [0, 8, 'A'], [1, 6, 'r'], [1, 7, 'w'], [1, 8, 'r'], [0, 9, 'o'], [1, 9, 'o'],
-    [15, 6, 'r'], [15, 7, 'r'], [15, 8, 'A'], [14, 6, 'r'], [14, 7, 'r'], [14, 8, 'r']];
-  var BOW = [[10, 1, 'r'], [11, 1, 'r'], [13, 1, 'r'], [14, 1, 'r'], [10, 2, 'r'], [11, 2, 'A'], [12, 2, 'A'], [13, 2, 'A'], [14, 2, 'r'], [10, 3, 'r'], [11, 3, 'r'], [13, 3, 'r'], [14, 3, 'r']];
+
+  /* arms: points relative to the body's top-left (x=0, y=13+dy) */
+  var ARM = {
+    side: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 2, 'c'], [11, 3, 'c'], [11, 4, 's']],
+    fwd: [[3, 2, 'C'], [2, 3, 'C'], [1, 4, 's'], [10, 2, 'c'], [11, 2, 'c'], [12, 2, 's']],
+    back: [[3, 2, 'C'], [2, 2, 'C'], [1, 2, 's'], [10, 2, 'c'], [11, 3, 'c'], [12, 4, 's']],
+    pump: [[2, 2, 'C'], [1, 3, 'C'], [1, 4, 's'], [10, 1, 'c'], [11, 1, 'c'], [12, 0, 's']],
+    up: [[3, 1, 'C'], [2, 0, 'C'], [1, -1, 's'], [10, 1, 'c'], [11, 0, 'c'], [12, -1, 's']],
+    out: [[3, 2, 'C'], [2, 2, 'C'], [1, 2, 's'], [10, 2, 'c'], [11, 2, 'c'], [12, 2, 's']],
+    paw: [[3, 2, 'C'], [3, 3, 'C'], [4, 3, 'k'], [10, 2, 'c'], [11, 2, 'c'], [11, 1, 'k'], [12, 1, 'k']],
+    pawlick: [[3, 2, 'C'], [3, 3, 'C'], [4, 3, 'k'], [10, 1, 'c'], [11, 0, 'c'], [11, -1, 'k'], [12, -1, 'k']],
+    mug: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 1, 'c'], [11, 0, 's'], [12, -1, 'b'], [13, -1, 'b'], [12, 0, 'b'], [13, 0, 'b'], [14, -1, 'b'], [12, -2, 'n']],
+    glasses: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 1, 'c'], [11, 0, 'c'], [12, -2, 's']],
+    tuck: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 1, 'c'], [11, 0, 'c'], [11, -2, 's']],
+    brush: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 2, 'c'], [11, 2, 'c'], [12, 1, 's'], [13, 0, 'r'], [14, -1, 'r'], [14, -2, 'a']],
+    type1: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 2, 'c'], [11, 3, 'c'], [11, 4, 's']],
+    type2: [[3, 2, 'C'], [3, 3, 'C'], [3, 4, 's'], [10, 2, 'c'], [11, 3, 'c'], [12, 4, 's']],
+    swim1: [[3, 2, 'C'], [2, 1, 'C'], [1, 0, 's'], [10, 2, 'c'], [11, 1, 'c'], [12, 0, 's']],
+    swim2: [[3, 2, 'C'], [2, 3, 'C'], [1, 3, 's'], [10, 3, 'c'], [11, 4, 'c'], [12, 4, 's']],
+    cheer: [[3, 0, 'C'], [2, -1, 'C'], [2, -2, 's'], [10, 0, 'c'], [11, -1, 'c'], [12, -2, 's']],
+    climb: [[3, 1, 'C'], [3, 0, 'C'], [3, -1, 's'], [10, 1, 'c'], [11, 0, 'c'], [12, -1, 's']],
+    climb2: [[3, 2, 'C'], [3, 3, 'C'], [2, 3, 's'], [10, 0, 'c'], [11, -1, 'c'], [12, -2, 's']]
+  };
+
+  function paint(id, P) {
+    var R = grid(), dy = P.dy || 0, lx = P.lean || 0, hy = dy + (P.hdy || 0);
+    /* back layer */
+    if (id === 'X0') { var hp = P.hair || 0, hx = X0HAIRX[hp]; st(R, hx[0] + lx, hx[1] + hy, X0HAIR[hp]); }
+    if (id === 'Feline1') pts(R, 2, 18 + dy, TAIL[P.tail || 0]);
+    st(R, 0, 19, LEG[id][P.legs]);
+    if (P.legs !== 'sit') st(R, 0, 13 + dy, BODY[id]);
+    else st(R, 0, 13 + dy, BODY[id].slice(0, 5));
+    if (id === 'X0' && P.legs !== 'sit') st(R, 0, 19 + dy, [X0HEM[P.hem || 0]]);
+        st(R, lx, hy, HEADS[id]);
+    /* face */
+    var fx = 6 + lx, fy = 9 + hy;
+    if (id === 'C0') {
+      /* glasses frame + lenses */
+      var gl = P.glow ? 'a' : 'g';
+      pts(R, 0, 0, [[fx - 1, fy, gl], [fx, fy, gl], [fx + 1, fy, gl], [fx + 2, fy, gl], [fx + 3, fy, gl], [fx + 4, fy, gl], [fx + 5, fy, gl], [fx + 6, fy, gl],
+        [fx - 1, fy + 1, gl], [fx + 3, fy + 1, gl], [fx + 6, fy + 1, gl], [fx, fy + 2, gl], [fx + 1, fy + 2, gl], [fx + 4, fy + 2, gl], [fx + 5, fy + 2, gl], [fx - 2, fy, gl]]);
+      if (P.eyes === 'blink') pts(R, 0, 0, [[fx, fy + 1, 'o'], [fx + 1, fy + 1, 'o'], [fx + 4, fy + 1, 'o'], [fx + 5, fy + 1, 'o']]);
+      else if (P.eyes === 'wince') pts(R, 0, 0, [[fx, fy + 1, 'o'], [fx + 5, fy + 1, 'o'], [fx + 1, fy + 1, 's'], [fx + 4, fy + 1, 's']]);
+      else if (P.glow) pts(R, 0, 0, [[fx, fy + 1, 'a'], [fx + 1, fy + 1, 'a'], [fx + 4, fy + 1, 'a'], [fx + 5, fy + 1, 'a']]);
+      else pts(R, 0, 0, [[fx, fy + 1, 'L'], [fx + 1, fy + 1, 'E'], [fx + 4, fy + 1, 'L'], [fx + 5, fy + 1, 'E']]);
+      pts(R, 0, 0, [[fx + 3, fy + 3, P.mouth === 'open' ? 'm' : 'S'], [fx + 4, fy + 3, P.mouth === 'open' ? 'm' : 's']]);
+      /* headset band over the hair + ear cup + mic */
+      pts(R, lx, hy, [[3, 7, 'k'], [3, 6, 'k'], [3, 5, 'k'], [4, 4, 'k'], [4, 3, 'k'], [5, 2, 'k'], [6, 1, 'k'], [2, 8, 'k'], [3, 8, 'k'], [2, 9, 'k'], [3, 9, 'r'], [2, 10, 'C'], [3, 10, 'k'], [4, 11, 'k'], [5, 12, 'k'], [6, 12, 'k'], [7, 12, 'r']]);
+    } else {
+      eyes(R, fx + (id === 'X0' ? 0 : 1), fy, P.eyes || 'open', false);
+      var mx = fx + (id === 'X0' ? 3 : 4), mo = P.mouth === 'open' ? 'm' : (id === 'X0' ? 'a' : 'm');
+      if (id === 'Feline1' && P.mouth !== 'open') pts(R, 0, 0, [[mx - 1, fy + 2, 'm'], [mx + 1, fy + 2, 'm']]); /* cat mouth w */
+      else pts(R, 0, 0, [[mx, fy + 2, mo]]);
+      pts(R, 0, 0, [[fx - 1, fy + 2, 'p'], [fx + 6 + (id === 'X0' ? 0 : 1), fy + 2, 'p']]);
+      if (id === 'X0') { /* ribbon + side lock framing the face */
+        pts(R, 0, 0, [[fx + 1, fy - 1, 'o'], [fx + 5, fy - 1, 'o'], [fx + 2, fy, 'o']]);
+        pts(R, lx, hy, [[12, 13, 'h'], [13, 13, 'H'], [12, 14, 'H']]);
+        pts(R, lx, hy, [[10, 1, 'r'], [11, 1, 'r'], [13, 1, 'r'], [14, 1, 'r'], [10, 2, 'r'], [11, 2, 'A'], [12, 2, 'A'], [13, 2, 'A'], [14, 2, 'r'], [10, 3, 'r'], [11, 3, 'r'], [13, 3, 'r'], [14, 3, 'r']]);
+      }
+      if (id === 'Feline1' && P.ear === 1) pts(R, lx, hy, [[10, 2, '_'], [11, 1, '_'], [12, 2, 'h'], [11, 2, 'h'], [10, 3, 'h'], [11, 3, 'i'], [12, 3, 'h'], [13, 3, 'h']]);
+    }
+    pts(R, lx * 0, 13 + dy, ARM[P.arms || 'side']);
+    if (P.laptop) pts(R, 0, 13 + dy, [[13, 0, 'k'], [13, 1, 'k'], [13, 2, 'a'], [13, 3, 'k'], [14, 0, 'k'], [14, 1, 'k'], [14, 2, 'k'], [14, 3, 'k'], [10, 4, 'g'], [11, 4, 'g'], [12, 4, 'g'], [13, 4, 'g'], [14, 4, 'g']]);
+    if (id === 'Feline1' && P.ear === 2) pts(R, lx, hy, [[3, 1, '_'], [2, 2, '_'], [3, 2, '_'], [4, 2, '_'], [2, 3, '_'], [3, 3, '_'], [4, 3, '_'], [5, 3, '_'], [11, 1, '_'], [10, 2, '_'], [11, 2, '_'], [12, 2, '_'], [9, 3, '_'], [10, 3, '_'], [11, 3, '_'], [12, 3, '_'], [1, 4, 'i'], [0, 5, 'h'], [1, 5, 'h'], [13, 4, 'i'], [14, 5, 'h'], [14, 4, 'h']]); /* ears droop */
+    if (P.extra) P.extra(R, dy);
+    outline(R);
+    return R.map(function (r) { return r.join(''); });
+  }
 
   PX.CHARS = {
     Feline1: {
-      cat: true, tail: true, body: 'dress', label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：4 颗心，每 25 秒回 1 颗 + 二段跳', perkEn: 'NINE LIVES', color: '#ff6fa6',
+      cat: true, tail: true, label: 'FELINE1', cn: '猫娘 Feline1', perk: '九命：4 颗心，每 25 秒回 1 颗 + 二段跳', perkEn: 'NINE LIVES', color: '#ff6fa6',
       pal: { o: '#4e2a48', h: '#fbeef5', H: '#d2a8c6', L: '#ffffff', i: '#ff8ab8', s: '#ffe6dc', S: '#f0c2ba', E: '#e8307e', w: '#ffffff', p: '#ffb0c4', m: '#c0506a',
-        c: '#ffd6e8', C: '#eaa6c4', k: '#ffffff', a: '#ff5a9e', A: '#c0306a', l: '#ffffff', n: '#e2d0e4', b: '#b8487e', B: '#ff8ab8', t: '#fbeef5', T: '#d2a8c6', r: '#ff6fa6' }
+        c: '#ffd6e8', C: '#eaa6c4', k: '#ffffff', a: '#ff5a9e', A: '#c0306a', l: '#ffffff', n: '#e2d0e4', b: '#b8487e', B: '#ff8ab8', t: '#fbeef5', T: '#d2a8c6', r: '#ff6fa6', y: '#ffd45e', g: '#ffffff' }
     },
     C0: {
-      cat: false, headset: true, body: 'hoodie', label: 'C0', cn: '程序 C0', perk: '超频：按 A 慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
+      cat: false, headset: true, label: 'C0', cn: '程序 C0', perk: '超频：按 A 慢动作 + 穿透', perkEn: 'OVERCLOCK', color: '#4fe3ff',
       pal: { o: '#08060c', h: '#2e2534', H: '#1a141e', L: '#5a4a6e', s: '#f3d2c4', S: '#deb0a4', E: '#241c2c', w: '#ffffff', p: '#f4a0a8', m: '#9c4a5a',
-        c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#1c1824', n: '#110e16', b: '#4fe3ff', B: '#ffffff', r: '#4fe3ff' }
+        c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#3a5a8a', n: '#26406a', b: '#e8e8f0', B: '#4fe3ff', r: '#4fe3ff', g: '#aab6d4' }
     },
     X0: {
-      cat: false, ribbon: true, body: 'blouse', label: 'X0', cn: '画师 X0', perk: '镜光护盾：12 秒充能 + 小磁铁', perkEn: 'MIRROR SHIELD', color: '#b48cff',
+      cat: false, ribbon: true, label: 'X0', cn: '画师 X0', perk: '镜光护盾：12 秒充能 + 小磁铁', perkEn: 'MIRROR SHIELD', color: '#b48cff',
       pal: { o: '#1e0e16', h: '#5a3a44', H: '#3a2430', L: '#8a6070', s: '#f6dcd6', S: '#e2b8b0', E: '#9a6cff', w: '#ffffff', p: '#ff9fb0', m: '#a04a5a',
-        c: '#f8eef2', C: '#d4bccc', k: '#ffffff', a: '#ff5f8f', A: '#c02a5a', d: '#2a1a2e', D: '#1a0e1c', l: '#3a2430', n: '#24141c', b: '#1a0a12', B: '#5a3a44', r: '#ff5f8f' }
+        c: '#f8eef2', C: '#d4bccc', k: '#ffffff', a: '#ff5f8f', A: '#c02a5a', d: '#2a1a2e', D: '#1a0e1c', l: '#3a2430', n: '#24141c', b: '#1a0a12', B: '#5a3a44', r: '#ff5f8f', g: '#ffd45e' }
     }
   };
   PX.ORDER = ['Feline1', 'C0', 'X0'];
 
-  function put(rows, pts, outline) {
-    pts.forEach(function (p) { if (rows[p[1]] && p[0] >= 0 && p[0] < 16) rows[p[1]][p[0]] = p[2]; });
-    if (outline) pts.forEach(function (p) {
-      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var x = p[0] + d[0], y = p[1] + d[1]; if (rows[y] && x >= 0 && x < 16 && rows[y][x] === '.') rows[y][x] = 'o'; });
-    });
+  /* per-person animation sets */
+  var ANIM = {
+    C0: {
+      stand: { legs: 'stand', arms: 'side' },
+      run: [{ legs: 'r0', arms: 'pump', lean: 1, dy: 0 }, { legs: 'r1', arms: 'side', lean: 1, dy: 1 }, { legs: 'r2', arms: 'back', lean: 1, dy: 0 }, { legs: 'r3', arms: 'side', lean: 1, dy: 1 }],
+      jump: { legs: 'jump', arms: 'up', mouth: 'open' }, fall: { legs: 'fall', arms: 'out' },
+      idle: [{ legs: 'stand', arms: 'type1', laptop: 1 }, { legs: 'stand', arms: 'type2', laptop: 1 }, { legs: 'stand', arms: 'type1', laptop: 1, eyes: 'blink' }, { legs: 'stand', arms: 'type2', laptop: 1 },
+        { legs: 'stand', arms: 'mug', eyes: 'blink' }, { legs: 'stand', arms: 'mug' }, { legs: 'stand', arms: 'glasses' }, { legs: 'stand', arms: 'side' }],
+      cheer: { legs: 'stand', arms: 'cheer', eyes: 'open', mouth: 'open' }, skill: { legs: 'r1', arms: 'pump', lean: 1, glow: true }
+    },
+    X0: {
+      stand: { legs: 'stand', arms: 'side', hair: 0, hem: 0 },
+      run: [{ legs: 'r0', arms: 'fwd', hair: 1, hem: 1, dy: 0 }, { legs: 'r1', arms: 'side', hair: 2, hem: 0, dy: 1 }, { legs: 'r2', arms: 'back', hair: 1, hem: 2, dy: 0 }, { legs: 'r3', arms: 'side', hair: 2, hem: 0, dy: 1 }],
+      jump: { legs: 'jump', arms: 'up', hair: 3, hem: 1 }, fall: { legs: 'fall', arms: 'out', hair: 3, hem: 2 },
+      idle: [{ legs: 'stand', arms: 'tuck', hair: 0 }, { legs: 'stand', arms: 'tuck', hair: 2, eyes: 'happy' }, { legs: 'stand', arms: 'brush', hair: 2 }, { legs: 'stand', arms: 'brush', hair: 0, eyes: 'blink' }],
+      cheer: { legs: 'stand', arms: 'cheer', hair: 1, eyes: 'happy', mouth: 'open' }, skill: { legs: 'stand', arms: 'out', hair: 3, eyes: 'happy' }
+    },
+    Feline1: {
+      stand: { legs: 'stand', arms: 'paw', tail: 0 },
+      run: [{ legs: 'r0', arms: 'paw', tail: 0, dy: 0 }, { legs: 'r1', arms: 'paw', tail: 1, dy: 1, hdy: 0 }, { legs: 'r2', arms: 'paw', tail: 2, dy: 0, ear: 1 }, { legs: 'r3', arms: 'paw', tail: 1, dy: 1 }],
+      jump: { legs: 'jump', arms: 'up', tail: 3, mouth: 'open' }, fall: { legs: 'fall', arms: 'out', tail: 2 },
+      idle: [{ legs: 'stand', arms: 'paw', tail: 0 }, { legs: 'stand', arms: 'pawlick', tail: 1, eyes: 'happy' }, { legs: 'stand', arms: 'pawlick', tail: 2, eyes: 'happy', ear: 1 }, { legs: 'stand', arms: 'paw', tail: 3 }],
+      cheer: { legs: 'stand', arms: 'cheer', tail: 3, eyes: 'happy', mouth: 'open' }, skill: { legs: 'jump', arms: 'up', tail: 3, eyes: 'happy' },
+      land: { legs: 'stand', arms: 'paw', tail: 4, eyes: 'happy' }, hurtP: { ear: 2, tail: 4 }
+    }
+  };
+
+  /* slide: a low pose in the bottom 10 rows, matching the 12x9 sliding hitbox */
+  var SLIDE = {
+    /* C0: feet-first baseball slide, leaning back on one hand */
+    C0: ['..h.h.h.........', '.hhhhhhh........', '.hhhhhhhh.......', '.rgggggggg......', '.rksLEsLEs......', '..kssssSgggg....', '..cccccccgggknb.', '.sCcckcccllnnbbB', '.s.AaaaaA.......'],
+    /* X0: knee slide, torso upright, long hair streaming back, ribbon */
+    X0: ['.........rAr....', '...hhhhhhhh.....', '.hhhhhhhhhhh....', 'hhhhhhsoEsoE....', 'hhHhhhssssss....', '.hHH.ccaAcs.....', '..H.cccccc......', '...ddddddddlllbB', '..dddddddddnnbbB'],
+    /* Feline1: low crouch slide on one knee, one paw skimming the ground, tail streaming back */
+    Feline1: ['.....h...h......', '....hih.hih.....', '...hhhhhhhhh....', 't..hLhhhssEsE...', 't..hhhhhsssss...', '.t..ccyykss.....', '..tcccccckkk....', '...lncccccln.kk.', '..bbBnn.ClnnbB..']
+  };
+  function slideRows(id) {
+    var R = grid(); st(R, 0, 14, SLIDE[id]); outline(R);
+    return R.map(function (r) { return r.join(''); });
   }
-  function charRows(def, pose) {
-    var rows = (def.cat ? TOP.cat : TOP.human).concat(HEAD, BODIES[def.body], LEGS[pose.legs]).map(function (r) { return r.split(''); });
-    if (pose.blink) { rows[9] = 'ohHsssssssssshHo'.split(''); rows[10] = 'ohHsssoossooShHo'.split(''); }
-    if (def.tail) put(rows, TAILS[pose.tail || 0], true);
-    put(rows, ARMS[pose.arms], true);
-    if (def.headset) put(rows, HEADSET, false);
-    if (def.ribbon) put(rows, BOW, true);
-    return rows.map(function (r) { return r.join(''); });
-  }
+
   PX.buildChar = function (id) {
-    var d = PX.CHARS[id], mk = function (pose) { return PX.fromRows(charRows(d, pose), d.pal); };
+    var d = PX.CHARS[id], A = ANIM[id], mk = function (pose) { return PX.fromRows(paint(id, pose), d.pal); };
+    var mix = function (o, add) { var r = {}, k; for (k in o) r[k] = o[k]; for (k in add) r[k] = add[k]; return r; };
     var s = {
-      stand: mk({ legs: 'stand', arms: 'side' }), blink: mk({ legs: 'stand', arms: 'side', blink: true }),
-      run: [mk({ legs: 'r0', arms: 'back', tail: 0 }), mk({ legs: 'r1', arms: 'side', tail: 1 }), mk({ legs: 'r2', arms: 'fwd', tail: 0 }), mk({ legs: 'r1', arms: 'side', tail: 1 })],
-      jump: mk({ legs: 'jump', arms: 'up', tail: 1 }), fall: mk({ legs: 'fall', arms: 'out', tail: 0 })
+      stand: mk(A.stand), blink: mk(mix(A.stand, { eyes: 'blink' })),
+      run: A.run.map(mk), jump: mk(A.jump), fall: mk(A.fall),
+      idle: A.idle.map(mk), cheer: mk(A.cheer), skill: mk(A.skill),
+      climb: [mk({ legs: 'jump', arms: 'climb', tail: 3, hair: 0 }), mk({ legs: 'fall', arms: 'climb2', tail: 2, hair: 3 })],
+      slide: PX.fromRows(slideRows(id), d.pal)
     };
-    s.hurt = PX.tint(mk({ legs: 'fall', arms: 'up', blink: true }), 'rgba(255,80,110,.45)');
+    s.glow = id === 'C0' ? A.run.map(function (p) { return mk(mix(p, { glow: true })); }) : null; /* overclock: glowing glasses */
+    s.swim = [mk(mix(A.fall, { arms: 'swim1', legs: 'jump', hair: 1, tail: 2 })), mk(mix(A.fall, { arms: 'swim2', legs: 'fall', hair: 2, tail: 3 }))];
+    s.ride = mk(mix(A.stand, { arms: 'out', hair: 1, hem: 1, tail: 2 }));
+    s.jet = mk(mix(A.jump, { arms: 'fwd', hair: 1, tail: 2 }));
+    s.land = A.land ? mk(A.land) : null;
+    s.hurt = PX.tint(mk(mix(mix(A.fall, { arms: 'up', eyes: 'wince', mouth: 'open' }), A.hurtP || {})), 'rgba(255,80,110,.45)');
     s.white = PX.tint(s.stand, '#ffffff');
     return s;
   };
