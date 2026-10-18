@@ -277,8 +277,7 @@
   .gba.sw.stack .jc { width: auto; flex-direction: row; justify-content: space-around; padding: 14px 10px 20px; }
   .gba.sw.stack .jl { border-radius: 0 0 0 46px; border-right: 1px solid rgba(0,0,0,.4); }
   .gba.sw.stack .jr { border-radius: 0 0 46px 0; border-left: 1px solid rgba(0,0,0,.4); }
-  .gba.sw.stack .jr .jmini { order: 3; } .gba.sw.stack .jr .jstick { order: -1; }
-  .jstick { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #4a4458, #1a1622 70%); box-shadow: 0 2px 0 rgba(0,0,0,.4), inset 0 0 0 3px #0e0b14; flex: none; }
+  .gba.sw.stack .jr .jmini { order: 3; }
   .jmini { width: 38px; height: 38px; border-radius: 50%; border: 0; padding: 0; background: #1a1622; color: #e8e4f8; font: 24px/38px "DotGothic16", monospace; box-shadow: 0 2px 0 rgba(0,0,0,.45); cursor: pointer; touch-action: none; flex: none; }
   .jmini:active { transform: translateY(1px); }
   /* the four direction buttons and the X/Y/A/B diamond: same geometry, round buttons */
@@ -312,7 +311,6 @@
     .gba.sw.stack .jl .jmini { align-self: flex-end; margin-right: 10px; } .gba.sw.stack .jr .jmini { align-self: flex-start; margin-left: 10px; order: 0; }
     .jmini { width: 48px; height: 48px; font-size: 28px; line-height: 48px; }
     .mtab { top: -36px; height: 38px; font-size: 19px; line-height: 36px; }
-    .jstick { display: none; }
     .arcade .help { display: none; }
   }
   @media (max-width: 340px) { .gba.sw.stack .jc { padding-left: 1px; padding-right: 1px; } }
@@ -352,7 +350,6 @@
   html.fx .arc .gba.sw { margin: auto auto 0; }
   html.fx .arc .help { flex: none; margin: 6px 0 auto; display: block; }
   html.fx .jmini { width: 32px; height: 32px; font-size: 20px; line-height: 32px; }
-  html.fx .jstick { width: 32px; height: 32px; }
   html.fx .jc { gap: 14px; padding: 14px 4px; }
   html.fx .xyab button { font-size: 19px; }
   /* tabbed dock */
@@ -388,7 +385,6 @@
   html.fx-port .gba.sw .scr { padding: 6px 4px 6px; }
   html.fx-port .gba.sw.stack .jc { flex-direction: row; justify-content: space-around; gap: 6px; padding: 10px 4px 14px; }
   html.fx-port .gba.sw.stack .jl .jmini, html.fx-port .gba.sw.stack .jr .jmini { align-self: center; margin: 0; }
-  html.fx-port .jstick { display: none; }
   html.fx-port .jmini { width: 40px; height: 40px; font-size: 24px; line-height: 40px; }
   html.fx-port .tp { padding: 6px 8px; }
   html.fx-port .dock-tabs button { font-size: 12px; }
@@ -468,7 +464,6 @@
             <button data-d="right" data-i18n-aria-label="game.right" aria-label="右：向右 / 下一个角色"></button>
             <button data-d="down" data-i18n-aria-label="game.down" aria-label="下：按住蹲下 / 菜单"></button>
           </div>
-          <div class="jstick" aria-hidden="true"></div>
         </div>
         <div class="scr">
           <button class="mtab" id="bgmBtn" type="button" aria-pressed="false" data-i18n-aria-label="game.musicToggle" aria-label="打开或关闭游戏音乐和音效（M）">♪ 音乐 关</button>
@@ -485,7 +480,6 @@
             <button class="fbtn a" id="aBtn" type="button" data-i18n-aria-label="game.a" data-i18n-title="game.a" aria-label="A：跳跃 / 确认（键盘 C、空格、回车）" title="A：跳跃 / 确认（键盘 C、空格、回车）">A</button>
             <button class="fbtn b" id="bBtn" type="button" data-i18n-aria-label="game.b" data-i18n-title="game.b" aria-label="B：技能 / 返回（键盘 Z）" title="B：技能 / 返回（键盘 Z）">B</button>
           </div>
-          <div class="jstick" aria-hidden="true"></div>
         </div>
       </div>
       <p class="help" data-i18n-html="game.help"><kbd>←</kbd><kbd>→</kbd> 移动 · <kbd>↓</kbd> 蹲 · <kbd>C</kbd> 跳 · <kbd>X</kbd> 攻击（长按切换近战/远程） · <kbd>Z</kbd> 技能 · <kbd>↑</kbd> 交互 · <kbd>S</kbd> 暂停</p>
