@@ -402,7 +402,13 @@
       g.fillStyle = '#ffd45e'; g.fillRect(144, GROUND_Y + 5, 3, 3); g.fillRect(140, GROUND_Y + 8, 2, 2); g.fillRect(149, GROUND_Y + 9, 2, 2);
     }
     if (action === 'selfie') {
-      if (t > 35 && t < 46) { g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(0, 0, SW, SH); }
+      // Keep the photo cue local to the group; flashing the whole canvas white
+      // makes the live camera look like it is briefly clearing or reloading.
+      if (t > 35 && t < 46 && t % 3 < 2) {
+        var fx = Math.round(center + 25), fy = GROUND_Y + 4;
+        g.fillStyle = '#fff6d8'; g.fillRect(fx, fy - 1, 1, 3); g.fillRect(fx - 1, fy, 3, 1);
+        g.fillStyle = '#ff9fc4'; g.fillRect(fx + 2, fy - 1, 1, 1);
+      }
       if (t % 24 < 12) { g.fillStyle = '#ff9fc4'; g.fillRect(128, GROUND_Y - 4, 2, 2); g.fillRect(167, GROUND_Y - 8, 2, 2); }
     }
   }
