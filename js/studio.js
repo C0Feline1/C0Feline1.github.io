@@ -268,7 +268,8 @@
   }
   function drawDesks() {
     desks.forEach(function (d, i) {
-      var x = d.x, typing = Math.floor((tk + i * 7) / 9) % 2;
+      var x = d.x, away = current && current.members.indexOf(actors[d.id]) >= 0;
+      var typing = !away && Math.floor((tk + i * 7) / 9) % 2;
       g.fillStyle = '#1a1226'; g.fillRect(x + 2, 92, 4, 24); g.fillRect(x + 2, 114, 18, 3); g.fillRect(x + 10, 117, 2, 10); g.fillRect(x + 4, 126, 14, 2);
       g.fillStyle = '#5a3a52'; g.fillRect(x, 111, 70, 3); g.fillStyle = '#3a2438'; g.fillRect(x, 114, 70, 2); g.fillRect(x + 2, 116, 3, FY - 116); g.fillRect(x + 65, 116, 3, FY - 116);
       g.fillStyle = '#0a0812'; g.fillRect(x + 26, 109, 16, 2); g.fillStyle = PX.CHARS[d.id].pal.s;
@@ -276,21 +277,26 @@
       var mx = x + 38, my = 82;
       g.fillStyle = '#0a0812'; g.fillRect(mx, my, 30, 22); g.fillRect(mx + 13, my + 22, 4, 5); g.fillRect(mx + 9, my + 27, 12, 2);
       g.fillStyle = '#0d1424'; g.fillRect(mx + 1, my + 1, 28, 20);
-      var lines = codeLines[i], off = Math.floor(tk / 25) % 8;
-      for (var ln = 0; ln < 6; ln++) {
-        var L = lines[(ln + off) % 8];
-        g.fillStyle = ['#4a5a7a', d.screen, '#ffd45e', '#5dff8f'][L[0]];
-        if (d.id === 'X0') {
-          g.fillStyle = ['#ff9fc4', '#b48cff', '#ffd45e', '#4fe3ff'][(ln + off) % 4];
-          g.fillRect(mx + 3 + (ln % 3) * 8, my + 3 + Math.floor(ln / 3) * 8, 7, 7); continue;
+      if (away) {
+        // A worker's monitor and typing animation go idle while they are away.
+        PX.text(g, 'IDLE', mx + 7, my + 9, '#657089', '#0d1424');
+      } else {
+        var lines = codeLines[i], off = Math.floor(tk / 25) % 8;
+        for (var ln = 0; ln < 6; ln++) {
+          var L = lines[(ln + off) % 8];
+          g.fillStyle = ['#4a5a7a', d.screen, '#ffd45e', '#5dff8f'][L[0]];
+          if (d.id === 'X0') {
+            g.fillStyle = ['#ff9fc4', '#b48cff', '#ffd45e', '#4fe3ff'][(ln + off) % 4];
+            g.fillRect(mx + 3 + (ln % 3) * 8, my + 3 + Math.floor(ln / 3) * 8, 7, 7); continue;
+          }
+          if (d.id === 'Feline1') {
+            g.drawImage(sprites.Feline1.run[Math.floor(tk / 5) % 4], 0, 0, 16, 24, mx + 9, my + 1, 12, 18);
+            g.fillStyle = '#7fd06a'; g.fillRect(mx + 1, my + 18, 28, 3); break;
+          }
+          g.fillRect(mx + 3 + L[0] * 2, my + 3 + ln * 3, L[1], 1);
         }
-        if (d.id === 'Feline1') {
-          g.drawImage(sprites.Feline1.run[Math.floor(tk / 5) % 4], 0, 0, 16, 24, mx + 9, my + 1, 12, 18);
-          g.fillStyle = '#7fd06a'; g.fillRect(mx + 1, my + 18, 28, 3); break;
-        }
-        g.fillRect(mx + 3 + L[0] * 2, my + 3 + ln * 3, L[1], 1);
+        if (d.id === 'C0' && tk % 24 < 12) { g.fillStyle = '#fff'; g.fillRect(mx + 4, my + 18, 3, 1); }
       }
-      if (d.id === 'C0' && tk % 24 < 12) { g.fillStyle = '#fff'; g.fillRect(mx + 4, my + 18, 3, 1); }
       var lab = (d.id === 'Feline1' ? 'F1' : d.id) + ' ' + d.role;
       var labelW = Math.min(56, PX.textWidth(lab) + 6), labelX = x + Math.floor((70 - labelW) / 2), color = PX.CHARS[d.id].color;
       g.fillStyle = color; g.fillRect(labelX, 78, labelW, 9); g.fillStyle = '#0a0712'; g.fillRect(labelX + 1, 79, labelW - 2, 7);
