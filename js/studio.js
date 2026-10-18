@@ -453,10 +453,20 @@
     PX.text(g, 'REC', SW - 18, 4, tk % 30 < 15 ? '#ff4f6a' : '#5a1a2a', '#000');
     screen.imageSmoothingEnabled = false; screen.drawImage(scene, 0, 0, view.width, view.height);
   }
+  var visible = true, running = false;
   function loop(ts) {
+    if (!visible || document.hidden) { running = false; return; }
     requestAnimationFrame(loop);
     if (ts - lastFrame < 40) return;
     lastFrame = ts; tk++; updateEvent(); updateCat(); drawRoom();
   }
-  requestAnimationFrame(loop);
+  function startLoop() {
+    if (!running && visible && !document.hidden) { running = true; requestAnimationFrame(loop); }
+  }
+  if (window.IntersectionObserver) new IntersectionObserver(function (entries) {
+    visible = entries[entries.length - 1].isIntersecting;
+    startLoop();
+  }).observe(view);
+  document.addEventListener('visibilitychange', startLoop);
+  startLoop();
 })();
