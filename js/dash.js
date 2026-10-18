@@ -3,6 +3,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var R = Math.random, pick = function (a) { return a[Math.floor(R() * a.length)]; };
   var T = function (key, vars) { return window.I18N ? I18N.t(key, vars) : key; };
+  function LT(key, vars, zh) { return window.I18N && I18N.getLocale() !== 'zh-CN' ? I18N.log(key, vars) : zh; }
   function pad(n) { return String(n).padStart(2, '0'); }
   function now() { var d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
   function fmt(n) { return Math.round(n).toLocaleString(window.I18N ? I18N.getLocale() : 'en-US'); }
@@ -60,12 +61,15 @@
   setInterval(function () {
     var b = cards[1].v, d = R() < 0.55 ? -1 : 1, nb = Math.max(3, b + d);
     setCard('bugs', nb, d < 0 ? 'card.bugs.fixed' : 'card.bugs.new', nb / 20, d < 0 ? 'up' : 'down');
-    if (d < 0) log('ok', 'fixed  #' + (200 + Math.floor(R() * 99)) + ' ' + pick(['跳跃判定偏移 1px', '猫耳穿模', '雪花不下了', '存档读不出来', '狼跑得太快']));
+    if (d < 0) {
+      var bugNo = 200 + Math.floor(R() * 99), bug = pick(['跳跃判定偏移 1px', '猫耳穿模', '雪花不下了', '存档读不出来', '狼跑得太快']);
+      log('ok', LT('bugFixed', { num: bugNo }, 'fixed  #' + bugNo + ' ' + bug));
+    }
   }, 6500);
   setInterval(function () {
     if (R() > 0.4) return;
-    if (cards[0].v >= 6) { setCard('coffee', 0, 'card.coffee.over', 0.05); log('ok', 'reset  咖啡计数器归零，C0 改喝白开水'); return; }
-    setCard('coffee', cards[0].v + 1, 'card.coffee.brew', (cards[0].v + 1) / 6); log('w', 'coffee++  C0 去续了一杯咖啡');
+    if (cards[0].v >= 6) { setCard('coffee', 0, 'card.coffee.over', 0.05); log('ok', LT('coffeeReset', null, 'reset  咖啡计数器归零，C0 改喝白开水')); return; }
+    setCard('coffee', cards[0].v + 1, 'card.coffee.brew', (cards[0].v + 1) / 6); log('w', LT('coffeeBrew', null, 'coffee++  C0 去续了一杯咖啡'));
   }, 15000);
 
   /* terminal */
@@ -85,25 +89,53 @@
     ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 已就位'],
     ['c', 'arcade KITTY RUNNER 已加载，等待玩家']
   ];
-  boot.forEach(function (b, i) { setTimeout(function () { log(b[0], b[1]); }, 250 + i * 320); });
-  setTimeout(function loop() {
-    var m = BuildLog.next();
-    log(m[0], m[1]);
-    setTimeout(loop, BuildLog.inStory() ? 900 + R() * 900 : 2400 + R() * 3600);
-  }, 3200);
+  var terminalEpoch = 0, bootTimers = [], terminalTimer = 0, logCursor = 0;
+  function startTerminal() {
+    var epoch = ++terminalEpoch;
+    bootTimers.forEach(clearTimeout); bootTimers = [];
+    clearTimeout(terminalTimer);
+    logCursor = 0;
+    logEl.textContent = ''; logEl.appendChild(cur);
+    var localized = window.I18N && I18N.getLocale() !== 'zh-CN';
+    var startLines = localized ? I18N.getLogLines('boot') : boot;
+    startLines.forEach(function (b, i) {
+      bootTimers.push(setTimeout(function () { if (epoch === terminalEpoch) log(b[0], b[1]); }, 250 + i * 320));
+    });
+    function loop() {
+      if (epoch !== terminalEpoch) return;
+      var m, delay;
+      if (localized) {
+        var lines = I18N.getLogLines('stream');
+        if (!lines.length) lines = [['c', 'build.log']];
+        m = lines[logCursor++ % lines.length];
+        delay = 2400 + R() * 3600;
+      } else {
+        m = BuildLog.next();
+        delay = BuildLog.inStory() ? 900 + R() * 900 : 2400 + R() * 3600;
+      }
+      log(m[0], m[1]);
+      terminalTimer = setTimeout(loop, delay);
+    }
+    terminalTimer = setTimeout(loop, 3200);
+  }
+  startTerminal();
 
   window.addEventListener('runner', function (e) {
     var d = e.detail;
-    if (d.type === 'over' && d.practice) log('c', 'arcade ' + d.id + ' 练习「' + d.where + '」' + (d.clear ? '通关 ✓' : '倒下了') + ' · 不计分');
+    if (d.type === 'over' && d.practice) {
+      var practiceResult = d.clear ? (window.I18N ? I18N.log('practiceClear') : '通关 ✓') : (window.I18N ? I18N.log('practiceFail') : '倒下了');
+      log('c', LT('practice', { id: d.id, where: d.where, result: practiceResult }, 'arcade ' + d.id + ' 练习「' + d.where + '」' + (d.clear ? '通关 ✓' : '倒下了') + ' · 不计分'));
+    }
     else if (d.type === 'over') {
-      log(d.isBest ? 'ok' : 'w', 'arcade ' + d.id + ' 在「' + d.where + '」跑了 ' + d.dist + 'm · ' + d.score + ' 分' + (d.isBest ? '  ★ 新纪录' : ''));
+      var recordSuffix = d.isBest && window.I18N ? I18N.log('newRecord') : (d.isBest ? '  ★ 新纪录' : '');
+      log(d.isBest ? 'ok' : 'w', LT('run', { id: d.id, where: d.where, distance: d.dist, score: d.score, record: recordSuffix }, 'arcade ' + d.id + ' 在「' + d.where + '」跑了 ' + d.dist + 'm · ' + d.score + ' 分' + (d.isBest ? '  ★ 新纪录' : '')));
       setCard('best', d.best, d.isBest ? 'card.best.new' : 'card.best.score', Math.min(1, d.best / 3000), d.isBest ? 'up' : '', { score: d.score });
-    } else if (d.type === 'biome') log('p', 'arcade 抵达 → ' + d.name);
-    else if (d.type === 'milestone' && d.dist % 300 === 0) log('c', 'arcade ' + d.id + ' 已跑出 ' + d.dist + 'm');
+    } else if (d.type === 'biome') log('p', LT('biome', { name: d.name }, 'arcade 抵达 → ' + d.name));
+    else if (d.type === 'milestone' && d.dist % 300 === 0) log('c', LT('milestone', { id: d.id, distance: d.dist }, 'arcade ' + d.id + ' 已跑出 ' + d.dist + 'm'));
   });
 
   if (window.I18N) window.addEventListener('c0-language-change', function () {
-    renderTicker(); updateVerifyTime();
+    renderTicker(); updateVerifyTime(); startTerminal();
   });
 
   /* A / B / D-pad */

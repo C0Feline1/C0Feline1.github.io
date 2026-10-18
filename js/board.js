@@ -41,7 +41,11 @@
       var d = x.getImageData(0, 0, 16, 16).data; for (var i = 0; i < d.length; i += 4) if (d[i + 3] && (Math.abs(d[i] - d[i + 1]) > 30 || Math.abs(d[i] - d[i + 2]) > 30)) return true; } catch (e) { }
     return false;
   })();
-  function flagHTML(c) { if (!c || !ISOSET[c]) return ''; return emojiFlags ? '<span class="flag" title="' + esc(ccName(c)) + '">' + flagEmoji(c) + '</span>' : '<span class="flag-cc" title="' + esc(ccName(c)) + '">' + c + '</span>'; }
+  function flagHTML(c) {
+    if (!c || !ISOSET[c]) return '';
+    var name = esc(ccName(c)), code = c.toLowerCase();
+    return '<span class="flag-wrap" title="' + name + '"><img class="flag" src="https://flagcdn.com/w20/' + code + '.png" width="16" height="12" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="flag-cc" hidden>' + c + '</span></span>';
+  }
   function guessCC() {
     var saved = localStorage.getItem('runner-cc'); if (saved !== null) return ISOSET[saved] ? saved : '';
     var langs = navigator.languages || [navigator.language || ''];
@@ -53,14 +57,21 @@
   var highlight = null;
   /* phase3C: when the score was set, in the viewer's own time zone: "MM-DD HH:mm" (this year) or "YYYY-MM-DD" (older);
      hover shows the full local date/time. Falls back to the server's UTC date for old API responses without ts. */
-  var TF = null;
-  function makeTimeFormatter() { try { return new Intl.DateTimeFormat(window.I18N ? I18N.getLocale() : undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); } catch (e) { return null; } }
-  TF = makeTimeFormatter();
   function when(r) {
-    if (!r.ts || !TF || !TF.formatToParts) return { s: r.date ? String(r.date).slice(5) : '', t: r.date || '' };
-    var d = new Date(r.ts * 1000), p = {}; TF.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
-    var hh = p.hour === '24' ? '00' : p.hour;
-    return { s: +p.year === new Date().getFullYear() ? p.month + '-' + p.day + ' ' + hh + ':' + p.minute : p.year + '-' + p.month + '-' + p.day, t: d.toLocaleString(window.I18N ? I18N.getLocale() : undefined) };
+    var locale = window.I18N ? I18N.getLocale() : undefined;
+    if (!r.ts) {
+      if (!r.date) return { s: '', t: '' };
+      var fallbackDate = new Date(String(r.date).slice(0, 10) + 'T00:00:00Z');
+      return {
+        s: new Intl.DateTimeFormat(locale, { month: '2-digit', day: '2-digit', timeZone: 'UTC' }).format(fallbackDate),
+        t: new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(fallbackDate)
+      };
+    }
+    var d = new Date(r.ts * 1000), sameYear = d.getFullYear() === new Date().getFullYear();
+    var s = sameYear
+      ? new Intl.DateTimeFormat(locale, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d)
+      : new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+    return { s: s, t: d.toLocaleString(locale) };
   }
   function render(top) {
     lastTop = top; listMessageKey = top.length ? null : 'board.empty';
@@ -165,9 +176,9 @@
           setMsg('board.submitted', { rank: j.rank }); load();
           window.dispatchEvent(new CustomEvent('leaderboard', { detail: { name: name, rank: j.rank, score: d.score } }));
           setTimeout(function () { if (!pending) closeModal(); }, 1400);
-        } else fail((j.error || '服务器拒绝') + (j._status ? '（' + j._status + '）' : ''));
+        } else fail(T('board.serverRejected') + (j._status ? ' (' + j._status + ')' : ''));
       })
-      .catch(function (e) { fail(T('board.networkError') + (e && e.message ? ': ' + e.message : '')); });
+      .catch(function () { fail(T('board.networkError')); });
   }
 
   function startRun(id) {
@@ -195,17 +206,16 @@
         mine.run = r;
         return req('/qualify?score=' + d.score).then(function (j) {
           if (pending !== mine) return;
-          if (!j._ok) { fail(j.error || ('HTTP ' + j._status)); return; }
+          if (!j._ok) { fail(T('board.serverRejected') + (j._status ? ' (' + j._status + ')' : '')); return; }
           if (!j.qualifies) { pending = null; setMsg('board.notQualified'); sendBtn.disabled = true; skipLabelKey = 'board.ok'; skipBtn.textContent = T(skipLabelKey); setTimeout(function () { if (!modal.hidden && !pending) closeModal(); }, 2200); return; }
           mine.rank = j.rank; ready(j.rank);
         });
-      }).catch(function (e) { if (pending === mine) fail('网络错误'); })
+      }).catch(function (e) { if (pending === mine) fail(T('board.networkError')); })
         .then(function () { setTimeout(load, 300); });
     }
   });
 
   if (window.I18N) window.addEventListener('c0-language-change', function () {
-    TF = makeTimeFormatter();
     setStatus(online);
     if (lastTop) render(lastTop);
     else if (listMessageKey) listEl.innerHTML = '<li class="lb-empty">' + esc(T(listMessageKey)) + '</li>';

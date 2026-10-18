@@ -393,6 +393,67 @@
     }
   };
 
+  /* build.log has its own localized feed because its Chinese source is a story generator.
+     Keep the original, richer generator for Chinese and use translated terminal feeds elsewhere. */
+  var buildLogs = {
+    en: {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 ready'], ['c', 'arcade KITTY RUNNER loaded; waiting for player']],
+      stream: [['c', 'build  pixel atlas generated (0 images; drawn in code)'], ['c', 'C0 is negotiating with the compiler'], ['p', 'X0 finished another wolf sprite'], ['p', 'Feline1 is testing the jump feel: meow!'], ['w', 'warn   coffee supply below 20%'], ['w', 'warn   a cat is sleeping on the keyboard'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup saved to the cloud ✓'], ['p', 'cat    the cat stretched and reclaimed the chair'], ['c', 'cache  cleared 128 MB of temporary files'], ['c', 'audio  8-bit jump sound ready'], ['ok', 'ok     everyone is still here ✓'], ['p', 'spider Xiao Ba is watching you'], ['w', 'warn   inspiration level fluctuating']],
+      bugFixed: 'fixed  #{num} gameplay issue', coffeeReset: 'reset  coffee counter cleared; C0 switched to water', coffeeBrew: 'coffee++  C0 went for another cup',
+      practice: 'arcade {id} practice at {where} · {result} · no score', practiceClear: 'cleared ✓', practiceFail: 'fell over',
+      run: 'arcade {id} ran {distance}m at {where} · {score} pts{record}', newRecord: ' · ★ NEW RECORD', biome: 'arcade reached → {name}', milestone: 'arcade {id} has run {distance}m'
+    },
+    ja: {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 配置完了'], ['c', 'arcade KITTY RUNNER 読み込み完了 · プレイヤー待機中']],
+      stream: [['c', 'build  ピクセルアトラス生成完了（画像 0 枚、すべてコード描画）'], ['c', 'C0 がコンパイラーと交渉中'], ['p', 'X0 が新しいオオカミのドット絵を完成'], ['p', 'Feline1 がジャンプの感触をテスト中：ニャー！'], ['w', 'warn   コーヒーの在庫が 20% 未満'], ['w', 'warn   猫がキーボードでお昼寝中'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup クラウドに保存しました ✓'], ['p', 'cat    猫が伸びをして椅子を占領'], ['c', 'cache  一時ファイル 128 MB を削除'], ['c', 'audio  8-bit ジャンプ音を準備完了'], ['ok', 'ok     みんな無事です ✓'], ['p', 'spider 小八がこちらを見ています'], ['w', 'warn   ひらめき指数が変動中']],
+      bugFixed: 'fixed  #{num} ゲームの問題を修正', coffeeReset: 'reset  コーヒーカウンターをリセット · C0 は水に切り替え', coffeeBrew: 'coffee++  C0 がコーヒーのおかわりへ',
+      practice: 'arcade {id} が {where} を練習 · {result} · スコア対象外', practiceClear: 'クリア ✓', practiceFail: '倒れました',
+      run: 'arcade {id} が {where} で {distance}m 走行 · {score}点{record}', newRecord: ' · ★ 新記録', biome: 'arcade 到達 → {name}', milestone: 'arcade {id} が {distance}m 走りました'
+    },
+    ru: {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 на месте'], ['c', 'arcade KITTY RUNNER загружена · ждём игрока']],
+      stream: [['c', 'build  пиксельный атлас готов (0 изображений, всё создано кодом)'], ['c', 'C0 спорит с компилятором'], ['p', 'X0 закончил спрайт нового волка'], ['p', 'Feline1 проверяет прыжок: мяу!'], ['w', 'warn   запас кофе ниже 20%'], ['w', 'warn   кот спит на клавиатуре'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup сохранена в облаке ✓'], ['p', 'cat    кот потянулся и занял кресло'], ['c', 'cache  удалено 128 МБ временных файлов'], ['c', 'audio  8-битный звук прыжка готов'], ['ok', 'ok     все на месте ✓'], ['p', 'spider Сяо Ба наблюдает за вами'], ['w', 'warn   уровень вдохновения меняется']],
+      bugFixed: 'fixed  #{num} игровая ошибка', coffeeReset: 'reset  счётчик кофе сброшен; C0 перешёл на воду', coffeeBrew: 'coffee++  C0 пошёл за ещё одной чашкой',
+      practice: 'arcade {id}: тренировка в {where} · {result} · без очков', practiceClear: 'победа ✓', practiceFail: 'проигрыш',
+      run: 'arcade {id}: {distance} м в {where} · {score} очк.{record}', newRecord: ' · ★ НОВЫЙ РЕКОРД', biome: 'arcade достигла → {name}', milestone: 'arcade {id} пробежала {distance} м'
+    },
+    es: {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 listos'], ['c', 'arcade KITTY RUNNER cargado · esperando jugador']],
+      stream: [['c', 'build  atlas de píxeles listo (0 imágenes, todo hecho con código)'], ['c', 'C0 está negociando con el compilador'], ['p', 'X0 terminó otro sprite de lobo'], ['p', 'Feline1 prueba el salto: ¡miau!'], ['w', 'warn   queda menos del 20% de café'], ['w', 'warn   un gato duerme sobre el teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup guardada en la nube ✓'], ['p', 'cat    el gato se estiró y ocupó la silla'], ['c', 'cache  borrados 128 MB de archivos temporales'], ['c', 'audio  sonido de salto de 8 bits listo'], ['ok', 'ok     todos siguen aquí ✓'], ['p', 'spider Xiao Ba te está mirando'], ['w', 'warn   la inspiración está fluctuando']],
+      bugFixed: 'fixed  #{num} error del juego', coffeeReset: 'reset  contador de café reiniciado; C0 ahora toma agua', coffeeBrew: 'coffee++  C0 fue por otra taza',
+      practice: 'arcade {id} practica en {where} · {result} · sin puntos', practiceClear: 'superado ✓', practiceFail: 'se cayó',
+      run: 'arcade {id} recorrió {distance} m en {where} · {score} pts{record}', newRecord: ' · ★ NUEVO RÉCORD', biome: 'arcade llegó a → {name}', milestone: 'arcade {id} ya recorrió {distance} m'
+    },
+    'pt-PT': {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 prontos'], ['c', 'arcade KITTY RUNNER carregado · à espera de jogador']],
+      stream: [['c', 'build  atlas de píxeis pronto (0 imagens, tudo feito por código)'], ['c', 'C0 está a negociar com o compilador'], ['p', 'X0 terminou outro sprite de lobo'], ['p', 'Feline1 está a testar o salto: miau!'], ['w', 'warn   resta menos de 20% de café'], ['w', 'warn   um gato está a dormir no teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup guardada na nuvem ✓'], ['p', 'cat    o gato espreguiçou-se e ocupou a cadeira'], ['c', 'cache  removidos 128 MB de ficheiros temporários'], ['c', 'audio  som de salto de 8 bits pronto'], ['ok', 'ok     todos continuam aqui ✓'], ['p', 'spider Xiao Ba está a olhar para ti'], ['w', 'warn   a inspiração está a oscilar']],
+      bugFixed: 'fixed  #{num} problema do jogo', coffeeReset: 'reset  contador do café reiniciado; C0 passou à água', coffeeBrew: 'coffee++  C0 foi buscar mais um café',
+      practice: 'arcade {id} a treinar em {where} · {result} · sem pontuação', practiceClear: 'concluído ✓', practiceFail: 'caiu',
+      run: 'arcade {id} percorreu {distance} m em {where} · {score} pts{record}', newRecord: ' · ★ NOVO RECORDE', biome: 'arcade chegou a → {name}', milestone: 'arcade {id} já percorreu {distance} m'
+    },
+    'pt-BR': {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 a postos'], ['c', 'arcade KITTY RUNNER carregado · aguardando jogador']],
+      stream: [['c', 'build  atlas de pixels pronto (0 imagens, tudo feito com código)'], ['c', 'C0 está negociando com o compilador'], ['p', 'X0 terminou mais um sprite de lobo'], ['p', 'Feline1 está testando o pulo: miau!'], ['w', 'warn   estoque de café abaixo de 20%'], ['w', 'warn   um gato está dormindo no teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup salva na nuvem ✓'], ['p', 'cat    o gato se espreguiçou e tomou a cadeira'], ['c', 'cache  128 MB de arquivos temporários removidos'], ['c', 'audio  som de pulo 8-bit pronto'], ['ok', 'ok     todo mundo continua aqui ✓'], ['p', 'spider Xiao Ba está de olho em você'], ['w', 'warn   nível de inspiração oscilando']],
+      bugFixed: 'fixed  #{num} problema no jogo', coffeeReset: 'reset  contador de café zerado; C0 agora vai de água', coffeeBrew: 'coffee++  C0 foi pegar mais um café',
+      practice: 'arcade {id} treinando em {where} · {result} · sem pontuação', practiceClear: 'venceu ✓', practiceFail: 'caiu',
+      run: 'arcade {id} correu {distance} m em {where} · {score} pts{record}', newRecord: ' · ★ NOVO RECORDE', biome: 'arcade chegou a → {name}', milestone: 'arcade {id} já correu {distance} m'
+    },
+    de: {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 bereit'], ['c', 'arcade KITTY RUNNER geladen · wartet auf Spieler']],
+      stream: [['c', 'build  Pixelatlas erstellt (0 Bilder, alles per Code gezeichnet)'], ['c', 'C0 verhandelt mit dem Compiler'], ['p', 'X0 hat einen weiteren Wolfs-Sprite fertiggestellt'], ['p', 'Feline1 testet das Sprunggefühl: Miau!'], ['w', 'warn   Kaffeevorrat unter 20%'], ['w', 'warn   eine Katze schläft auf der Tastatur'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup in der Cloud gespeichert ✓'], ['p', 'cat    die Katze streckt sich und besetzt den Stuhl'], ['c', 'cache  128 MB temporäre Dateien gelöscht'], ['c', 'audio  8-Bit-Sprunggeräusch ist bereit'], ['ok', 'ok     alle sind noch da ✓'], ['p', 'spider Xiao Ba beobachtet dich'], ['w', 'warn   Inspirationswert schwankt']],
+      bugFixed: 'fixed  #{num} Spielfehler behoben', coffeeReset: 'reset  Kaffeezähler zurückgesetzt; C0 trinkt jetzt Wasser', coffeeBrew: 'coffee++  C0 holt sich noch einen Kaffee',
+      practice: 'arcade {id} übt in {where} · {result} · ohne Wertung', practiceClear: 'geschafft ✓', practiceFail: 'gestürzt',
+      run: 'arcade {id}: {distance} m in {where} · {score} Pkt.{record}', newRecord: ' · ★ NEUER REKORD', biome: 'arcade erreicht → {name}', milestone: 'arcade {id} ist {distance} m gelaufen'
+    },
+    la: {
+      boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 parati'], ['c', 'arcade KITTY RUNNER onerata · lusorem exspectat']],
+      stream: [['c', 'build  atlas pixelorum paratus (imagines 0, omnia codice picta)'], ['c', 'C0 cum compilatore disputat'], ['p', 'X0 novum lupi imaginem absolvit'], ['p', 'Feline1 saltum probat: miau!'], ['w', 'warn   coffeae copia infra 20%'], ['w', 'warn   felis super clavibus dormit'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup in nubem servata ✓'], ['p', 'cat    felis se extendit et sellam occupavit'], ['c', 'cache  128 MB archivorum temporariorum deleta'], ['c', 'audio  sonus saltus octobitici paratus'], ['ok', 'ok     omnes adhuc adsunt ✓'], ['p', 'spider Xiao Ba te spectat'], ['w', 'warn   inspiratio variatur']],
+      bugFixed: 'fixed  #{num} vitium ludi correctum', coffeeReset: 'reset  numerus coffeae deletus; C0 aquam bibit', coffeeBrew: 'coffee++  C0 aliam coffeam petit',
+      practice: 'arcade {id} in {where} exercetur · {result} · puncta nulla', practiceClear: 'victoria ✓', practiceFail: 'cecidit',
+      run: 'arcade {id} {distance} m in {where} cucurrit · {score} puncta{record}', newRecord: ' · ★ NOVUM RECORDUM', biome: 'arcade advenit → {name}', milestone: 'arcade {id} {distance} m cucurrit'
+    }
+  };
+
   var locale = 'zh-CN', LANGS = Object.keys(messages);
   try {
     var saved = localStorage.getItem('c0-site-language');
@@ -428,7 +489,18 @@
     apply();
     window.dispatchEvent(new CustomEvent('c0-language-change', { detail: { locale: locale } }));
   }
-  window.I18N = { t: t, apply: apply, setLocale: setLocale, getLocale: function () { return locale; }, locales: LANGS.slice() };
+  function formatLog(value, vars) {
+    return String(value).replace(/\{(\w+)\}/g, function (all, name) { return vars && vars[name] !== undefined ? String(vars[name]) : all; });
+  }
+  function logText(key, vars) {
+    var pack = buildLogs[locale] || buildLogs.en;
+    return formatLog(pack[key] === undefined ? buildLogs.en[key] || key : pack[key], vars);
+  }
+  function getLogLines(kind) {
+    var pack = buildLogs[locale] || buildLogs.en, lines = pack[kind] || buildLogs.en[kind] || [];
+    return lines.map(function (line) { return line.slice(); });
+  }
+  window.I18N = { t: t, log: logText, getLogLines: getLogLines, apply: apply, setLocale: setLocale, getLocale: function () { return locale; }, locales: LANGS.slice() };
   apply();
   var select = document.getElementById('langSelect');
   if (select) select.addEventListener('change', function () { setLocale(select.value); });

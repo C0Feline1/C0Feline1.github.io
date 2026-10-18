@@ -187,8 +187,9 @@
   .cc-pick input { margin-top: 0 !important; flex: 1; min-width: 0; }
   .cc-flag { min-width: 26px; text-align: center; font-size: 18px; }
   .lb-box select { display: block; width: 100%; margin-top: 6px; background: #07050d; border: 1px solid var(--line); color: #fff; font: 14px "DotGothic16", monospace; padding: 5px 6px; }
-  .flag { margin-right: 5px; font-family: "Twemoji Country Flags", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+  .flag { display: inline-block; width: 16px; height: 12px; margin-right: 5px; object-fit: cover; vertical-align: -1px; border: 1px solid rgba(255,255,255,.16); }
   .flag-cc { display: inline-block; margin-right: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--dim); font: 10px/13px monospace; vertical-align: 1px; letter-spacing: .5px; }
+  .flag-cc[hidden] { display: none; }
   .lb-msg { min-height: 1.4em; margin: 8px 0 0 !important; color: var(--cyan) !important; font-size: 12px; }
   /* mobile: no tap highlight / selection / long-press callout on the console */
   .gba, .gba *, #game { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -539,10 +540,10 @@
 <script src="js/game.js?v=20261018m"></script>
 <script src="js/music.js?v=20261018o"></script>
 <script src="js/logs.js?v=20261018m"></script>
-<script src="js/i18n.js?v=20261018o"></script>
-<script src="js/dash.js?v=20261018o"></script>
+<script src="js/i18n.js?v=20261018p"></script>
+<script src="js/dash.js?v=20261018p"></script>
 <script src="js/studio.js?v=20261018n"></script>
 <script src="js/spider.js?v=20261018m"></script>
-<script src="js/board.js?v=20261018o"></script>
+<script src="js/board.js?v=20261018p"></script>
 </body>
 </html>
