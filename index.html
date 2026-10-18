@@ -65,6 +65,11 @@
   .ticker span { display: inline-block; animation: tick 40s linear infinite; padding-left: 100%; }
   .ticker em { font-style: normal; color: var(--pink2); }
   .clock { font-size: 18px; color: var(--cyan); border: 1px solid var(--cyan); padding: 2px 10px; box-shadow: inset 0 0 10px rgba(79,227,255,.2); }
+  .lang-switch { display: flex; align-items: center; gap: 5px; flex: none; height: 32px; padding: 0 8px; border: 1px solid var(--cyan); background: #0b1020; color: var(--cyan); box-shadow: inset 0 0 10px rgba(79,227,255,.12); }
+  .lang-switch .globe { font-size: 14px; line-height: 1; }
+  .lang-switch select { max-width: 150px; border: 0; outline: 0; padding: 0; color: var(--text); background: transparent; font: 12px "DotGothic16", "Microsoft YaHei", monospace; cursor: pointer; }
+  .lang-switch select option { color: var(--text); background: var(--panel); }
+  .lang-switch:focus-within { outline: 2px solid var(--pink); outline-offset: 2px; }
   .bar { display: inline-block; vertical-align: middle; width: 70px; height: 6px; background: #241a35; margin-left: 6px; }
   .bar i { display: block; height: 100%; background: var(--green); transition: width .6s; }
 
@@ -77,6 +82,7 @@
   .tag { font-size: 10px; border: 1px solid currentColor; padding: 0 5px; color: var(--pink); white-space: nowrap; }
   .card .big { font-size: 22px; color: #fff; }
   .card .sub { color: var(--dim); font-size: 11px; }
+  .card .sub.up { color: var(--green); } .card .sub.down { color: var(--red); }
   .card .meter { height: 4px; background: #241a35; margin-top: 6px; }
   .card .meter i { display: block; height: 100%; transition: width .8s; }
   .up { color: var(--green); } .down { color: var(--red); }
@@ -325,6 +331,8 @@
   html.fx .top { grid-area: top; flex-wrap: nowrap; padding: 5px 10px; gap: 10px; min-width: 0; }
   html.fx .logo { font-size: 18px; flex: none; } html.fx .logo canvas { width: 26px; height: 26px; }
   html.fx .clock { font-size: 15px; padding: 1px 8px; flex: none; }
+  html.fx .lang-switch { height: 28px; padding: 0 6px; gap: 3px; }
+  html.fx .lang-switch select { max-width: 130px; font-size: 11px; }
   html.fx .mood { flex: none; }
   html.fx .cards { grid-area: cards; gap: 6px; min-height: 0; grid-auto-rows: max-content; }
   html.fx .card { padding: 5px 9px; } html.fx .card .tag { display: none; } html.fx .card .ph { margin-bottom: 0; }
@@ -362,6 +370,8 @@
   /* landscape: big arcade + one sidebar (stats, studio cam, tabbed dock) */
   html.fx-land .frame { grid-template-columns: minmax(0, 1fr) 240px; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
     grid-template-areas: "top top" "arcade cards" "arcade cam" "arcade tabs" "arcade dock" "arcade foot"; }
+  html.fx-land .ticker { min-width: 40px; }
+  html.fx-land .lang-switch select { max-width: 110px; }
   html.fx-land .cards { grid-template-columns: 1fr 1fr; }
   html.fx-land .arc .gba.sw { --jcw: 116px; --bc: 36px; }
   html.fx-land footer { padding-left: 0; }
@@ -370,6 +380,7 @@
   html.fx-port .frame { padding: 5px; gap: 5px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); grid-template-areas: "top" "arcade" "tabs" "dock"; }
   html.fx-port .top { padding: 4px 8px; gap: 8px; justify-content: space-between; } html.fx-port .ticker, html.fx-port .mood { display: none; }
   html.fx-port .logo { font-size: 15px; } html.fx-port .logo canvas { width: 22px; height: 22px; } html.fx-port .clock { font-size: 13px; }
+  html.fx-port .lang-switch select { max-width: 96px; }
   html.fx-port footer, html.fx-port .arc > .ph, html.fx-port .arc .help, html.fx-port .scrlabel { display: none !important; }
   html.fx-port .arcade > .panel { --force: stack; padding: 2px 2px 4px; }
   html.fx-port .arc .gba.sw { --bc: 46px; padding-top: 36px; margin: 0 auto; }
@@ -400,41 +411,44 @@
   <header class="top">
     <div class="logo"><canvas id="logoPx" width="16" height="16"></canvas><span>C0 STUDIO <b>+</b> FELINE</span></div>
     <div class="ticker"><span id="ticker"></span></div>
-    <div class="mood" style="font-size:12px;color:var(--dim)">MOOD <span id="moodTxt">74.9%</span><span class="bar"><i id="moodBar" style="width:75%"></i></span></div>
+    <div class="mood" style="font-size:12px;color:var(--dim)"><span data-i18n="header.mood">MOOD</span> <span id="moodTxt">74.9%</span><span class="bar"><i id="moodBar" style="width:75%"></i></span></div>
     <div class="clock" id="clock">00:00:00</div>
+    <label class="lang-switch"><span class="globe" aria-hidden="true">🌐</span><select id="langSelect" data-i18n-aria-label="lang.select" aria-label="选择语言">
+      <option value="zh-CN">中文</option><option value="en">English</option><option value="ja">日本語</option><option value="ru">Русский</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="de">Deutsch</option><option value="la">Latina</option>
+    </select></label>
   </header>
 
-  <nav class="dock-tabs" id="dockTabs" aria-label="面板切换">
-    <button type="button" data-t="cards">数据</button><button type="button" data-t="cam">实况</button><button type="button" data-t="lb">排行</button><button type="button" data-t="term">日志</button><button type="button" data-t="chart">灵感</button><button type="button" data-t="works">作品</button><button type="button" data-t="legal">关于</button><button type="button" data-t="ad">广告</button><button type="button" class="dock-x" data-t="close" aria-label="关闭面板">✕</button>
+  <nav class="dock-tabs" id="dockTabs" data-i18n-aria-label="nav.panelLabel" aria-label="面板切换">
+    <button type="button" data-t="cards" data-i18n="nav.cards">数据</button><button type="button" data-t="cam" data-i18n="nav.cam">实况</button><button type="button" data-t="lb" data-i18n="nav.rank">排行</button><button type="button" data-t="term" data-i18n="nav.logs">日志</button><button type="button" data-t="chart" data-i18n="nav.inspiration">灵感</button><button type="button" data-t="works" data-i18n="nav.works">作品</button><button type="button" data-t="legal" data-i18n="nav.about">关于</button><button type="button" data-t="ad" data-i18n="nav.ads">广告</button><button type="button" class="dock-x" data-t="close" data-i18n-aria-label="nav.closeLabel" aria-label="关闭面板">✕</button>
   </nav>
-  <button type="button" class="dock-open" id="dockOpen" aria-label="打开信息面板">≡ 信息</button>
+  <button type="button" class="dock-open" id="dockOpen" data-i18n="nav.openInfo" data-i18n-aria-label="nav.openInfo" aria-label="打开信息面板">≡ 信息</button>
 
   <section class="grid cards" id="cards" data-tab="cards"></section>
 
   <section class="grid main">
     <div class="panel cam" data-tab="cam">
-      <div class="ph"><h2><span class="rec">●</span> STUDIO CAM · 工作室实况</h2><span class="tag" style="color:var(--cyan)">LIVE</span></div>
+      <div class="ph"><h2><span class="rec">●</span> <span data-i18n="studio.title">STUDIO CAM · 工作室实况</span></h2><span class="tag" style="color:var(--cyan)">LIVE</span></div>
       <canvas id="studio" width="320" height="180" aria-label="像素工作室动画：三个角色正在工作"></canvas>
     </div>
     <div class="panel term" data-tab="term">
-      <div class="ph"><h2>&gt;_ build.log</h2><span class="tag" style="color:var(--green)">TAIL -F</span></div>
+      <div class="ph"><h2 data-i18n="terminal.title">&gt;_ build.log</h2><span class="tag" style="color:var(--green)">TAIL -F</span></div>
       <pre id="log"></pre>
     </div>
     <div class="lbrow">
       <div class="panel lb" data-tab="lb">
-        <div class="ph"><h2>🏆 HALL OF FAME · 排行榜 TOP 100</h2><span class="tag" id="lbStatus" style="color:var(--dim)">…</span></div>
-        <ol class="lb-list" id="lbList"><li class="lb-empty">加载中……</li></ol>
-        <p class="lb-retry" id="lbRetry" hidden><span id="lbRetryMsg">上一局成绩没有提交成功</span> <button type="button" id="lbRetryBtn">重试提交</button></p>
-        <p class="lb-tip">任意一局得分进入全球前 100 名，就可以留下名字。</p>
+        <div class="ph"><h2 data-i18n="board.title">🏆 HALL OF FAME · 排行榜 TOP 100</h2><span class="tag" id="lbStatus" style="color:var(--dim)">…</span></div>
+        <ol class="lb-list" id="lbList"><li class="lb-empty" data-i18n="board.loading">加载中……</li></ol>
+        <p class="lb-retry" id="lbRetry" hidden><span id="lbRetryMsg" data-i18n="board.retryHint">上一局成绩没有提交成功</span> <button type="button" id="lbRetryBtn" data-i18n="board.retry">重试提交</button></p>
+        <p class="lb-tip" data-i18n="board.tip">任意一局得分进入全球前 100 名，就可以留下名字。</p>
       </div>
       <div class="panel ad" id="adBox" data-tab="ad">
-        <div class="ph"><h2>📢 广告位招租 · AD SPACE FOR RENT</h2><span class="tag" style="color:var(--gold)">VACANT</span></div>
+        <div class="ph"><h2 data-i18n="ad.title">📢 广告位招租 · AD SPACE FOR RENT</h2><span class="tag" style="color:var(--gold)" data-i18n="ad.vacant">VACANT</span></div>
         <div class="ad-body">
-          <canvas id="adSpin" width="40" height="40" aria-label="一直在转的像素风车"></canvas>
+          <canvas id="adSpin" width="40" height="40" data-i18n-aria-label="ad.spinner" aria-label="一直在转的像素风车"></canvas>
           <div class="ad-copy">
-            <b>此处广告位招租</b>
-            <p>日均曝光：小八 × 1<br>租金：一条小鱼干 / 月<br>风车由小八看守，<span class="dim">请勿靠近</span></p>
-            <p class="ad-note">* 这不是真广告，没有任何第三方内容</p>
+            <b data-i18n="ad.space">此处广告位招租</b>
+            <p data-i18n-html="ad.details">日均曝光：小八 × 1<br>租金：一条小鱼干 / 月<br>风车由小八看守，请勿靠近</p>
+            <p class="ad-note" data-i18n="ad.note">* 这不是真广告，没有任何第三方内容</p>
           </div>
         </div>
       </div>
@@ -443,91 +457,92 @@
 
   <section class="grid arcade">
     <div class="panel arc">
-      <div class="ph"><h2>▶ ARCADE · KITTY RUNNER</h2><span class="tag" style="color:var(--gold)">PLAYABLE</span></div>
+      <div class="ph"><h2 data-i18n="game.title">▶ ARCADE · KITTY RUNNER</h2><span class="tag" style="color:var(--gold)" data-i18n="game.playable">PLAYABLE</span></div>
       <div class="gba sw">
         <div class="jc jl">
-          <button class="jmini" id="minusBtn" type="button" aria-label="−：返回 / 换人" title="−：返回 / 换人">−</button>
+          <button class="jmini" id="minusBtn" type="button" data-i18n-aria-label="game.minus" data-i18n-title="game.minus" aria-label="−：返回 / 换人" title="−：返回 / 换人">−</button>
           <div class="dpad jdp">
-            <button data-d="up" aria-label="上：跳跃"></button>
-            <button data-d="left" aria-label="左：向左 / 上一个角色"></button>
-            <button data-d="right" aria-label="右：向右 / 下一个角色"></button>
-            <button data-d="down" aria-label="下：按住蹲下 / 菜单"></button>
+            <button data-d="up" data-i18n-aria-label="game.up" aria-label="上：跳跃"></button>
+            <button data-d="left" data-i18n-aria-label="game.left" aria-label="左：向左 / 上一个角色"></button>
+            <button data-d="right" data-i18n-aria-label="game.right" aria-label="右：向右 / 下一个角色"></button>
+            <button data-d="down" data-i18n-aria-label="game.down" aria-label="下：按住蹲下 / 菜单"></button>
           </div>
           <div class="jstick" aria-hidden="true"></div>
         </div>
         <div class="scr">
-          <button class="mtab" id="bgmBtn" type="button" aria-pressed="false" aria-label="打开或关闭游戏音乐和音效（M）">♪ 音乐 关</button>
+          <button class="mtab" id="bgmBtn" type="button" aria-pressed="false" data-i18n-aria-label="game.musicToggle" aria-label="打开或关闭游戏音乐和音效（M）">♪ 音乐 关</button>
           <div class="screenwrap">
-            <canvas id="game" tabindex="0" aria-label="KITTY RUNNER 小游戏：点屏幕开始 / 跳跃，C 跳跃，X 攻击，Z 技能，↑ 互动，S 暂停"></canvas>
+            <canvas id="game" tabindex="0" data-i18n-aria-label="game.canvasLabel" aria-label="KITTY RUNNER 小游戏：点屏幕开始 / 跳跃，C 跳跃，X 攻击，Z 技能，↑ 互动，S 暂停"></canvas>
             <div class="scrlabel"><span>C0 SWITCH</span><span>● POWER</span></div>
           </div>
         </div>
         <div class="jc jr">
-          <button class="jmini" id="plusBtn" type="button" aria-label="+：暂停 / 继续（键盘 S、P、Esc）" title="+：暂停 / 继续（键盘 S、P、Esc）">+</button>
+          <button class="jmini" id="plusBtn" type="button" data-i18n-aria-label="game.plus" data-i18n-title="game.plus" aria-label="+：暂停 / 继续（键盘 S、P、Esc）" title="+：暂停 / 继续（键盘 S、P、Esc）">+</button>
           <div class="xyab">
-            <button class="fbtn x" id="xBtn" type="button" aria-label="X：攻击，长按切换近战 / 远程（键盘 X）" title="X：攻击，长按切换近战 / 远程（键盘 X）">X</button>
-            <button class="fbtn y" id="yBtn" type="button" aria-label="Y：互动（键盘 ↑）" title="Y：互动（键盘 ↑）">Y</button>
-            <button class="fbtn a" id="aBtn" type="button" aria-label="A：跳跃 / 确认（键盘 C、空格、回车）" title="A：跳跃 / 确认（键盘 C、空格、回车）">A</button>
-            <button class="fbtn b" id="bBtn" type="button" aria-label="B：技能 / 返回（键盘 Z）" title="B：技能 / 返回（键盘 Z）">B</button>
+            <button class="fbtn x" id="xBtn" type="button" data-i18n-aria-label="game.x" data-i18n-title="game.x" aria-label="X：攻击，长按切换近战 / 远程（键盘 X）" title="X：攻击，长按切换近战 / 远程（键盘 X）">X</button>
+            <button class="fbtn y" id="yBtn" type="button" data-i18n-aria-label="game.y" data-i18n-title="game.y" aria-label="Y：互动（键盘 ↑）" title="Y：互动（键盘 ↑）">Y</button>
+            <button class="fbtn a" id="aBtn" type="button" data-i18n-aria-label="game.a" data-i18n-title="game.a" aria-label="A：跳跃 / 确认（键盘 C、空格、回车）" title="A：跳跃 / 确认（键盘 C、空格、回车）">A</button>
+            <button class="fbtn b" id="bBtn" type="button" data-i18n-aria-label="game.b" data-i18n-title="game.b" aria-label="B：技能 / 返回（键盘 Z）" title="B：技能 / 返回（键盘 Z）">B</button>
           </div>
           <div class="jstick" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="help"><kbd>←</kbd><kbd>→</kbd> 移动 · <kbd>↓</kbd> 蹲 · <kbd>C</kbd> 跳 · <kbd>X</kbd> 攻击（长按切换近战/远程） · <kbd>Z</kbd> 技能 · <kbd>↑</kbd> 交互 · <kbd>S</kbd> 暂停</p>
+      <p class="help" data-i18n-html="game.help"><kbd>←</kbd><kbd>→</kbd> 移动 · <kbd>↓</kbd> 蹲 · <kbd>C</kbd> 跳 · <kbd>X</kbd> 攻击（长按切换近战/远程） · <kbd>Z</kbd> 技能 · <kbd>↑</kbd> 交互 · <kbd>S</kbd> 暂停</p>
     </div>
   </section>
 
   <section class="grid lower">
     <div class="panel chart" data-tab="chart">
-      <div class="ph"><h2>INSPIRATION · 灵感指数</h2><span class="tag" id="chartTag" style="color:var(--green)">+2.31%</span></div>
+      <div class="ph"><h2 data-i18n="chart.title">INSPIRATION · 灵感指数</h2><span class="tag" id="chartTag" style="color:var(--green)">+2.31%</span></div>
       <div class="chart-box"><canvas id="chart"></canvas></div>
       <div class="val" id="chartVal">✦ 74,916</div>
     </div>
     <div class="panel worksp" data-tab="works">
-      <div class="ph"><h2>WORKS · 作品</h2><span class="tag">3 SLOTS</span></div>
+      <div class="ph"><h2 data-i18n="works.title">WORKS · 作品</h2><span class="tag" data-i18n="works.slots">3 SLOTS</span></div>
       <ul class="works">
-        <li class="work-link"><a href="https://play.google.com/store/apps/details?id=com.stardreamgallery.game" target="_blank" rel="noopener"><span class="st tag" style="color:var(--gold)">封闭测试中</span><b>星梦画廊 Stardream Gallery ↗</b><p>竖屏拼图 · Android · 在 Google Play 查看</p></a></li>
-        <li><span class="st tag" style="color:var(--cyan)">制作中</span><b>归途的余温</b><p>像素横版动作冒险 · 上面那个跑酷是它的小番外</p></li>
-        <li class="locked"><span class="st tag">LOCKED</span><b>？？？</b><p>正在构思……</p></li>
+        <li class="work-link"><a href="https://play.google.com/store/apps/details?id=com.stardreamgallery.game" target="_blank" rel="noopener"><span class="st tag" style="color:var(--gold)" data-i18n="works.beta">封闭测试中</span><b data-i18n="works.stardream">星梦画廊 Stardream Gallery ↗</b><p data-i18n="works.stardreamDesc">竖屏拼图 · Android · 在 Google Play 查看</p></a></li>
+        <li><span class="st tag" style="color:var(--cyan)" data-i18n="works.inProgress">制作中</span><b data-i18n="works.warmth">归途的余温</b><p data-i18n="works.warmthDesc">像素横版动作冒险 · 上面那个跑酷是它的小番外</p></li>
+        <li class="locked"><span class="st tag" data-i18n="works.locked">LOCKED</span><b>？？？</b><p data-i18n="works.comingSoon">正在构思……</p></li>
       </ul>
-      <p class="about">独立开发人C0，一个人做游戏和小工具。这个页面上的数据全是演出来的，只有作品和下面的链接是真的。</p>
+      <p class="about" data-i18n="works.about">独立开发人C0，一个人做游戏和小工具。这个页面上的数据全是演出来的，只有作品和下面的链接是真的。</p>
     </div>
     <div class="panel legal" data-tab="legal">
-      <div class="ph"><h2>LEGAL &amp; VERIFY · 法律与验证</h2><span class="tag" style="color:var(--green)">ALL GREEN</span></div>
-      <h3 class="legal-h">隐私政策 · Privacy Policies</h3>
+      <div class="ph"><h2 data-i18n="legal.title">LEGAL &amp; VERIFY · 法律与验证</h2><span class="tag" style="color:var(--green)" data-i18n="legal.status">ALL GREEN</span></div>
+      <h3 class="legal-h" data-i18n="legal.privacyHeading">隐私政策 · Privacy Policies</h3>
       <ul class="links legal-apps">
         <!-- one <li> per app: add new apps here -->
-        <li><span class="app">星梦画廊 Stardream Gallery</span><a href="/stardream-gallery-privacy/">隐私政策 / Privacy ›</a></li>
+        <li><span class="app">星梦画廊 Stardream Gallery</span><a href="/stardream-gallery-privacy/" data-i18n="legal.privacyLink">隐私政策 / Privacy ›</a></li>
       </ul>
       <ul class="links">
-        <li><span>开发者网站</span><span class="ok">c0feline1.github.io</span></li>
+        <li><span data-i18n="legal.website">开发者网站</span><span class="ok">c0feline1.github.io</span></li>
       </ul>
-      <p class="about" id="verifyNote">最近一次自检：<span id="verifyTime">--</span>　<span class="ok" style="color:var(--green)">OK</span></p>
+      <p class="about" id="verifyNote"><span data-i18n="legal.lastCheck">最近一次自检：</span><span id="verifyTime">--</span>　<span class="ok" style="color:var(--green)">OK</span></p>
     </div>
   </section>
-  <footer>© 2026 独立开发人C0 · 所有像素都由代码绘制 · 页面上爬来爬去的是小八，点它会说话</footer>
+  <footer data-i18n="footer">© 2026 独立开发人C0 · 所有像素都由代码绘制 · 页面上爬来爬去的是小八，点它会说话</footer>
 </div>
 <div class="lb-modal" id="lbModal" hidden>
   <div class="lb-box" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
-    <h3 id="lbTitle">★ NEW RECORD ★</h3>
-    <p>本局得分 <b id="lbScore">0</b>　<span id="lbRankHint"></span></p>
-    <label>留下名字登上排行榜（1-12 个字）<input id="lbName" maxlength="12" autocomplete="nickname" spellcheck="false"></label>
-    <label class="cc-label">国家 / 地区（可以不选）
-      <span class="cc-pick"><span class="cc-flag" id="lbCcFlag" aria-hidden="true"></span><input id="lbCcFind" placeholder="搜索：中国 / Japan / JP" autocomplete="off" spellcheck="false" aria-label="搜索国家或地区"></span>
-      <select id="lbCc" aria-label="国家或地区"></select>
+    <h3 id="lbTitle" data-i18n="modal.title">★ NEW RECORD ★</h3>
+    <p><span data-i18n="modal.score">本局得分</span> <b id="lbScore">0</b>　<span id="lbRankHint"></span></p>
+    <label><span data-i18n="modal.nameLabel">留下名字登上排行榜（1-12 个字）</span><input id="lbName" maxlength="12" autocomplete="nickname" spellcheck="false" data-i18n-placeholder="modal.namePlaceholder" placeholder="你的名字"></label>
+    <label class="cc-label"><span data-i18n="modal.countryLabel">国家 / 地区（可以不选）</span>
+      <span class="cc-pick"><span class="cc-flag" id="lbCcFlag" aria-hidden="true"></span><input id="lbCcFind" data-i18n-placeholder="modal.countryPlaceholder" data-i18n-aria-label="modal.countrySearch" placeholder="搜索：中国 / Japan / JP" autocomplete="off" spellcheck="false" aria-label="搜索国家或地区"></span>
+      <select id="lbCc" data-i18n-aria-label="modal.countryLabel" aria-label="国家或地区"></select>
     </label>
-    <div class="lb-btns"><button id="lbSend">登上排行榜</button><button id="lbSkip" class="ghost">算了</button></div>
+    <div class="lb-btns"><button id="lbSend" data-i18n="modal.submit">登上排行榜</button><button id="lbSkip" class="ghost" data-i18n="modal.skip">算了</button></div>
     <p class="lb-msg" id="lbMsg"></p>
   </div>
 </div>
 <script src="js/pixel.js?v=20261018m"></script>
 <script src="js/audio.js?v=20261018m"></script>
 <script src="js/game.js?v=20261018m"></script>
-<script src="js/music.js?v=20261018m"></script>
+<script src="js/music.js?v=20261018o"></script>
 <script src="js/logs.js?v=20261018m"></script>
-<script src="js/dash.js?v=20261018n"></script>
+<script src="js/i18n.js?v=20261018o"></script>
+<script src="js/dash.js?v=20261018o"></script>
 <script src="js/studio.js?v=20261018n"></script>
 <script src="js/spider.js?v=20261018m"></script>
-<script src="js/board.js?v=20261018m"></script>
+<script src="js/board.js?v=20261018o"></script>
 </body>
 </html>

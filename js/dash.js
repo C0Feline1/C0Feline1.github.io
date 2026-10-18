@@ -2,9 +2,10 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var R = Math.random, pick = function (a) { return a[Math.floor(R() * a.length)]; };
+  var T = function (key, vars) { return window.I18N ? I18N.t(key, vars) : key; };
   function pad(n) { return String(n).padStart(2, '0'); }
   function now() { var d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
-  function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+  function fmt(n) { return Math.round(n).toLocaleString(window.I18N ? I18N.getLocale() : 'en-US'); }
 
   /* logo: Feline1's face */
   (function () {
@@ -19,42 +20,52 @@
     $('moodTxt').textContent = m.toFixed(1) + '%'; $('moodBar').style.width = m + '%';
   }, 1000);
   $('clock').textContent = now();
-  $('verifyTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+  function updateVerifyTime() { $('verifyTime').textContent = new Date().toLocaleString(window.I18N ? I18N.getLocale() : 'zh-CN', { hour12: false }); }
+  updateVerifyTime();
 
-  $('ticker').innerHTML = [
-    '<em>BUILD</em> 归途的余温 v0.7.3 编译通过', '<em>星梦画廊</em> 封闭测试进行中', '<em>Feline1</em> 又把咖啡打翻了',
-    '<em>X0</em> 今日份可爱已送达 ♥', '<em>C0</em> 提交了 17 次 "fix typo"', '<em>app-ads.txt</em> ✓ 200 OK',
-    '<em>猫猫</em> 已连续睡眠 6 小时', '<em>天气</em> 霜脊方向有异常降雪', '<em>提示</em> 下面的跑酷可以玩'
-  ].join('　·　');
+  var tickerItems = [
+    ['BUILD', 'ticker.build'], ['Stardream Gallery', 'ticker.gallery'], ['Feline1', 'ticker.feline'],
+    ['X0', 'ticker.x0'], ['C0', 'ticker.commits'], ['app-ads.txt', 'ticker.ads'],
+    ['CAT', 'ticker.sleep'], ['WEATHER', 'ticker.snow'], ['INFO', 'ticker.arcade']
+  ];
+  function renderTicker() {
+    $('ticker').innerHTML = tickerItems.map(function (item) { return '<em>' + item[0] + '</em> ' + T(item[1]); }).join('　·　');
+  }
+  renderTicker();
 
   /* stat cards */
   var cards = [
-    { id: 'coffee', t: 'COFFEE · 咖啡', tag: 'CAFFEINE', col: '#ffd45e', v: 3, unit: ' 杯', sub: '今日摄入', meter: 0.6 },
-    { id: 'bugs', t: 'BUGS · 剩余', tag: 'TRACKER', col: '#ff4f6a', v: 12, unit: '', sub: '修一个冒两个', meter: 0.4 },
-    { id: 'pixels', t: 'PIXELS · 已绘制', tag: 'CANVAS', col: '#4fe3ff', v: 128402, unit: '', sub: '全部由代码生成', meter: 0.8 },
-    { id: 'best', t: 'YOUR BEST · 跑酷', tag: 'LOCAL', col: '#ff6fa6', v: (window.KittyRunner ? KittyRunner.best() : 0), unit: ' 分', sub: '去下面刷新纪录', meter: 0.3 }
+    { id: 'coffee', title: 'card.coffee.title', tag: 'card.coffee.tag', col: '#ffd45e', v: 3, unit: 'card.coffee.unit', sub: 'card.coffee.sub', meter: 0.6 },
+    { id: 'bugs', title: 'card.bugs.title', tag: 'card.bugs.tag', col: '#ff4f6a', v: 12, unit: '', sub: 'card.bugs.new', tone: 'down', meter: 0.4 },
+    { id: 'pixels', title: 'card.pixels.title', tag: 'card.pixels.tag', col: '#4fe3ff', v: 128402, unit: '', sub: 'card.pixels.sub', meter: 0.8 },
+    { id: 'best', title: 'card.best.title', tag: 'card.best.tag', col: '#ff6fa6', v: (window.KittyRunner ? KittyRunner.best() : 0), unit: 'card.best.unit', sub: 'card.best.sub', meter: 0.3 }
   ];
-  $('cards').innerHTML = cards.map(function (c) {
-    return '<div class="panel card"><div class="ph"><h2 style="color:' + c.col + '">' + c.t + '</h2><span class="tag" style="color:' + c.col + '">' + c.tag +
-      '</span></div><div class="big" id="cv-' + c.id + '">' + fmt(c.v) + c.unit + '</div><div class="sub" id="cs-' + c.id + '">' + c.sub +
-      '</div><div class="meter"><i id="cm-' + c.id + '" style="width:' + c.meter * 100 + '%;background:' + c.col + '"></i></div></div>';
-  }).join('');
-  function setCard(id, v, sub, meter) {
-    var c = cards.filter(function (x) { return x.id === id; })[0]; c.v = v;
-    $('cv-' + id).textContent = fmt(v) + c.unit;
-    if (sub) $('cs-' + id).innerHTML = sub;
-    if (meter !== undefined) $('cm-' + id).style.width = Math.max(3, Math.min(100, meter * 100)) + '%';
+  function renderCards() {
+    $('cards').innerHTML = cards.map(function (c) {
+      return '<div class="panel card"><div class="ph"><h2 style="color:' + c.col + '">' + T(c.title) + '</h2><span class="tag" style="color:' + c.col + '">' + T(c.tag) +
+        '</span></div><div class="big" id="cv-' + c.id + '">' + fmt(c.v) + T(c.unit) + '</div><div class="sub ' + (c.tone || '') + '" id="cs-' + c.id + '">' + T(c.sub, c.subVars) +
+        '</div><div class="meter"><i id="cm-' + c.id + '" style="width:' + c.meter * 100 + '%;background:' + c.col + '"></i></div></div>';
+    }).join('');
   }
+  renderCards();
+  function setCard(id, v, subKey, meter, tone, vars) {
+    var c = cards.filter(function (x) { return x.id === id; })[0]; c.v = v;
+    if (subKey) { c.sub = subKey; c.tone = tone || ''; c.subVars = vars || null; }
+    $('cv-' + id).textContent = fmt(v) + T(c.unit);
+    var sub = $('cs-' + id); sub.textContent = T(c.sub, c.subVars); sub.className = 'sub ' + (c.tone || '');
+    if (meter !== undefined) { c.meter = meter; $('cm-' + id).style.width = Math.max(3, Math.min(100, meter * 100)) + '%'; }
+  }
+  if (window.I18N) window.addEventListener('c0-language-change', renderCards);
   setInterval(function () { setCard('pixels', cards[2].v > 999999 ? 128402 : cards[2].v + Math.floor(R() * 40), null, 0.5 + R() * 0.5); }, 700);
   setInterval(function () {
     var b = cards[1].v, d = R() < 0.55 ? -1 : 1, nb = Math.max(3, b + d);
-    setCard('bugs', nb, d < 0 ? '<span class="up">▼ 修好一个</span>' : '<span class="down">▲ 又冒出一个</span>', nb / 20);
+    setCard('bugs', nb, d < 0 ? 'card.bugs.fixed' : 'card.bugs.new', nb / 20, d < 0 ? 'up' : 'down');
     if (d < 0) log('ok', 'fixed  #' + (200 + Math.floor(R() * 99)) + ' ' + pick(['跳跃判定偏移 1px', '猫耳穿模', '雪花不下了', '存档读不出来', '狼跑得太快']));
   }, 6500);
   setInterval(function () {
     if (R() > 0.4) return;
-    if (cards[0].v >= 6) { setCard('coffee', 0, '咖啡因超标，改喝水', 0.05); log('ok', 'reset  咖啡计数器归零，C0 改喝白开水'); return; }
-    setCard('coffee', cards[0].v + 1, '续了一杯 ☕', (cards[0].v + 1) / 6); log('w', 'coffee++  C0 去续了一杯咖啡');
+    if (cards[0].v >= 6) { setCard('coffee', 0, 'card.coffee.over', 0.05); log('ok', 'reset  咖啡计数器归零，C0 改喝白开水'); return; }
+    setCard('coffee', cards[0].v + 1, 'card.coffee.brew', (cards[0].v + 1) / 6); log('w', 'coffee++  C0 去续了一杯咖啡');
   }, 15000);
 
   /* terminal */
@@ -86,9 +97,13 @@
     if (d.type === 'over' && d.practice) log('c', 'arcade ' + d.id + ' 练习「' + d.where + '」' + (d.clear ? '通关 ✓' : '倒下了') + ' · 不计分');
     else if (d.type === 'over') {
       log(d.isBest ? 'ok' : 'w', 'arcade ' + d.id + ' 在「' + d.where + '」跑了 ' + d.dist + 'm · ' + d.score + ' 分' + (d.isBest ? '  ★ 新纪录' : ''));
-      setCard('best', d.best, d.isBest ? '<span class="up">▲ 新纪录！</span>' : '本次 ' + d.score + ' 分', Math.min(1, d.best / 3000));
+      setCard('best', d.best, d.isBest ? 'card.best.new' : 'card.best.score', Math.min(1, d.best / 3000), d.isBest ? 'up' : '', { score: d.score });
     } else if (d.type === 'biome') log('p', 'arcade 抵达 → ' + d.name);
     else if (d.type === 'milestone' && d.dist % 300 === 0) log('c', 'arcade ' + d.id + ' 已跑出 ' + d.dist + 'm');
+  });
+
+  if (window.I18N) window.addEventListener('c0-language-change', function () {
+    renderTicker(); updateVerifyTime();
   });
 
   /* A / B / D-pad */
