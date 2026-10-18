@@ -454,6 +454,90 @@
     }
   };
 
+  var gameTexts = {
+    'zh-CN': {
+      'world.park': '现代 · 公园', 'world.snow': '霜脊 · 雪原入口', 'world.peak': '冰封峰顶', 'world.home': '现代 · 公寓街区', 'world.cabin': '守山屋', 'world.ridge': '风雪山脊', 'world.cave': '岩洞营火', 'world.lake': '归途 · 冰湖',
+      'world.xian': '云桥 · 修仙界', 'world.ink': '水墨 · 山水间', 'world.cyber': '雨城 · 不眠街', 'world.steam': '锅炉厅 · 第二次呼吸', 'world.sea': '珊瑚遗迹 · 潮汐', 'world.market': '夜市 · 灯笼街', 'world.sakura': '樱花 · 狐之社', 'world.bit8': '像素 · 8-BIT 世界',
+      'world.desert': '黄沙遗迹', 'world.volcano': '熔岩火山', 'world.haunt': '幽灵古宅', 'world.skycity': '天空之城', 'world.space': '星海 · 轨道站', 'world.mirror': '镜湖 · 倒影', 'world.candy': '棉花糖梦境', 'world.court': '绿洲 · 歇脚处',
+      'character.Feline1': '猫娘 Feline1', 'perk.Feline1': '九命：4 颗心，每 25 秒回 1 颗 + 二段跳', 'character.C0': '程序员 C0', 'perk.C0': '超频：按 B（键盘 Z）慢动作 + 穿透', 'character.X0': '美术 X0', 'perk.X0': '镜光护盾：12 秒充能 + 小磁铁',
+      'ui.paused': '已暂停', 'ui.resume': '继续游戏', 'ui.restart': '重新开始', 'ui.changeCharacter': '返回选人', 'over.at': '倒在了「{world}」', 'over.together': '不过三个人还在一起。',
+      'room.apt': '公寓 · 小家', 'room.tea': '樱之茶室', 'room.lodge': '雪原小屋', 'room.cabin': '山间木屋', 'room.party': '一圈完成！', 'room.court': '绿洲 · 歇脚处',
+      'boss.eel': '熔岩鳗出现了！', 'boss.butler': '管家幽灵出现了！', 'tea.inscription': '一期一会'
+    },
+    en: {
+      'world.park': 'Modern Park', 'world.snow': 'Frost Ridge · Snowfield', 'world.peak': 'Frozen Summit', 'world.home': 'Home Street', 'world.cabin': 'Mountain Lodge', 'world.ridge': 'Storm Ridge', 'world.cave': 'Ember Cave', 'world.lake': 'Homeward · Frozen Lake',
+      'world.xian': 'Cloud Bridge · Sword Realm', 'world.ink': 'Ink Landscape', 'world.cyber': 'Rain City · Sleepless Street', 'world.steam': 'Boiler Hall · Second Breath', 'world.sea': 'Coral Ruins · Tides', 'world.market': 'Night Market · Lantern Street', 'world.sakura': 'Sakura · Fox Shrine', 'world.bit8': 'Pixel · 8-Bit World',
+      'world.desert': 'Sand Ruins', 'world.volcano': 'Magma Peak', 'world.haunt': 'Haunted Manor', 'world.skycity': 'Sky City', 'world.space': 'Star Sea · Orbital Station', 'world.mirror': 'Mirror Lake · Reflections', 'world.candy': 'Cotton Candy Dream', 'world.court': 'Oasis · Rest Stop',
+      'character.Feline1': 'Catgirl Feline1', 'perk.Feline1': '4 HP · +1/25s · double jump', 'character.C0': 'Coder C0', 'perk.C0': 'Slow + pierce · B/Z', 'character.X0': 'Artist X0', 'perk.X0': 'Shield/12s · small magnet',
+      'ui.paused': 'PAUSED', 'ui.resume': 'RESUME', 'ui.restart': 'RESTART', 'ui.changeCharacter': 'CHARACTER SELECT', 'over.at': 'Fell at {world}', 'over.together': 'But the three are still together.',
+      'room.apt': 'Apartment · Home', 'room.tea': 'Sakura Tea House', 'room.lodge': 'Snow Lodge', 'room.cabin': 'Mountain Cabin', 'room.party': 'Lap Complete!', 'room.court': 'Oasis · Rest Stop',
+      'boss.eel': 'The Lava Eel appeared!', 'boss.butler': 'The Butler Ghost appeared!', 'tea.inscription': 'Once in a lifetime'
+    },
+    ja: {
+      'world.park': '現代の公園', 'world.snow': '霜脊 · 雪原', 'world.peak': '氷結峰頂', 'world.home': '現代の住宅街', 'world.cabin': '山の宿', 'world.ridge': '吹雪の山脊', 'world.cave': '洞窟の焚き火', 'world.lake': '帰路 · 氷の湖',
+      'world.xian': '雲の橋 · 剣の世界', 'world.ink': '水墨山水', 'world.cyber': '雨の街 · 眠らぬ通り', 'world.steam': 'ボイラー室 · もう一度息を', 'world.sea': 'サンゴの遺跡 · 潮の満ち引き', 'world.market': '夜市 · 提灯通り', 'world.sakura': '桜 · 狐の社', 'world.bit8': 'ピクセル · 8ビット世界',
+      'world.desert': '砂の遺跡', 'world.volcano': '溶岩の峰', 'world.haunt': '幽霊屋敷', 'world.skycity': '空中都市', 'world.space': '星の海 · 軌道ステーション', 'world.mirror': '鏡の湖 · 水鏡', 'world.candy': 'わたあめの夢', 'world.court': 'オアシス · 休憩所',
+      'character.Feline1': '猫娘 Feline1', 'perk.Feline1': 'HP4 · 25秒ごとに+1 · 二段ジャンプ', 'character.C0': 'プログラマー C0', 'perk.C0': 'B/Zでスロー＋貫通', 'character.X0': 'アーティスト X0', 'perk.X0': '盾/12秒 · 小さな磁石',
+      'ui.paused': '一時停止', 'ui.resume': 'ゲームに戻る', 'ui.restart': '最初から', 'ui.changeCharacter': 'キャラクター選択へ', 'over.at': '「{world}」で倒れた', 'over.together': 'それでも三人は一緒。',
+      'room.apt': 'アパート · わが家', 'room.tea': '桜の茶室', 'room.lodge': '雪原の小屋', 'room.cabin': '山間の木の家', 'room.party': '一周クリア！', 'room.court': 'オアシス · 休憩所',
+      'boss.eel': '溶岩ウナギが現れた！', 'boss.butler': '執事の幽霊が現れた！', 'tea.inscription': '一期一会'
+    },
+    ru: {
+      'world.park': 'Современный парк', 'world.snow': 'Хребет Морозов · Снежная равнина', 'world.peak': 'Ледяная вершина', 'world.home': 'Современный жилой квартал', 'world.cabin': 'Горный приют', 'world.ridge': 'Заснеженный хребет', 'world.cave': 'Костёр в пещере', 'world.lake': 'Путь домой · Ледяное озеро',
+      'world.xian': 'Облачный мост · Мир меча', 'world.ink': 'Тушевые горы и воды', 'world.cyber': 'Город дождя · Бессонная улица', 'world.steam': 'Котельный зал · Второе дыхание', 'world.sea': 'Коралловые руины · Приливы', 'world.market': 'Ночной рынок · Улица фонарей', 'world.sakura': 'Сакура · Лисье святилище', 'world.bit8': 'Пиксели · Мир 8-BIT',
+      'world.desert': 'Песчаные руины', 'world.volcano': 'Магматическая вершина', 'world.haunt': 'Особняк призраков', 'world.skycity': 'Небесный город', 'world.space': 'Звёздное море · Орбитальная станция', 'world.mirror': 'Зеркальное озеро · Отражения', 'world.candy': 'Сон из сладкой ваты', 'world.court': 'Оазис · Место отдыха',
+      'character.Feline1': 'Кошка Feline1', 'perk.Feline1': '4 HP · +1/25с · двойной прыжок', 'character.C0': 'Программист C0', 'perk.C0': 'Замедление + пробой · B/Z', 'character.X0': 'Художник X0', 'perk.X0': 'Щит/12с · малый магнит',
+      'ui.paused': 'ПАУЗА', 'ui.resume': 'ПРОДОЛЖИТЬ', 'ui.restart': 'ЗАНОВО', 'ui.changeCharacter': 'ВЫБРАТЬ ГЕРОЯ', 'over.at': 'Поражение в мире «{world}»', 'over.together': 'Но эта троица всё ещё вместе.',
+      'room.apt': 'Квартира · Дом', 'room.tea': 'Чайный домик сакуры', 'room.lodge': 'Снежный домик', 'room.cabin': 'Горная хижина', 'room.party': 'Круг завершён!', 'room.court': 'Оазис · Отдых',
+      'boss.eel': 'Появился лавовый угорь!', 'boss.butler': 'Появился призрак дворецкого!', 'tea.inscription': 'Один миг — одна встреча'
+    },
+    es: {
+      'world.park': 'Parque moderno', 'world.snow': 'Cordillera Helada · Campo nevado', 'world.peak': 'Cima congelada', 'world.home': 'Barrio moderno', 'world.cabin': 'Refugio de montaña', 'world.ridge': 'Cresta de la tormenta', 'world.cave': 'Fogata en la cueva', 'world.lake': 'Regreso · Lago helado',
+      'world.xian': 'Puente de nubes · Reino de la espada', 'world.ink': 'Paisaje de tinta', 'world.cyber': 'Ciudad lluviosa · Calle sin sueño', 'world.steam': 'Sala de calderas · Segundo aliento', 'world.sea': 'Ruinas de coral · Mareas', 'world.market': 'Mercado nocturno · Calle de faroles', 'world.sakura': 'Sakura · Santuario del zorro', 'world.bit8': 'Píxeles · Mundo de 8 bits',
+      'world.desert': 'Ruinas de arena', 'world.volcano': 'Cima de magma', 'world.haunt': 'Mansión encantada', 'world.skycity': 'Ciudad del cielo', 'world.space': 'Mar estelar · Estación orbital', 'world.mirror': 'Lago espejo · Reflejos', 'world.candy': 'Sueño de algodón de azúcar', 'world.court': 'Oasis · Área de descanso',
+      'character.Feline1': 'Gata Feline1', 'perk.Feline1': '4 HP · +1/25s · doble salto', 'character.C0': 'Programador C0', 'perk.C0': 'Lento + perforar · B/Z', 'character.X0': 'Artista X0', 'perk.X0': 'Escudo/12s · imán pequeño',
+      'ui.paused': 'EN PAUSA', 'ui.resume': 'CONTINUAR', 'ui.restart': 'REINICIAR', 'ui.changeCharacter': 'ELEGIR PERSONAJE', 'over.at': 'Caíste en {world}', 'over.together': 'Pero los tres siguen juntos.',
+      'room.apt': 'Apartamento · Hogar', 'room.tea': 'Casa de té Sakura', 'room.lodge': 'Cabaña nevada', 'room.cabin': 'Cabaña de montaña', 'room.party': '¡Vuelta completada!', 'room.court': 'Oasis · Descanso',
+      'boss.eel': '¡Apareció la anguila de lava!', 'boss.butler': '¡Apareció el mayordomo fantasma!', 'tea.inscription': 'Un encuentro, una sola vez'
+    },
+    'pt-PT': {
+      'world.park': 'Parque moderno', 'world.snow': 'Cordilheira Gelada · Planície de neve', 'world.peak': 'Pico congelado', 'world.home': 'Bairro moderno', 'world.cabin': 'Refúgio da montanha', 'world.ridge': 'Cordilheira da tempestade', 'world.cave': 'Fogueira na gruta', 'world.lake': 'Regresso · Lago gelado',
+      'world.xian': 'Ponte das nuvens · Reino da espada', 'world.ink': 'Paisagem a tinta', 'world.cyber': 'Cidade chuvosa · Rua sem sono', 'world.steam': 'Sala das caldeiras · Segundo fôlego', 'world.sea': 'Ruínas de coral · Marés', 'world.market': 'Mercado noturno · Rua das lanternas', 'world.sakura': 'Sakura · Santuário da raposa', 'world.bit8': 'Pixels · Mundo de 8 bits',
+      'world.desert': 'Ruínas de areia', 'world.volcano': 'Pico de magma', 'world.haunt': 'Mansão assombrada', 'world.skycity': 'Cidade do céu', 'world.space': 'Mar estelar · Estação orbital', 'world.mirror': 'Lago-espelho · Reflexos', 'world.candy': 'Sonho de algodão-doce', 'world.court': 'Oásis · Área de descanso',
+      'character.Feline1': 'Gata Feline1', 'perk.Feline1': '4 HP · +1/25s · salto duplo', 'character.C0': 'Programador C0', 'perk.C0': 'Lento + perfurar · B/Z', 'character.X0': 'Artista X0', 'perk.X0': 'Escudo/12s · íman pequeno',
+      'ui.paused': 'EM PAUSA', 'ui.resume': 'CONTINUAR', 'ui.restart': 'RECOMEÇAR', 'ui.changeCharacter': 'ESCOLHER PERSONAGEM', 'over.at': 'Caíste em {world}', 'over.together': 'Mas os três continuam juntos.',
+      'room.apt': 'Apartamento · Casa', 'room.tea': 'Casa de chá Sakura', 'room.lodge': 'Cabana da neve', 'room.cabin': 'Cabana da montanha', 'room.party': 'Volta concluída!', 'room.court': 'Oásis · Descanso',
+      'boss.eel': 'A enguia de lava apareceu!', 'boss.butler': 'O fantasma mordomo apareceu!', 'tea.inscription': 'Um encontro, uma única vez'
+    },
+    'pt-BR': {
+      'world.park': 'Parque moderno', 'world.snow': 'Cordilheira Gelada · Campo nevado', 'world.peak': 'Pico congelado', 'world.home': 'Bairro moderno', 'world.cabin': 'Refúgio da montanha', 'world.ridge': 'Cordilheira da tempestade', 'world.cave': 'Fogueira na caverna', 'world.lake': 'Volta para casa · Lago congelado',
+      'world.xian': 'Ponte das nuvens · Reino da espada', 'world.ink': 'Paisagem em tinta', 'world.cyber': 'Cidade chuvosa · Rua sem sono', 'world.steam': 'Sala das caldeiras · Segundo fôlego', 'world.sea': 'Ruínas de coral · Marés', 'world.market': 'Mercado noturno · Rua das lanternas', 'world.sakura': 'Sakura · Santuário da raposa', 'world.bit8': 'Pixels · Mundo 8-BIT',
+      'world.desert': 'Ruínas de areia', 'world.volcano': 'Pico de magma', 'world.haunt': 'Mansão assombrada', 'world.skycity': 'Cidade do céu', 'world.space': 'Mar estelar · Estação orbital', 'world.mirror': 'Lago espelhado · Reflexos', 'world.candy': 'Sonho de algodão-doce', 'world.court': 'Oásis · Área de descanso',
+      'character.Feline1': 'Gata Feline1', 'perk.Feline1': '4 HP · +1/25s · pulo duplo', 'character.C0': 'Programador C0', 'perk.C0': 'Lento + perfurar · B/Z', 'character.X0': 'Artista X0', 'perk.X0': 'Escudo/12s · ímã pequeno',
+      'ui.paused': 'PAUSADO', 'ui.resume': 'CONTINUAR', 'ui.restart': 'RECOMEÇAR', 'ui.changeCharacter': 'ESCOLHER PERSONAGEM', 'over.at': 'Você caiu em {world}', 'over.together': 'Mas os três continuam juntos.',
+      'room.apt': 'Apartamento · Lar', 'room.tea': 'Casa de chá Sakura', 'room.lodge': 'Cabana nevada', 'room.cabin': 'Cabana da montanha', 'room.party': 'Volta completa!', 'room.court': 'Oásis · Descanso',
+      'boss.eel': 'A enguia de lava apareceu!', 'boss.butler': 'O fantasma mordomo apareceu!', 'tea.inscription': 'Um encontro, uma única vez'
+    },
+    de: {
+      'world.park': 'Moderner Park', 'world.snow': 'Frostgrat · Schneefeld', 'world.peak': 'Gefrorener Gipfel', 'world.home': 'Modernes Wohnviertel', 'world.cabin': 'Berghütte', 'world.ridge': 'Sturmgrat', 'world.cave': 'Lagerfeuerhöhle', 'world.lake': 'Heimweg · Eissee',
+      'world.xian': 'Wolkenbrücke · Schwertwelt', 'world.ink': 'Tuschelandschaft', 'world.cyber': 'Regenstadt · Schlaflose Straße', 'world.steam': 'Kesselhalle · Zweiter Atem', 'world.sea': 'Korallenruinen · Gezeiten', 'world.market': 'Nachtmarkt · Laternenstraße', 'world.sakura': 'Sakura · Fuchsschrein', 'world.bit8': 'Pixel · 8-Bit-Welt',
+      'world.desert': 'Sandruinen', 'world.volcano': 'Magmagipfel', 'world.haunt': 'Spukhaus', 'world.skycity': 'Himmelsstadt', 'world.space': 'Sternenmeer · Orbitalstation', 'world.mirror': 'Spiegelsee · Spiegelbilder', 'world.candy': 'Zuckerwattentraum', 'world.court': 'Oase · Rastplatz',
+      'character.Feline1': 'Katzenmädchen Feline1', 'perk.Feline1': '4 HP · +1/25s · Doppelsprung', 'character.C0': 'Programmierer C0', 'perk.C0': 'Zeitlupe + Durchschlag · B/Z', 'character.X0': 'Künstlerin X0', 'perk.X0': 'Schild/12s · kleiner Magnet',
+      'ui.paused': 'PAUSE', 'ui.resume': 'WEITER', 'ui.restart': 'NEUSTART', 'ui.changeCharacter': 'FIGUR WÄHLEN', 'over.at': 'Gestürzt in {world}', 'over.together': 'Doch die drei halten zusammen.',
+      'room.apt': 'Wohnung · Zuhause', 'room.tea': 'Sakura-Teehaus', 'room.lodge': 'Schneehütte', 'room.cabin': 'Berghütte', 'room.party': 'Runde geschafft!', 'room.court': 'Oase · Rastplatz',
+      'boss.eel': 'Der Lavastrom-Aal erscheint!', 'boss.butler': 'Der Butlergeist erscheint!', 'tea.inscription': 'Ein Moment, eine Begegnung'
+    },
+    la: {
+      'world.park': 'Hortus Modernus', 'world.snow': 'Dorsum Gelidum · Campus Nivalis', 'world.peak': 'Vertex Glacialis', 'world.home': 'Vicus Modernus', 'world.cabin': 'Hospitium Montanum', 'world.ridge': 'Dorsum Tempestatis', 'world.cave': 'Ignis in Specu', 'world.lake': 'Iter Domum · Lacus Gelidus',
+      'world.xian': 'Pons Nubium · Regnum Gladii', 'world.ink': 'Montes Atramento Picti', 'world.cyber': 'Urbs Pluvialis · Vicus Insomnis', 'world.steam': 'Aula Fornacis · Secundus Spiritus', 'world.sea': 'Ruinae Corallinae · Aestus', 'world.market': 'Forum Nocturnum · Vicus Lucernarum', 'world.sakura': 'Sakura · Fanum Vulpium', 'world.bit8': 'Picta Elementa · Mundus Octobiticus',
+      'world.desert': 'Ruinae Arenosae', 'world.volcano': 'Vertex Magmaticus', 'world.haunt': 'Domus Manium', 'world.skycity': 'Urbs Caelestis', 'world.space': 'Mare Astrorum · Statio Orbitalis', 'world.mirror': 'Lacus Speculi · Imagines', 'world.candy': 'Somnium Sacchari Filati', 'world.court': 'Oasis · Locus Quietis',
+      'character.Feline1': 'Feles Feline1', 'perk.Feline1': '4 corda · +1/25s · saltus duplex', 'character.C0': 'Programmata C0', 'perk.C0': 'Mora + transfixio · B/Z', 'character.X0': 'Artifex X0', 'perk.X0': 'Scutum/12s · parvus magnes',
+      'ui.paused': 'PAUSATUM', 'ui.resume': 'PERGE', 'ui.restart': 'RENOVA', 'ui.changeCharacter': 'HEROEM ELIGE', 'over.at': 'Cecidit in {world}', 'over.together': 'Sed tres una manent.',
+      'room.apt': 'Domus · Habitatio', 'room.tea': 'Domus Thearia Sakura', 'room.lodge': 'Casa Nivalis', 'room.cabin': 'Casa Montis', 'room.party': 'Circuitus perfectus!', 'room.court': 'Oasis · Quies',
+      'boss.eel': 'Anguis Lavae apparuit!', 'boss.butler': 'Manes Vilici apparuit!', 'tea.inscription': 'Unum tempus, unus occursus'
+    }
+  };
+
   var locale = 'zh-CN', LANGS = Object.keys(messages);
   try {
     var saved = localStorage.getItem('c0-site-language');
@@ -500,7 +584,13 @@
     var pack = buildLogs[locale] || buildLogs.en, lines = pack[kind] || buildLogs.en[kind] || [];
     return lines.map(function (line) { return line.slice(); });
   }
-  window.I18N = { t: t, log: logText, getLogLines: getLogLines, apply: apply, setLocale: setLocale, getLocale: function () { return locale; }, locales: LANGS.slice() };
+  function gameText(key, vars) {
+    var pack = gameTexts[locale] || gameTexts.en, value = pack[key];
+    if (value === undefined) value = gameTexts.en[key];
+    if (value === undefined) value = key;
+    return formatLog(value, vars);
+  }
+  window.I18N = { t: t, game: gameText, log: logText, getLogLines: getLogLines, apply: apply, setLocale: setLocale, getLocale: function () { return locale; }, locales: LANGS.slice() };
   apply();
   var select = document.getElementById('langSelect');
   if (select) select.addEventListener('change', function () { setLocale(select.value); });

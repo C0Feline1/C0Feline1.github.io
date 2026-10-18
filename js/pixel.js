@@ -297,7 +297,7 @@
         c: '#2c2638', C: '#1a1622', k: '#4a4260', a: '#4fe3ff', A: '#2a8aa8', l: '#3a5a8a', n: '#26406a', b: '#e8e8f0', B: '#4fe3ff', r: '#4fe3ff', g: '#aab6d4' }
     },
     X0: {
-      cat: false, ribbon: true, label: 'X0', cn: '美少女 X0', perk: '镜光护盾：12 秒充能 + 小磁铁', perkEn: 'MIRROR SHIELD', color: '#b48cff',
+      cat: false, ribbon: true, label: 'X0', cn: '美术 X0', perk: '镜光护盾：12 秒充能 + 小磁铁', perkEn: 'MIRROR SHIELD', color: '#b48cff',
       pal: { o: '#1e0e16', h: '#5a3a44', H: '#3a2430', L: '#8a6070', s: '#f6dcd6', S: '#e2b8b0', E: '#9a6cff', w: '#ffffff', p: '#ff9fb0', m: '#a04a5a',
         c: '#f8eef2', C: '#d4bccc', k: '#ffffff', a: '#ff5f8f', A: '#c02a5a', d: '#2a1a2e', D: '#1a0e1c', l: '#3a2430', n: '#24141c', b: '#1a0a12', B: '#5a3a44', r: '#ff5f8f', g: '#ffd45e' }
     }

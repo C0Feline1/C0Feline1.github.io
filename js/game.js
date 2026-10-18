@@ -1369,12 +1369,19 @@
     armHouse(game); cp(game, BIOMES[game.biome].key); markSeen(BIOMES[game.biome].key);
     if (game.practice) game.houseAt = null; /* practice: no rest rooms, the world just keeps going */
     for (var i = 0; i < 80; i++) game.hist.push([GY, 1]);
-    showBanner(BIOMES[game.biome].name, game.practice ? 'PRACTICE · ' + BIOMES[game.biome].en : BIOMES[game.biome].en, game.practice ? game.biome : undefined);
+    showBanner(BIOMES[game.biome].name, game.practice ? 'PRACTICE · ' + BIOMES[game.biome].en : BIOMES[game.biome].en, game.practice ? game.biome : undefined, 'world.' + BIOMES[game.biome].key);
     if (window.SND) SND.world(game.biome, true);
     st.mode = 'play'; seenRun = onScreen; autoPaused = false; game.hintF = 0; countHint(game);
     emit(game.practice ? { type: 'start', id: id, practice: true } : { type: 'start', id: id });
   }
-  function showBanner(cn, en, bi) { if (game) game.banner = { cn: cn, en: en, t: 0, bi: bi === undefined ? -1 : bi }; }
+  function activeLocale() { return window.I18N && I18N.getLocale ? I18N.getLocale() : 'zh-CN'; }
+  function localizedText(key, cn, en, vars) {
+    if (activeLocale() === 'zh-CN') return cn;
+    return window.I18N && I18N.game ? I18N.game(key, vars) : (en || cn);
+  }
+  function localizedWorld(biome) { return biome ? localizedText('world.' + biome.key, biome.name, biome.en || biome.name) : ''; }
+  function bannerText(banner) { return banner.key ? localizedText(banner.key, banner.cn, banner.en) : (activeLocale() === 'zh-CN' ? banner.cn : banner.en); }
+  function showBanner(cn, en, bi, key) { if (game) game.banner = { cn: cn, en: en, key: key || '', t: 0, bi: bi === undefined ? -1 : bi }; }
   function emit(dash) { window.dispatchEvent(new CustomEvent('runner', { detail: dash })); }
 
   /* ---------- input ---------- */
@@ -1595,7 +1602,7 @@
       if (G.obs.some(function (o) { return (o.type === 'tower' || o.type === 'house') && o.x > -60; })) return;
       G.mb = { id: D.id, D: D, k: k, t: 0, next: 90, atk: 0, tel: null, hits0: G.wst ? G.wst.hits : 0, x: W + 30, y: GY - 40, flash: 0, leave: 0,
         hp: 20 + 6 * Math.min(G.loop, 2), maxHp: 20 + 6 * Math.min(G.loop, 2) };
-      G.mbDone = k; G.banner = null; showBanner(D.cn, D.en, G.biome); tune([45, 48, 52, 51, 45], 120, 'sawtooth', 0.035); G.shake = 4;
+      G.mbDone = k; G.banner = null; showBanner(D.cn, D.en, G.biome, 'boss.' + D.id); tune([45, 48, 52, 51, 45], 120, 'sawtooth', 0.035); G.shake = 4;
       return;
     }
     var M = G.mb; M.t++; if (M.flash > 0) M.flash--;
@@ -2541,7 +2548,7 @@
         { id: 'scroll', x: 184, w: 22, label: 'READ', max: 1, draw: function (X, t, f, Rm) {
             rr(X, GY - 88, 22, 2, '#6a4a30'); rr(X + 2, GY - 86, 18, 42, '#fff8e8'); rr(X, GY - 44, 22, 2, '#6a4a30'); rr(X + 9, GY - 82, 4, 32, 'rgba(26,16,48,.12)');
             for (var k = 0; k < 4; k++) rr(X + 9, GY - 80 + k * 9, 4, 5, '#1a1030');
-            if (t.a > 0) { t.a--; drawCN('一期一会', W / 2, 60, 10, '#1a1030', 'center', '#ffffff'); }
+            if (t.a > 0) { t.a--; drawCN(localizedText('tea.inscription', '一期一会', 'Once in a lifetime'), W / 2, 60, 10, '#1a1030', 'center', '#ffffff'); }
           }, use: function (t, G) { t.a = 150; tune([69, 74, 76], 220, 'triangle', 0.035); payOnce(G, t, 1, 'ONE CHANCE, ONE MEETING', '#ffffff'); } },
         { id: 'taiko', x: 218, w: 24, label: 'DRUM', max: 2, draw: function (X, t, f) {
             var b = t.a > 0 ? 1 : 0; if (t.a > 0) t.a--;
@@ -2720,7 +2727,7 @@
     }
     G.roam = R0; G.obs = []; G.plats = []; G.items = []; G.shots = []; G.sliding = false; G.onPlat = null; G.fadeIn = 24; G.rocket = 0; G.climb = null;
     cp(G, 'H:' + theme);
-    showBanner(T.name, T.en);
+    showBanner(T.name, T.en, undefined, 'room.' + theme);
     popText(theme === 'party' ? 'LOOP CLEAR!  {Y}: USE' : 'REST STOP  -  {Y}: USE', '#ffd47a');
     if (theme === 'party') tune([72, 76, 79, 84, 79, 84, 88], 110, 'square', 0.04);
   }
@@ -2883,7 +2890,7 @@
     gradeWorld(b, 1); g.drawImage(VIG, 0, 0);
     drawHUD(G, 'roam');
     if (Rm.lanterns) { var lit = Rm.lanterns.filter(function (l) { return l.lit; }).length; hudPanel(3, H - 32, 70, 12); PX.text(g, 'TORCHES ' + lit + '/4', 6, H - 29, '#ffb84f', '#1a0f30'); }
-    if (G.banner) { var bt = G.banner.t, ba2 = bt < 16 ? bt / 16 : (bt > 120 ? Math.max(0, 1 - (bt - 120) / 30) : 1); if (ba2 > 0.01) { var bw = Math.max(112, PX.textWidth(G.banner.en) + 14); g.globalAlpha = ba2 * 0.92; box(W / 2 - bw / 2, 24, bw, 24, 'rgba(18,13,36,.9)'); g.globalAlpha = ba2; drawCN(G.banner.cn, W / 2, 26, 9, '#ffffff', 'center'); PX.text(g, G.banner.en, W / 2 - PX.textWidth(G.banner.en) / 2, 40, '#ff9fc4'); g.globalAlpha = 1; } }
+    if (G.banner) { var bt = G.banner.t, ba2 = bt < 16 ? bt / 16 : (bt > 120 ? Math.max(0, 1 - (bt - 120) / 30) : 1); if (ba2 > 0.01) { var bw = Math.max(112, PX.textWidth(G.banner.en) + 14); g.globalAlpha = ba2 * 0.92; box(W / 2 - bw / 2, 24, bw, 24, 'rgba(18,13,36,.9)'); g.globalAlpha = ba2; drawCN(bannerText(G.banner), W / 2, 26, 9, '#ffffff', 'center'); PX.text(g, G.banner.en, W / 2 - PX.textWidth(G.banner.en) / 2, 40, '#ff9fc4'); g.globalAlpha = 1; } }
     drawToasts(G);
     if (G.pop) { var pt = G.pop.t; g.globalAlpha = pt > 50 ? 1 - (pt - 50) / 20 : 1; PX.text(g, G.pop.text, W / 2 - PX.textWidth(G.pop.text) / 2, 46, G.pop.col, '#000'); g.globalAlpha = 1; }
     var fa = Math.max(G.fadeIn / 24, Rm.exit > 0 ? Math.min(1, Rm.exit / 22) : 0); if (fa > 0) { g.fillStyle = 'rgba(8,5,16,' + fa + ')'; g.fillRect(0, 0, W, H); }
@@ -3215,8 +3222,8 @@
       cp(G, nbm.key); /* checkpoint: [metres, frame, world key, shards so far] */
       if (G.slot === 0 && G.loop > 0) en = 'LOOP ' + (G.loop + 1) + ' · FASTER!';
       if (nbm.warm) en = 'REST POINT · SHIELD UP';
-      showBanner(nbm.name, en, nb);
-      emit({ type: 'biome', id: id, name: nbm.name, line: nbm.line });
+      showBanner(nbm.name, en, nb, 'world.' + nbm.key);
+      emit({ type: 'biome', id: id, name: localizedWorld(nbm), line: nbm.line });
       if (nbm.boss) G.bossT = 90;
       if (newLoop) enterHouse(G, 'party'); /* end of the lap: celebration room with the lap summary */
     }
@@ -3381,8 +3388,8 @@
     var sc = score(), isBest = sc > best && !G.practice;
     if (isBest) { best = sc; localStorage.setItem('runner-best', best); }
     G.isBest = isBest;
-    if (G.practice) { emit({ type: 'over', practice: true, id: G.id, score: sc, dist: Math.floor(G.dist), shards: G.shards, best: best, isBest: false, where: BIOMES[G.biome].name }); return; }
-    emit({ type: 'over', v: GAME_VERSION, id: G.id, score: sc, dist: Math.floor(G.dist), shards: G.shards, frames: G.frame, cps: G.cps.slice(), best: best, isBest: isBest, where: BIOMES[G.biome].name });
+    if (G.practice) { emit({ type: 'over', practice: true, id: G.id, score: sc, dist: Math.floor(G.dist), shards: G.shards, best: best, isBest: false, where: localizedWorld(BIOMES[G.biome]) }); return; }
+    emit({ type: 'over', v: GAME_VERSION, id: G.id, score: sc, dist: Math.floor(G.dist), shards: G.shards, frames: G.frame, cps: G.cps.slice(), best: best, isBest: isBest, where: localizedWorld(BIOMES[G.biome]) });
   }
 
   /* ---------- draw ---------- */
@@ -3518,7 +3525,9 @@
       }
     });
     var d = PX.CHARS[PX.ORDER[st.sel]];
-    drawCN(d.cn + ' · ' + d.perk, W / 2, 124, 6, '#ffffff', 'center', '#000');
+    var charId = PX.ORDER[st.sel];
+    var charInfo = localizedText('character.' + charId, d.cn, d.label) + ' · ' + localizedText('perk.' + charId, d.perk, d.perkEn);
+    drawCN(charInfo, W / 2, 124, 6, '#ffffff', 'center', '#000');
     /* menu row: practice / album / badges (DOWN to reach it) */
     var al = ALBUM_ROOMS.filter(function (k) { return ALBUM[k]; }).length, ML = ['PRACTICE', 'ALBUM ' + al + '/6', 'BADGES ' + badgeCount()];
     ML.forEach(function (lb, i) {
@@ -3565,7 +3574,7 @@
       if (!badges && (bb.mode || 'run') !== 'run') { g.fillStyle = '#4fe3ff'; g.fillRect(x + 31, y + 18, 2, 2); }
     });
     var sb = BIOMES[PRACTICE_LIST[st.pcur]], lockd = !badges && !SEEN[sb.key];
-    drawCN(lockd ? '？？？' : sb.name, W / 2, 137, 7, lockd ? '#8a7ab8' : '#ffffff', 'center', '#000');
+    drawCN(lockd ? '？？？' : localizedWorld(sb), W / 2, 137, 7, lockd ? '#8a7ab8' : '#ffffff', 'center', '#000');
     if (badges) {
       var bits2 = BADGES[sb.key] || 0, txt = BADGE_DEF.map(function (d) { return (bits2 & d.bit ? '* ' : '- ') + d.n; }).join('  ');
       PX.text(g, txt, W / 2 - PX.textWidth(txt) / 2, 150, '#c8bce8', '#000');
@@ -3771,7 +3780,7 @@
       if (ba2 > 0.01) {
         g.globalAlpha = ba2 * 0.92; box(bx0, byy, bw, 26, 'rgba(18,13,36,.9)'); g.globalAlpha = ba2;
         if (tw) { g.drawImage(thumb(tbi, 32, 20), bx0 + 4, byy + 3); g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(bx0 + 4, byy + 3, 32, 1); }
-        drawCN(G.banner.cn, tcx, byy + 3, 9, 'rgba(255,255,255,' + ba2 + ')', 'center');
+        drawCN(bannerText(G.banner), tcx, byy + 3, 9, 'rgba(255,255,255,' + ba2 + ')', 'center');
         PX.text(g, G.banner.en, Math.round(tcx - PX.textWidth(G.banner.en) / 2), byy + 17, '#ff9fc4'); g.globalAlpha = 1;
       }
     }
@@ -3782,9 +3791,10 @@
       TQ.length = 0;
       g.fillStyle = 'rgba(10,6,30,.6)'; g.fillRect(0, 0, W, H);
       PX.text(g, 'PAUSED', W / 2 - PX.textWidth('PAUSED', 3) / 2, 22, '#ffffff', '#ff4fa3', 3);
-      drawCN('已暂停', W / 2, 40, 10, '#ffd45e', 'center');
+      drawCN(localizedText('ui.paused', '已暂停', 'PAUSED'), W / 2, 40, 10, '#ffd45e', 'center');
       if (autoPaused) PX.text(g, 'AUTO-PAUSED (SCREEN SCROLLED AWAY)', W / 2 - PX.textWidth('AUTO-PAUSED (SCREEN SCROLLED AWAY)') / 2, 56, '#7fe0ff', '#000');
-      ['继续游戏', '重新开始', '返回选人'].forEach(function (s, i) {
+      ['ui.resume', 'ui.restart', 'ui.changeCharacter'].forEach(function (key, i) {
+        var s = localizedText(key, ['继续游戏', '重新开始', '返回选人'][i], ['RESUME', 'RESTART', 'CHARACTER SELECT'][i]);
         var y = 66 + i * 18, sel = i === (st.psel || 0);
         box(W / 2 - 46, y, 92, 15, sel ? '#2a1648' : 'rgba(18,13,36,.92)', sel ? '#ff4fa3' : '#4a3a6a');
         drawCN(s, W / 2, y + 3, 8, sel ? '#ffffff' : '#9a8cc0', 'center');
@@ -3801,7 +3811,7 @@
       box(36, y, 168, 94, 'rgba(18,13,36,.95)');
       var hd = 'PRACTICE OVER';
       PX.text(g, hd, W / 2 - PX.textWidth(hd, 2) / 2, y + 8, '#ff4fa3', '#000', 2);
-      drawCN(BIOMES[G.practice.bi].name, W / 2, y + 24, 7, '#ffffff', 'center');
+      drawCN(localizedWorld(BIOMES[G.practice.bi]), W / 2, y + 24, 7, '#ffffff', 'center');
       var ls = G.lapSt, rate = ls.got + ls.miss ? Math.round(ls.got / (ls.got + ls.miss) * 100) : 0;
       PX.text(g, 'SHARDS ' + G.shards + '   GOT ' + rate + '%', 52, y + 40, '#ffd45e', '#000');
       PX.text(g, 'LV ' + G.practice.lv + (G.practice.lv >= PR_MAX ? ' (MAX)' : '') + '   LOOPS ' + G.practice.n + '   TIME ' + mmss(Math.floor(G.practice.t / 60)), 52, y + 50, '#7fe0ff', '#000');
@@ -3813,9 +3823,8 @@
     g.fillStyle = 'rgba(10,6,30,.55)'; g.fillRect(0, 0, W, H);
     box(36, y, 168, 94, 'rgba(18,13,36,.95)');
     PX.text(g, 'GAME OVER', W / 2 - PX.textWidth('GAME OVER', 2) / 2, y + 8, '#ff4fa3', '#000', 2);
-    var lines = ['倒在了「' + BIOMES[G.biome].name + '」', '不过三个人还在一起。'];
-    drawCN(lines[0], W / 2, y + 24, 7, '#ffffff', 'center');
-    drawCN(lines[1], W / 2, y + 34, 7, '#c8b8ff', 'center');
+    drawCN(localizedText('over.at', '倒在了「' + BIOMES[G.biome].name + '」', 'Fell at ' + localizedWorld(BIOMES[G.biome]), { world: localizedWorld(BIOMES[G.biome]) }), W / 2, y + 24, 7, '#ffffff', 'center');
+    drawCN(localizedText('over.together', '不过三个人还在一起。', 'But the three are still together.'), W / 2, y + 34, 7, '#c8b8ff', 'center');
     PX.text(g, 'SCORE ' + score(), 52, y + 50, '#ffffff', '#000');
     PX.text(g, 'BEST  ' + best, 52, y + 60, '#ffd45e', '#000');
     PX.text(g, Math.floor(G.dist) + 'M  *' + G.shards, 188 - PX.textWidth(Math.floor(G.dist) + 'M  *' + G.shards), y + 50, '#7fe0ff', '#000');
