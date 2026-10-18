@@ -171,7 +171,7 @@
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, false); }); });
   });
 
-  /* the console shell / Joy-Con bodies do nothing when clicked: only the real buttons act, and the screen starts a run from the title */
+  /* the console shell / Joy-Con bodies do nothing when clicked; on the title screen, tap a character to select it and tap it again to start */
   var shell = document.querySelector('.gba');
 
   /* phase3C: Switch console. Picks "row" (Joy-Cons beside the screen) whenever the panel is >= 700 px wide, else

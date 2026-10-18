@@ -1334,7 +1334,7 @@
   SFX.dash = function () { beep(180, 0.4, 'sawtooth', 0.04, 900); };
   /* ---------- state ---------- */
   var best = +(localStorage.getItem('runner-best') || 0);
-  var st = { mode: 'title', sel: 0, t: 0, trow: 0, msel: 0, pcur: 0, acur: 0, pbi: -1 };
+  var st = { mode: 'title', sel: 0, tapSel: -1, t: 0, trow: 0, msel: 0, pcur: 0, acur: 0, pbi: -1 };
   /* ---------- phase3 meta: practice (G10), album (G6), badges (G7) - all local, nothing is sent anywhere ---------- */
   function lsGet(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v === null || v === undefined ? d : v; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
@@ -1350,6 +1350,7 @@
   function toast(G, text, col) { if (!G) return; (G.toasts = G.toasts || []).push({ text: text, col: col || '#ffd45e', t: 0 }); }
   var game;
   function newGame() {
+    st.tapSel = -1;
     var id = PX.ORDER[st.sel], pbi = st.pbi >= 0 && BIOMES[st.pbi] && !BIOMES[st.pbi].roam ? st.pbi : -1;
     game = {
       id: id, x: 58, y: GY, vy: 0, gdir: 1, hp: id === 'Feline1' ? 4 : 3, maxHp: id === 'Feline1' ? 4 : 3, regenAt: 0, gFlash: 0, slowT: 0, slowCd: 0, grace: 0, airFlip: false, cps: [], onGround: true, jumps: 0, holdT: 0, coyote: 0, buffer: 0, gliding: false,
@@ -1405,8 +1406,8 @@
   }
   /* screen taps: only pointer events on the canvas itself count (the console shell, bezel and Joy-Con bodies have no handler).
      The tap is hit-tested in game pixels (240x160) against what is drawn:
-     Title: a character card selects it (tapping the selected card starts a run), PRACTICE / ALBUM / BADGES open, anywhere else
-     starts a normal run. Practice / badges: a world tile selects it, tapping it again = {A} (go); the header = back.
+     Title: a character card selects it (tapping that same card again starts a run), PRACTICE / ALBUM / BADGES open; other
+     taps do nothing. Practice / badges: a world tile selects it, tapping it again = {A} (go); the header = back.
      Album: a photo selects it, again = zoom; any tap closes the zoom. Pause: the three buttons. Play: the same as A (tap = jump,
      hold = higher jump, released on pointerup anywhere). Game over: again (after the short delay; not while the name box is open). */
   function inBox(p, x, y, w, h) { return p.x >= x - 2 && p.x < x + w + 2 && p.y >= y - 2 && p.y < y + h + 2; }
@@ -1415,11 +1416,12 @@
     if (st.mode === 'title') {
       if (locked) return;
       for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 46, 52, 76)) {
-        if (i === st.sel && st.trow !== 1) { st.pbi = -1; newGame(); } else { st.sel = i; st.trow = 0; SFX.select(); }
+        if (i === st.tapSel && i === st.sel && st.trow !== 1) { st.tapSel = -1; st.pbi = -1; newGame(); }
+        else { st.sel = i; st.tapSel = i; st.trow = 0; SFX.select(); }
         return;
       }
-      for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 134, 52, 11)) { st.trow = 1; st.msel = i; openMenu(i); return; }
-      st.pbi = -1; newGame(); return;
+      for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 134, 52, 11)) { st.tapSel = -1; st.trow = 1; st.msel = i; openMenu(i); return; }
+      st.tapSel = -1; return;
     }
     if (MENUS[st.mode]) {
       if (st.mode === 'album') {
@@ -1452,31 +1454,31 @@
   cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
-  function pauseChoose() { autoPaused = false; var s = st.psel || 0; if (s === 0) st.mode = 'play'; else if (s === 1) newGame(); else { st.mode = 'title'; st.t = 0; } SFX.select(); }
+  function pauseChoose() { autoPaused = false; var s = st.psel || 0; if (s === 0) st.mode = 'play'; else if (s === 1) newGame(); else { st.mode = 'title'; st.tapSel = -1; st.t = 0; } SFX.select(); }
   function bButton() {
     kick();
     if (MENUS[st.mode]) { if (st.zoom) st.zoom = false; else menuBack(); return; }
     if (st.mode === 'over' && game && game.practice) { st.mode = 'practice'; st.t = 0; return; }
-    if (st.mode === 'title' && st.trow === 1) { st.trow = 0; SFX.select(); return; }
-    if (st.mode === 'title') { st.sel = (st.sel + 1) % 3; SFX.select(); }
+    if (st.mode === 'title' && st.trow === 1) { st.tapSel = -1; st.trow = 0; SFX.select(); return; }
+    if (st.mode === 'title') { st.tapSel = -1; st.sel = (st.sel + 1) % 3; SFX.select(); }
     else if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; }
     else if (st.mode === 'paused') st.mode = 'play';
-    else if (st.mode === 'over') { st.mode = 'title'; st.t = 0; }
+    else if (st.mode === 'over') { st.mode = 'title'; st.tapSel = -1; st.t = 0; }
   }
   function dpad(dir) {
     kick();
     if (MENUS[st.mode]) { if (!st.zoom) menuNav(dir); return; }
-    if (st.mode === 'title' && (dir === 'down' || (dir === 'up' && st.trow === 1))) { st.trow = dir === 'down' ? 1 - st.trow : 0; SFX.select(); return; }
+    if (st.mode === 'title' && (dir === 'down' || (dir === 'up' && st.trow === 1))) { st.tapSel = -1; st.trow = dir === 'down' ? 1 - st.trow : 0; SFX.select(); return; }
     if (st.mode === 'title' && st.trow === 1 && (dir === 'left' || dir === 'right')) { st.msel = (st.msel + (dir === 'left' ? 2 : 1)) % 3; SFX.select(); return; }
     if (st.mode === 'paused' && (dir === 'up' || dir === 'down')) { st.psel = ((st.psel || 0) + (dir === 'up' ? 2 : 1)) % 3; SFX.select(); return; }
-    if (dir === 'up') { onAction(); return; }
+    if (dir === 'up') { if (st.mode === 'play') yPress(); return; }
     if (st.mode === 'play') {
       if (dir === 'down') { downPressed = true; downHeld = true; } /* released by hold('down', false) */
       else nudge += dir === 'left' ? -14 : 14;
       return;
     }
-    if (st.mode === 'title' && (dir === 'left' || dir === 'right')) { st.sel = (st.sel + (dir === 'left' ? 2 : 1)) % 3; SFX.select(); }
-    else if (st.mode === 'over' && dir === 'down') { st.mode = 'title'; st.t = 0; }
+    if (st.mode === 'title' && (dir === 'left' || dir === 'right')) { st.tapSel = -1; st.sel = (st.sel + (dir === 'left' ? 2 : 1)) % 3; SFX.select(); }
+    else if (st.mode === 'over' && dir === 'down') { st.mode = 'title'; st.tapSel = -1; st.t = 0; }
   }
   /* keyboard: C = A (jump / confirm; Space and Enter too), Z = B (skill in a run; back / change character elsewhere),
      X = X button (attack; hold ~0.6 s = switch melee / ranged once, keep holding = auto attack), Up = Y (interact: doors, rest stops, toys),
@@ -1484,7 +1486,7 @@
      The listener sits on the canvas only, so typing in the name box (or any input) never reaches it. */
   function bPress() { kick(); if (st.mode === 'play') skill(); else bButton(); }
   function yPress() { kick(); if (st.mode === 'play') { yPressed = true; return; } if (st.mode === 'title') { dpad('down'); return; } if (MENUS[st.mode]) menuConfirm(); }
-  function plusPress() { kick(); if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } else if (st.mode === 'paused') st.mode = 'play'; else if (st.mode === 'title' || st.mode === 'over') onAction(); }
+  function plusPress() { kick(); if (st.mode === 'play') { st.mode = 'paused'; st.psel = 0; } else if (st.mode === 'paused') st.mode = 'play'; }
   function keyOf(e) { return e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key; }
   function jumpKey(k) { return k === 'c' || k === ' ' || k === 'Enter'; }
   function pauseKey(k) { return k === 's' || k === 'p' || k === 'Escape'; }
@@ -1523,8 +1525,8 @@
     else if (k === 'ArrowUp') { e.preventDefault(); if (st.mode === 'title' && st.trow === 1) dpad('up'); }
     else if (arrow) { e.preventDefault(); dpad(k.slice(5).toLowerCase()); }
     else if (k === 'z') { e.preventDefault(); if (!e.repeat) bButton(); }
-    else if (k === 'Escape') { if (st.mode === 'over') { st.mode = 'title'; st.t = 0; } }
-    else if (st.mode === 'title' && '123'.indexOf(k) >= 0) { st.sel = +k - 1; SFX.select(); }
+    else if (k === 'Escape') { if (st.mode === 'over') { st.mode = 'title'; st.tapSel = -1; st.t = 0; } }
+    else if (st.mode === 'title' && '123'.indexOf(k) >= 0) { st.tapSel = -1; st.sel = +k - 1; SFX.select(); }
   });
   cv.addEventListener('keyup', function (e) {
     var k = keyOf(e);
@@ -2119,11 +2121,11 @@
     L.coins.forEach(function (cn) { if (!cn.got) g.drawImage(P.shard[Math.floor(G_frame() / 6) % 4], lw + cn.dx, GY - cn.h - 4 + Math.round(Math.sin(G_frame() * 0.1 + cn.h) * 2)); });
     if (!o.done && !C && G_frame() % 30 < 20) { g.fillStyle = '#ffffff'; for (var a = 0; a < 3; a++) g.fillRect(lw + SH_GAP / 2 - 3 + a * 3, GY - L.goal - 14 - Math.abs(1 - a) * 2, 2, 2); }
   }
-  /* cosy rest house on the roadside: press Y (key S) while passing the door to take a break, or just run past */
+  /* cosy rest house on the roadside: walk into the doorway to enter; jumping over it skips the stop */
   var HOUSE_COL = { apt: ['#9aa8d0', '#4a5a9a', '#5a6aaa'], tea: ['#efe2c4', '#3a3a4a', '#4a4a5a'], lodge: ['#8a6a48', '#e8f0ff', '#ffffff'], cabin: ['#a86a3a', '#6a3a2a', '#7a4a32'] };
   function drawHouse(o) {
     var x = Math.round(o.x), y = GY, f = G_frame(), hc = HOUSE_COL[o.theme] || HOUSE_COL.apt;
-    if (!o.done && o.near) { var ht = '{Y}: ENTER', hw = PX.textWidth(ht) + 10, hx = Math.round(x + o.w / 2 - hw / 2); hudPanel(hx, y - 82, hw, 11, f % 30 < 15 ? '#ffd47a' : '#ffffff'); PX.text(g, ht, hx + 5, y - 79, '#ffd47a', '#1a0f30'); }
+    if (!o.done && o.near) { var ht = 'DOOR', hw = PX.textWidth(ht) + 10, hx = Math.round(x + o.w / 2 - hw / 2); hudPanel(hx, y - 82, hw, 11, f % 30 < 15 ? '#ffd47a' : '#ffffff'); PX.text(g, ht, hx + 5, y - 79, '#ffd47a', '#1a0f30'); }
     g.fillStyle = '#100a1c'; g.fillRect(x - 1, y - 39, o.w + 2, 39);
     g.fillStyle = hc[0]; g.fillRect(x, y - 38, o.w, 38);
     g.fillStyle = 'rgba(0,0,0,.12)'; for (var yy = y - 34; yy < y; yy += 5) g.fillRect(x, yy, o.w, 1);
@@ -3267,9 +3269,11 @@
       if (o.x + (o.w || 0) < -40) { G.obs.splice(i, 1); continue; }
       if (o.ghost) { if (++o.ghost > 30) G.obs.splice(i, 1); continue; }
       if (o.type === 'tower' && !o.done && o.x + 14 <= G.x + 2 && mode === 'run') { enterClimb(G, o); return; }
-      if (o.type === 'house' && !o.done && mode === 'run') { /* phase3C: rest stops are optional: Y while passing the door enters, running past skips */
+      if (o.type === 'house' && !o.done && mode === 'run') { /* enter only on ground-level contact with the doorway; jumping over skips it */
         var hdx = o.x + 12 - (G.x + 8); o.near = hdx > -34 && hdx < 44;
-        if (o.near && G.yBuf > 0) { G.yBuf = 0; o.done = 1; o.near = false; enterHouse(G, o.theme); return; }
+        var doorL = o.x + 8, doorR = o.x + 24;
+        var doorTouch = G.onGround && G.y >= GY - 1 && G.x + 16 > doorL && G.x < doorR;
+        if (doorTouch) { o.done = 1; o.near = false; enterHouse(G, o.theme); return; }
         if (hdx <= -34) { o.done = 1; o.near = false; }
       }
       if (o.pit || o.safe || (o.type === 'ice' && o.warn > 0)) continue;
@@ -3514,7 +3518,7 @@
     PX.text(g, 'BEST ' + best, W - PX.textWidth('BEST ' + best) - 6, 4, '#7fe0ff', '#000');
     PX.ORDER.forEach(function (id, i) {
       var cx = 30 + i * 60, sel = i === st.sel, d = PX.CHARS[id];
-      box(cx + 4, 46, 52, 76, sel ? '#2a1648' : '#140d26', sel ? d.color : '#4a3a6a');
+      box(cx + 4, 46, 52, 76, sel ? '#2a1648' : '#140d26', st.tapSel === i ? '#ffffff' : sel ? d.color : '#4a3a6a');
       var s = SPR[id], img = sel ? s.run[Math.floor(t / 6) % 4] : ((t + i * 70) % 300 < 88 ? s.idle[Math.floor((t + i * 70) % 300 / 22)] : ((t + i * 40) % 160 < 8 ? s.blink : s.stand));
       g.save(); g.translate(cx + 14, 54 + (sel ? Math.round(Math.sin(t * 0.2)) : 0)); g.scale(2, 2); g.drawImage(img, 0, 0); g.restore();
       PX.text(g, d.label, cx + 30 - PX.textWidth(d.label) / 2, 106, sel ? '#ffffff' : '#9a8cc0', '#000');
@@ -3535,14 +3539,14 @@
       box(mx, 134, 52, 11, on ? '#2a1648' : 'rgba(20,13,38,.85)', on ? '#ffd45e' : '#4a3a6a');
       PX.text(g, lb, mx + 26 - PX.textWidth(lb) / 2, 137, on ? '#ffffff' : '#9a8cc0', '#000');
     });
-    var hint = st.trow === 1 ? '< >: PICK   {A}: OPEN   {B}: BACK' : (Math.floor(t / 120) % 2 ? '< > OR {B}: CHOOSE  {A}: START  DOWN: MORE' : 'TAP SCREEN / {A} / SPACE TO START');
+    var hint = st.trow === 1 ? '< >: PICK   {A}: OPEN   {B}: BACK' : st.tapSel === st.sel ? 'TAP AGAIN TO START' : (Math.floor(t / 120) % 2 ? '< > OR {B}: CHOOSE  {A}: START  DOWN: MORE' : 'TAP A CHARACTER, TAP AGAIN TO START');
     if (Math.floor(t / 30) % 4 !== 3) PX.text(g, hint, W / 2 - PX.textWidth(hint) / 2, 150, '#ffd45e', '#3a1a40');
   }
   /* ---------- G10 / G6 / G7 screens ---------- */
   var PRACTICE_LIST = BIOMES.map(function (b, i) { return i; }).filter(function (i) { return !BIOMES[i].roam; });
   function openMenu(i) { st.mode = ['practice', 'album', 'badges'][i]; st.t = 0; SFX.select(); }
   function popMenuMsg(s) { st.menuMsg = { s: s, t: st.t }; }
-  function menuBack() { st.mode = 'title'; st.trow = 1; st.pbi = -1; st.t = 0; SFX.select(); }
+  function menuBack() { st.mode = 'title'; st.tapSel = -1; st.trow = 1; st.pbi = -1; st.t = 0; SFX.select(); }
   function menuNav(dir) {
     if (st.mode === 'album') { var a = st.acur; a += dir === 'left' ? -1 : dir === 'right' ? 1 : dir === 'up' ? -3 : 3; st.acur = clamp(a, 0, ALBUM_ROOMS.length - 1); }
     else { var p = st.pcur; p += dir === 'left' ? -1 : dir === 'right' ? 1 : dir === 'up' ? -6 : 6; st.pcur = clamp(p, 0, PRACTICE_LIST.length - 1); }
