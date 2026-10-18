@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STUDIO CAM · 工作室实况</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; padding:24px 16px; color:#eee6f3; background:#0a0712; font:14px/1.5 "DotGothic16","Microsoft YaHei",monospace; }
+  main { max-width:1040px; margin:0 auto; }
+  .frame { border:2px solid #ff4fa3; padding:10px; background:#0a0712; box-shadow:0 0 0 4px #2a0a20,0 0 40px rgba(255,79,163,.18); }
+  .head { display:flex; align-items:center; justify-content:space-between; gap:12px; border:1px solid #38253d; padding:8px 12px; background:#120d1d; }
+  h1 { margin:0; font-size:18px; font-weight:400; color:#ff9fc4; }
+  .tag { color:#4fe3ff; font-size:11px; }
+  .screen { margin-top:10px; border:1px solid #38253d; background:#05040a; padding:5px; }
+  canvas { display:block; width:100%; height:auto; image-rendering:pixelated; }
+  @media(max-width:600px) { body { padding:14px 8px; } .frame { padding:6px; } h1 { font-size:15px; } }
+</style>
+</head>
+<body>
+<main>
+  <section class="frame">
+    <div class="head"><h1>STUDIO CAM · 工作室实况</h1><span class="tag">● LIVE</span></div>
+    <div class="screen"><canvas id="studio" width="960" height="540" aria-label="沿用原版场景，角色轮流散步和互动"></canvas></div>
+  </section>
+</main>
+<script src="./js/pixel.js"></script>
+<script src="./studio-demo.js"></script>
+</body>
+</html>
