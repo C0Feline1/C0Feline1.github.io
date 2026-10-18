@@ -3352,8 +3352,8 @@
     BADGE_DEF.forEach(function (d) { if (nw & d.bit) { toast(G, 'BADGE: ' + d.n + ' · ' + b.en.split(' · ')[0], d.col); G.newBadges.push(d.n); } });
     SFX.power();
   }
-  function badgeCount() { var n = 0; for (var k in BADGES) for (var v = BADGES[k]; v; v >>= 1) n += v & 1; return n; }
-  function badgeTotal() { return BIOMES.reduce(function (s, b) { return s + (b.roam ? 0 : 3); }, 0); }
+  function badgeCount() { var n = 0; for (var k in BADGES) if (SEEN[k]) for (var v = BADGES[k]; v; v >>= 1) n += v & 1; return n; }
+  function badgeTotal() { return BIOMES.reduce(function (s, b) { return s + (!b.roam && SEEN[b.key] ? 3 : 0); }, 0); }
   var PR_STEP = 20 * 60, PR_MAX = 10;
   function practiceLoop(G) { /* back to the start of the same world: speed (it follows the distance) stays the same */
     var P0 = plan(0), PR = G.practice; G.dist = P0.starts[PR.slot] + 0.5; PR.n++; G.mbDone = null; G.climaxAt = null; G.setCd = 2;
@@ -3554,33 +3554,42 @@
   }
   function menuConfirm() { if (st.mode === 'practice') { var pb0 = PRACTICE_LIST[st.pcur]; if (!SEEN[BIOMES[pb0].key]) { popMenuMsg('LOCKED: REACH IT IN A RUN FIRST'); beep(160, 0.12, 'square', 0.04); return; } st.pbi = pb0; newGame(); } else if (st.mode === 'album') { st.zoom = !st.zoom; SFX.select(); } }
   function menuBg() {
-    var t = st.t, tb = BIOMES[Math.floor(t / 600) % BIOMES.length];
+    var t = st.t, known = PRACTICE_LIST.filter(function (bi) { return !!SEEN[BIOMES[bi].key]; });
+    var tb = BIOMES[known.length ? known[Math.floor(t / 600) % known.length] : 0];
     drawBiome(tb, t * 0.3, 1); g.fillStyle = 'rgba(10,6,30,.78)'; g.fillRect(0, 0, W, H);
   }
   function drawMenuHead(title, sub) {
     PX.text(g, title, 6, 5, '#ffffff', '#ff4fa3', 2);
     PX.text(g, sub, W - 6 - PX.textWidth(sub), 8, '#ffd45e', '#000');
   }
+  function drawWorldLock(x, y) {
+    g.fillStyle = '#100c1c'; g.fillRect(x, y, 34, 22);
+    g.fillStyle = '#262039'; g.fillRect(x + 1, y + 1, 32, 20);
+    g.fillStyle = '#8a7ab8';
+    g.fillRect(x + 13, y + 5, 8, 1); g.fillRect(x + 13, y + 5, 1, 5); g.fillRect(x + 20, y + 5, 1, 5);
+    g.fillRect(x + 12, y + 9, 10, 7);
+    g.fillStyle = '#100c1c'; g.fillRect(x + 17, y + 11, 1, 3);
+  }
   function drawWorldGrid(badges) {
     PRACTICE_LIST.forEach(function (bi, q) {
       var c = q % 6, r = Math.floor(q / 6), x = 6 + c * 38, y = 20 + r * 29, on = q === st.pcur, bb = BIOMES[bi];
+      var locked = !SEEN[bb.key];
       g.fillStyle = on ? '#ffd45e' : '#2a1f48'; g.fillRect(x - 1, y - 1, 36, 24);
-      g.drawImage(thumb(bi, 34, 22), x, y);
-      PX.text(g, String(bi + 1), x + 1, y + 1, '#ffffff', '#000');
-      var bits = BADGES[bb.key] || 0, n = 3;
-      for (var k = 0; k < n; k++) { var d = BADGE_DEF[k], have = bits & d.bit; g.fillStyle = '#000'; g.fillRect(x + 1 + k * 6, y + 23, 5, 5); g.fillStyle = have ? d.col : 'rgba(255,255,255,.18)'; g.fillRect(x + 2 + k * 6, y + 24, 3, 3); }
-      if (bb.boss) PX.text(g, 'B', x + 28, y + 1, '#ff4f6a', '#000');
-      if (!badges && !SEEN[bb.key]) { /* practice: worlds not reached yet are locked */
-        g.fillStyle = 'rgba(8,5,16,.78)'; g.fillRect(x, y, 34, 22);
-        g.fillStyle = '#8a7ab8'; g.fillRect(x + 14, y + 9, 7, 6); g.fillStyle = '#08050f'; g.fillRect(x + 17, y + 11, 1, 2);
-        g.fillStyle = '#8a7ab8'; g.fillRect(x + 15, y + 6, 1, 3); g.fillRect(x + 19, y + 6, 1, 3); g.fillRect(x + 15, y + 5, 5, 1);
+      if (locked) {
+        drawWorldLock(x, y);
+      } else {
+        g.drawImage(thumb(bi, 34, 22), x, y);
+        PX.text(g, String(bi + 1), x + 1, y + 1, '#ffffff', '#000');
+        var bits = BADGES[bb.key] || 0;
+        for (var k = 0; k < BADGE_DEF.length; k++) { var d = BADGE_DEF[k], have = bits & d.bit; g.fillStyle = '#000'; g.fillRect(x + 1 + k * 6, y + 23, 5, 5); g.fillStyle = have ? d.col : 'rgba(255,255,255,.18)'; g.fillRect(x + 2 + k * 6, y + 24, 3, 3); }
+        if (bb.boss) PX.text(g, 'B', x + 28, y + 1, '#ff4f6a', '#000');
       }
-      if (!badges && (bb.mode || 'run') !== 'run') { g.fillStyle = '#4fe3ff'; g.fillRect(x + 31, y + 18, 2, 2); }
+      if (!badges && !locked && (bb.mode || 'run') !== 'run') { g.fillStyle = '#4fe3ff'; g.fillRect(x + 31, y + 18, 2, 2); }
     });
-    var sb = BIOMES[PRACTICE_LIST[st.pcur]], lockd = !badges && !SEEN[sb.key];
+    var sb = BIOMES[PRACTICE_LIST[st.pcur]], lockd = !SEEN[sb.key];
     drawCN(lockd ? '？？？' : localizedWorld(sb), W / 2, 137, 7, lockd ? '#8a7ab8' : '#ffffff', 'center', '#000');
     if (badges) {
-      var bits2 = BADGES[sb.key] || 0, txt = BADGE_DEF.map(function (d) { return (bits2 & d.bit ? '* ' : '- ') + d.n; }).join('  ');
+      var bits2 = BADGES[sb.key] || 0, txt = lockd ? 'LOCKED · REACH IT IN A RUN' : BADGE_DEF.map(function (d) { return (bits2 & d.bit ? '* ' : '- ') + d.n; }).join('  ');
       PX.text(g, txt, W / 2 - PX.textWidth(txt) / 2, 150, '#c8bce8', '#000');
     } else {
       var en = st.menuMsg && st.t - st.menuMsg.t < 90 ? st.menuMsg.s : lockd ? 'LOCKED · REACH IT IN A RUN' : sb.en + '   {A}: GO  {B}: BACK';
@@ -3622,7 +3631,7 @@
   function drawMenu() {
     menuBg();
     if (st.mode === 'practice') { drawMenuHead('PRACTICE', 'ENDLESS · LV UP · NO SCORE'); drawWorldGrid(false); }
-    else if (st.mode === 'badges') { drawMenuHead('BADGES', badgeCount() + '/' + badgeTotal()); drawWorldGrid(true); }
+    else if (st.mode === 'badges') { drawMenuHead('BADGES', 'WORLD CHALLENGES ' + badgeCount() + '/' + badgeTotal()); drawWorldGrid(true); }
     else { drawMenuHead('ALBUM', ALBUM_ROOMS.filter(function (k) { return ALBUM[k]; }).length + '/6 PHOTOS'); drawAlbum(); }
   }
 
