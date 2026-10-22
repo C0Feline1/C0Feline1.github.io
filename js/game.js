@@ -1420,7 +1420,7 @@
         else { st.sel = i; st.tapSel = i; st.trow = 0; SFX.select(); }
         return;
       }
-      for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 134, 52, 11)) { st.tapSel = -1; st.trow = 1; st.msel = i; openMenu(i); return; }
+      for (i = 0; i < 3; i++) if (inBox(p, 34 + i * 60, 136, 52, 11)) { st.tapSel = -1; st.trow = 1; st.msel = i; openMenu(i); return; }
       st.tapSel = -1; return;
     }
     if (MENUS[st.mode]) {
@@ -1445,15 +1445,20 @@
     }
     if (st.mode === 'play' || st.mode === 'over') onAction();
   }
+  /* a held screen tap = a held A: only the finger that pressed it ends the jump (lifting a D-pad finger used to cut it short).
+     The A button on the console releases through KittyRunner.release() for its own finger */
+  var tapPtr = null;
   cv.addEventListener('pointerdown', function (e) {
     if (e.button > 0) return;
     e.preventDefault(); e.stopPropagation(); cv.focus({ preventScroll: true }); kick();
+    tapPtr = e.pointerId;
     var r = cv.getBoundingClientRect();
     tapAt({ x: (e.clientX - r.left) / (r.width || 1) * W, y: (e.clientY - r.top) / (r.height || 1) * H });
   });
   cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-  window.addEventListener('pointerup', release);
-  window.addEventListener('pointercancel', release);
+  function tapUp(e) { if (e.pointerId === tapPtr) { tapPtr = null; release(); } }
+  window.addEventListener('pointerup', tapUp);
+  window.addEventListener('pointercancel', tapUp);
   function pauseChoose() { autoPaused = false; var s = st.psel || 0; if (s === 0) st.mode = 'play'; else if (s === 1) newGame(); else { st.mode = 'title'; st.tapSel = -1; st.t = 0; } SFX.select(); }
   function bButton() {
     kick();
@@ -3475,7 +3480,8 @@
     }
     g.drawImage(tint || img, Math.round(x), Math.round(y - 24));
   }
-  function drawCN(text, x, y, size, color, align, shadow) { TQ.push([text, x, y, size, color, align, shadow]); }
+  /* maxW (game px, optional): the text steps down to a smaller integer scale until it fits, and y is then its vertical centre */
+  function drawCN(text, x, y, size, color, align, shadow, maxW) { TQ.push([text, x, y, size, color, align, shadow, maxW]); }
   var CNC = {}, CNN = 0;
   if (document.fonts && document.fonts.load) document.fonts.load('16px "DotGothic16"').then(function () { CNC = {}; CNN = 0; }, function () { });
   function cnSprite(text, color) {
@@ -3489,8 +3495,10 @@
   function flushText() {
     dctx.save(); dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.imageSmoothingEnabled = false;
     for (var i = 0; i < TQ.length; i++) {
-      var q = TQ[i], k = Math.max(1, Math.round(q[3] * S / 16)), sp = cnSprite(q[0], q[4]), w = sp.width * k;
-      var x0 = Math.round(q[1] * S - (q[5] === 'center' ? w / 2 : q[5] === 'right' ? w : 0)), y0 = Math.round(q[2] * S);
+      var q = TQ[i], k = Math.max(1, Math.round(q[3] * S / 16)), sp = cnSprite(q[0], q[4]);
+      if (q[7]) while (k > 1 && sp.width * k > q[7] * S) k--;
+      var w = sp.width * k;
+      var x0 = Math.round(q[1] * S - (q[5] === 'center' ? w / 2 : q[5] === 'right' ? w : 0)), y0 = Math.round(q[2] * S - (q[7] ? sp.height * k / 2 : 0));
       if (q[6]) dctx.drawImage(cnSprite(q[0], q[6]), x0 + k, y0 + k, w, sp.height * k);
       dctx.drawImage(sp, x0, y0, w, sp.height * k);
     }
@@ -3530,17 +3538,20 @@
     });
     var d = PX.CHARS[PX.ORDER[st.sel]];
     var charId = PX.ORDER[st.sel];
-    var charInfo = localizedText('character.' + charId, d.cn, d.label) + ' · ' + localizedText('perk.' + charId, d.perk, d.perkEn);
-    drawCN(charInfo, W / 2, 124, 6, '#ffffff', 'center', '#000');
+    /* one line between the cards (bottom 122) and the menu row (top 136); the name is dropped before the text would have to
+       shrink (the card already shows it) */
+    var perk = localizedText('perk.' + charId, d.perk, d.perkEn), charInfo = localizedText('character.' + charId, d.cn, d.label) + ' · ' + perk;
+    if (cnSprite(charInfo, '#ffffff').width * Math.max(1, Math.round(8 * S / 16)) > 200 * S) charInfo = perk;
+    drawCN(charInfo, W / 2, 129, 8, '#ffffff', 'center', '#000', 228);
     /* menu row: practice / album / badges (DOWN to reach it) */
     var al = ALBUM_ROOMS.filter(function (k) { return ALBUM[k]; }).length, ML = ['PRACTICE', 'ALBUM ' + al + '/6', 'BADGES ' + badgeCount()];
     ML.forEach(function (lb, i) {
       var mx = 34 + i * 60, on = st.trow === 1 && st.msel === i;
-      box(mx, 134, 52, 11, on ? '#2a1648' : 'rgba(20,13,38,.85)', on ? '#ffd45e' : '#4a3a6a');
-      PX.text(g, lb, mx + 26 - PX.textWidth(lb) / 2, 137, on ? '#ffffff' : '#9a8cc0', '#000');
+      box(mx, 136, 52, 11, on ? '#2a1648' : 'rgba(20,13,38,.85)', on ? '#ffd45e' : '#4a3a6a');
+      PX.text(g, lb, mx + 26 - PX.textWidth(lb) / 2, 139, on ? '#ffffff' : '#9a8cc0', '#000');
     });
     var hint = st.trow === 1 ? '< >: PICK   {A}: OPEN   {B}: BACK' : st.tapSel === st.sel ? 'TAP AGAIN TO START' : (Math.floor(t / 120) % 2 ? '< > OR {B}: CHOOSE  {A}: START  DOWN: MORE' : 'TAP A CHARACTER, TAP AGAIN TO START');
-    if (Math.floor(t / 30) % 4 !== 3) PX.text(g, hint, W / 2 - PX.textWidth(hint) / 2, 150, '#ffd45e', '#3a1a40');
+    if (Math.floor(t / 30) % 4 !== 3) PX.text(g, hint, W / 2 - PX.textWidth(hint) / 2, 151, '#ffd45e', '#3a1a40');
   }
   /* ---------- G10 / G6 / G7 screens ---------- */
   var PRACTICE_LIST = BIOMES.map(function (b, i) { return i; }).filter(function (i) { return !BIOMES[i].roam; });

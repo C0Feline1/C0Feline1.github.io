@@ -138,38 +138,86 @@
     renderTicker(); updateVerifyTime(); startTerminal();
   });
 
-  /* A / B / D-pad */
+  /* console buttons. Switch layout: A = jump / confirm, B = skill (back in menus), X = attack (hold: switch melee / ranged once,
+     then auto attack), Y = interact, - = back / change character, + = pause / start. pointerdown only (no click handler anywhere
+     on the console, so a tap can't fire twice); left button / primary touch only. .on lights a held button */
+  var coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  function buzz() { if (coarse && navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) try { navigator.vibrate(8); } catch (e) { } }
+  function lit(el, on) { if (el) el.classList.toggle('on', !!on); }
+  function grab(e) { e.preventDefault(); e.stopPropagation(); $('game').focus({ preventScroll: true }); }
   function bindBtn(el, fn) {
-    /* pointerdown only (no click handler anywhere on the console, so a tap can't fire twice); left button / primary touch only */
-    el.addEventListener('pointerdown', function (e) { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); $('game').focus({ preventScroll: true }); fn(); });
+    el.addEventListener('pointerdown', function (e) { if (e.button > 0) return; grab(e); lit(el, true); buzz(); fn(); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { el.addEventListener(ev, function () { lit(el, false); }); });
   }
-  /* Switch layout: A = jump / confirm, B = skill (back in menus), X = attack (hold: switch melee / ranged once, then auto attack), Y = interact,
-     - = back / change character, + = pause / start */
-  bindBtn($('aBtn'), function () { KittyRunner.action(); });
-  bindBtn($('bBtn'), function () { KittyRunner.bPress(); });
-  if ($('yBtn')) bindBtn($('yBtn'), function () { KittyRunner.y(); });
   if ($('minusBtn')) bindBtn($('minusBtn'), function () { KittyRunner.b(); });
   if ($('plusBtn')) bindBtn($('plusBtn'), function () { KittyRunner.plus(); });
-  if ($('xBtn')) {
-    /* X: hold = switch attack mode once, then auto attack. The pointer is captured so sliding a finger / the mouse a little
-       off the button does not end the hold (that used to split one hold into several and flip the mode back and forth) */
-    bindBtn($('xBtn'), function () { KittyRunner.fire(true); });
-    $('xBtn').addEventListener('pointerdown', function (e) { try { $('xBtn').setPointerCapture(e.pointerId); } catch (er) { } });
-    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) { $('xBtn').addEventListener(ev, function () { KittyRunner.fire(false); }); });
+  /* the D-pad and the X/Y/A/B diamond are touch zones: every finger owns one button at a time and can roll onto a neighbour
+     without lifting (left <-> right, A -> B ...), like on a real pad, and the gaps between the round buttons count too.
+     The zone captures the pointer, so a finger sliding off the zone keeps its button (the D-pad keeps following its angle) */
+  function zone(el, pick, down, up) {
+    var own = {};
+    function set(id, k) {
+      var o = own[id]; if (o === k) return;
+      if (o) { up(o); lit(el.querySelector('[data-k="' + o + '"]'), Object.keys(own).some(function (p) { return p != id && own[p] === o; })); }
+      own[id] = k;
+      if (k) { lit(el.querySelector('[data-k="' + k + '"]'), true); buzz(); down(k); }
+    }
+    el.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return; grab(e);
+      try { el.setPointerCapture(e.pointerId); } catch (er) { }
+      set(e.pointerId, pick(e, null));
+    });
+    el.addEventListener('pointermove', function (e) { if (e.pointerId in own) set(e.pointerId, pick(e, own[e.pointerId])); });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) {
+      el.addEventListener(ev, function (e) { if (e.pointerId in own) { set(e.pointerId, null); delete own[e.pointerId]; } });
+    });
   }
+  function rel(el, e) { var r = el.getBoundingClientRect(); return { x: (e.clientX - r.left) / (r.width || 1), y: (e.clientY - r.top) / (r.height || 1) }; }
+  var HOLDS = { left: 1, right: 1, down: 1 };
+  document.querySelectorAll('.dpad').forEach(function (dp) {
+    dp.querySelectorAll('button[data-d]').forEach(function (b) { b.dataset.k = b.dataset.d; });
+    zone(dp, function (e, cur) {
+      /* the direction is the dominant axis from the centre; a dead spot in the middle and a small band around the diagonals
+         keep the current direction, so a resting thumb does not flicker between two */
+      var p = rel(dp, e), x = p.x - 0.5, y = p.y - 0.5, ax = Math.abs(x), ay = Math.abs(y);
+      if (Math.max(ax, ay) < 0.12) return cur;
+      if (cur && Math.abs(ax - ay) < 0.08) return cur;
+      return ax > ay ? (x < 0 ? 'left' : 'right') : (y < 0 ? 'up' : 'down');
+    }, function (d) { KittyRunner.dpad(d); if (HOLDS[d] && KittyRunner.hold) KittyRunner.hold(d, true); },
+    function (d) { if (HOLDS[d] && KittyRunner.hold) KittyRunner.hold(d, false); });
+  });
+  var FACE = { x: [0.5, 1 / 6], y: [1 / 6, 0.5], a: [5 / 6, 0.5], b: [0.5, 5 / 6] };
+  document.querySelectorAll('.xyab').forEach(function (xy) {
+    Object.keys(FACE).forEach(function (k) { var b = xy.querySelector('.' + k); if (b) b.dataset.k = k; });
+    zone(xy, function (e, cur) {
+      /* nearest button; a new touch takes it within ~1.8 button radii (the dead centre between all four takes none), a held
+         finger only moves on once it is well onto another button */
+      var p = rel(xy, e), best = null, bd = 9;
+      Object.keys(FACE).forEach(function (k) { var d = Math.hypot(p.x - FACE[k][0], p.y - FACE[k][1]); if (d < bd) { bd = d; best = k; } });
+      if (cur) return best !== cur && bd < 0.2 ? best : cur;
+      return bd < 0.3 ? best : null;
+    }, function (k) {
+      if (k === 'a') KittyRunner.action(); else if (k === 'b') KittyRunner.bPress(); else if (k === 'y') KittyRunner.y(); else KittyRunner.fire(true);
+    }, function (k) {
+      /* A: let go = end the (higher) jump for this finger only; X: end the hold (one hold = at most one melee / ranged switch) */
+      if (k === 'a') KittyRunner.release(); else if (k === 'x') KittyRunner.fire(false);
+    });
+  });
+  /* keyboard keys light the matching on-screen button while held (only keys that reach the game: the canvas has focus) */
+  var KEYLIT = { ArrowUp: '.dpad [data-d=up]', ArrowDown: '.dpad [data-d=down]', ArrowLeft: '.dpad [data-d=left]', ArrowRight: '.dpad [data-d=right]',
+    c: '#aBtn', ' ': '#aBtn', Enter: '#aBtn', z: '#bBtn', x: '#xBtn', s: '#plusBtn', p: '#plusBtn', Escape: '#plusBtn' };
+  function keyLit(e, on) { var k = e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key; if (KEYLIT[k] && !(on && (e.ctrlKey || e.metaKey || e.altKey))) lit(document.querySelector(KEYLIT[k]), on); }
+  $('game').addEventListener('keydown', function (e) { keyLit(e, true); });
+  $('game').addEventListener('keyup', function (e) { keyLit(e, false); });
+  $('game').addEventListener('blur', function () { document.querySelectorAll('.gba .on').forEach(function (b) { b.classList.remove('on'); }); });
   /* mobile: a long press on the console must not select text, open the callout menu or the magnifier, and a double tap must
-     not zoom. touchstart is cancelled on the console buttons and the screen (they work from pointer events); the music tab
-     keeps its click */
+     not zoom. touchstart is cancelled on the console buttons, the touch zones and the screen (they work from pointer events);
+     the music tab keeps its click */
   var conEl = document.querySelector('.gba');
   if (conEl) {
     conEl.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-    conEl.addEventListener('touchstart', function (e) { var t = e.target.closest && e.target.closest('button, canvas'); if (t && !t.classList.contains('mtab')) e.preventDefault(); }, { passive: false });
+    conEl.addEventListener('touchstart', function (e) { var t = e.target.closest && e.target.closest('button, canvas, .dpad, .xyab'); if (t && !t.classList.contains('mtab')) e.preventDefault(); }, { passive: false });
   }
-  document.querySelectorAll('.dpad button').forEach(function (b) { bindBtn(b, function () { KittyRunner.dpad(b.dataset.d); }); });
-  document.querySelectorAll('.dpad button[data-d=left], .dpad button[data-d=right], .dpad button[data-d=down]').forEach(function (b) {
-    b.addEventListener('pointerdown', function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, true); });
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { if (KittyRunner.hold) KittyRunner.hold(b.dataset.d, false); }); });
-  });
 
   /* the console shell / Joy-Con bodies do nothing when clicked; on the title screen, tap a character to select it and tap it again to start */
   var shell = document.querySelector('.gba');
@@ -203,9 +251,10 @@
   if ($('dockOpen')) $('dockOpen').addEventListener('click', function () { docRoot.classList.add('dock-shown'); dockSync(); window.dispatchEvent(new Event('resize')); });
   dockSync();
 
-  var scrCv = $('game'), lastScr = 0;
+  var scrCv = $('game'), lastScr = 0, jcSet = 0;
   function sizeScreen() {
     if (!shell || !scrCv) return;
+    if (jcSet && (window.KR_FRAME || window.innerWidth <= 520)) { jcSet = 0; shell.style.removeProperty('--jcw'); shell.style.removeProperty('--bc'); } /* CSS sizes them there */
     var panel = shell.parentElement, ph = panel.querySelector('.ph');
     var ps = getComputedStyle(panel), innerW = panel.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
     var ch = scrCv.offsetHeight || 1, scr = shell.querySelector('.scr'), jc = shell.querySelector('.jc');
@@ -225,8 +274,14 @@
       var chrome = extraY + (ph ? ph.offsetHeight + 6 : 0) + parseFloat(ps.paddingTop) + 6;
       var availH = vH - chrome;
       if (fit === 'panel') availH = panel.clientHeight - parseFloat(ps.paddingBottom) - helpH - chrome;
-      else if (fit === 'view') availH = vH - (panel.getBoundingClientRect().top + window.scrollY) - parseFloat(ps.paddingBottom) - helpH - chrome - 8;
+      else if (fit === 'view') availH = Math.max(vH * 0.45, vH - (panel.getBoundingClientRect().top + window.scrollY) - parseFloat(ps.paddingBottom) - helpH - chrome - 8);
       var hW = Math.max(F ? 200 : 360, availH * 1.5);
+      if (!F) {
+        /* desktop: the Joy-Cons are about a quarter of the screen's width (fixed 152 px used to eat a narrow middle column) */
+        var jw = Math.round(Math.max(112, Math.min(150, Math.min((innerW - bezelX) / 1.48, hW) * 0.24)));
+        if (jw !== jcSet) { jcSet = jw; shell.style.setProperty('--jcw', jw + 'px'); shell.style.setProperty('--bc', Math.round(Math.max(34, Math.min(46, (jw - 12) / 3))) + 'px'); }
+        jcW = jw; rowW = innerW - bezelX - 2 * jcW;
+      }
       /* stacked: the Joy-Cons sit below the screen, so they take height too (~200 px incl. gaps) */
       var jcH = shell.classList.contains('stack') && jc ? jc.offsetHeight + 12 : 200;
       var sW = Math.min(stackW, Math.max(360, (availH - jcH) * 1.5)), rW = Math.min(rowW, hW);
