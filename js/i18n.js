@@ -5,7 +5,7 @@
 
   var messages = {
     'zh-CN': {
-      'site.title': '独立开发人C0 · C0 STUDIO', 'site.description': '独立开发人C0 的作品主页：星梦画廊 Stardream Gallery 等。',
+      'site.title': 'C0 STUDIO', 'site.description': '独立开发人C0 的作品主页：星梦画廊 Stardream Gallery 等。',
       'lang.select': '选择网站语言', 'header.mood': 'MOOD',
       'nav.panelLabel': '面板切换', 'nav.closeLabel': '关闭面板', 'nav.openInfo': '≡ 信息',
       'nav.cards': '数据', 'nav.cam': '实况', 'nav.rank': '排行', 'nav.logs': '日志', 'nav.inspiration': '灵感', 'nav.works': '作品', 'nav.about': '关于', 'nav.ads': '广告',
@@ -48,7 +48,7 @@
       'ticker.sleep': '猫猫已连续睡眠 6 小时', 'ticker.snow': '霜脊方向有异常降雪', 'ticker.arcade': '下面的跑酷可以玩'
     },
     en: {
-      'site.title': 'Indie Developer C0 · C0 STUDIO', 'site.description': 'Games and tools by indie developer C0, including Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Games and tools by indie developer C0, including Stardream Gallery.',
       'lang.select': 'Select site language', 'header.mood': 'MOOD',
       'nav.panelLabel': 'Panel navigation', 'nav.closeLabel': 'Close panel', 'nav.openInfo': '≡ Info',
       'nav.cards': 'Stats', 'nav.cam': 'Studio', 'nav.rank': 'Rankings', 'nav.logs': 'Logs', 'nav.inspiration': 'Inspiration', 'nav.works': 'Works', 'nav.about': 'About', 'nav.ads': 'Ad space',
@@ -91,7 +91,7 @@
       'ticker.sleep': 'The cat has slept for 6 hours straight', 'ticker.snow': 'Unusual snowfall near Frostspine', 'ticker.arcade': 'The runner below is playable'
     },
     ja: {
-      'site.title': 'インディー開発者 C0 · C0 STUDIO', 'site.description': 'インディー開発者 C0 のゲームとツール。Stardream Gallery など。',
+      'site.title': 'C0 STUDIO', 'site.description': 'インディー開発者 C0 のゲームとツール。Stardream Gallery など。',
       'lang.select': 'サイトの言語を選択', 'header.mood': 'MOOD',
       'nav.panelLabel': 'パネル切替', 'nav.closeLabel': 'パネルを閉じる', 'nav.openInfo': '≡ 情報',
       'nav.cards': 'データ', 'nav.cam': 'スタジオ', 'nav.rank': 'ランキング', 'nav.logs': 'ログ', 'nav.inspiration': 'ひらめき', 'nav.works': '作品', 'nav.about': '概要', 'nav.ads': '広告',
@@ -134,7 +134,7 @@
       'ticker.sleep': '猫が6時間連続で眠っています', 'ticker.snow': '霜脊方面で異常な降雪', 'ticker.arcade': '下のランナーはプレイできます'
     },
     ru: {
-      'site.title': 'Инди-разработчик C0 · C0 STUDIO', 'site.description': 'Игры и инструменты инди-разработчика C0, включая Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Игры и инструменты инди-разработчика C0, включая Stardream Gallery.',
       'lang.select': 'Выбрать язык сайта', 'header.mood': 'НАСТРОЕНИЕ',
       'nav.panelLabel': 'Навигация по панелям', 'nav.closeLabel': 'Закрыть панель', 'nav.openInfo': '≡ Инфо',
       'nav.cards': 'Статистика', 'nav.cam': 'Студия', 'nav.rank': 'Рейтинг', 'nav.logs': 'Журнал', 'nav.inspiration': 'Вдохновение', 'nav.works': 'Работы', 'nav.about': 'О проекте', 'nav.ads': 'Реклама',
@@ -177,7 +177,7 @@
       'ticker.sleep': 'Кошка спит уже 6 часов подряд', 'ticker.snow': 'У Фростспайна необычный снегопад', 'ticker.arcade': 'В раннер ниже можно играть'
     },
     es: {
-      'site.title': 'Desarrollador indie C0 · C0 STUDIO', 'site.description': 'Juegos y herramientas de C0, desarrollador independiente, incluido Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Juegos y herramientas de C0, desarrollador independiente, incluido Stardream Gallery.',
       'lang.select': 'Elegir idioma del sitio', 'header.mood': 'ÁNIMO',
       'nav.panelLabel': 'Navegación de paneles', 'nav.closeLabel': 'Cerrar panel', 'nav.openInfo': '≡ Info',
       'nav.cards': 'Datos', 'nav.cam': 'Estudio', 'nav.rank': 'Clasificación', 'nav.logs': 'Registro', 'nav.inspiration': 'Inspiración', 'nav.works': 'Obras', 'nav.about': 'Acerca de', 'nav.ads': 'Anuncios',
@@ -220,7 +220,7 @@
       'ticker.sleep': 'El gato lleva 6 horas durmiendo', 'ticker.snow': 'Nevada inusual cerca de Frostspine', 'ticker.arcade': 'El juego de carreras de abajo se puede jugar'
     },
     'pt-PT': {
-      'site.title': 'Programador independente C0 · C0 STUDIO', 'site.description': 'Jogos e ferramentas do programador independente C0, incluindo Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Jogos e ferramentas do programador independente C0, incluindo Stardream Gallery.',
       'lang.select': 'Escolher idioma do site', 'header.mood': 'HUMOR',
       'nav.panelLabel': 'Navegação dos painéis', 'nav.closeLabel': 'Fechar painel', 'nav.openInfo': '≡ Info',
       'nav.cards': 'Dados', 'nav.cam': 'Estúdio', 'nav.rank': 'Classificação', 'nav.logs': 'Registo', 'nav.inspiration': 'Inspiração', 'nav.works': 'Obras', 'nav.about': 'Sobre', 'nav.ads': 'Anúncios',
@@ -263,7 +263,7 @@
       'ticker.sleep': 'O gato dorme há 6 horas seguidas', 'ticker.snow': 'Queda de neve invulgar perto de Frostspine', 'ticker.arcade': 'O jogo de corrida abaixo está jogável'
     },
     'pt-BR': {
-      'site.title': 'Desenvolvedor indie C0 · C0 STUDIO', 'site.description': 'Jogos e ferramentas do desenvolvedor independente C0, incluindo Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Jogos e ferramentas do desenvolvedor independente C0, incluindo Stardream Gallery.',
       'lang.select': 'Selecionar idioma do site', 'header.mood': 'HUMOR',
       'nav.panelLabel': 'Navegação dos painéis', 'nav.closeLabel': 'Fechar painel', 'nav.openInfo': '≡ Info',
       'nav.cards': 'Dados', 'nav.cam': 'Estúdio', 'nav.rank': 'Ranking', 'nav.logs': 'Registros', 'nav.inspiration': 'Inspiração', 'nav.works': 'Projetos', 'nav.about': 'Sobre', 'nav.ads': 'Anúncios',
@@ -306,7 +306,7 @@
       'ticker.sleep': 'O gato está dormindo há 6 horas seguidas', 'ticker.snow': 'Neve incomum perto de Frostspine', 'ticker.arcade': 'O jogo de corrida abaixo está disponível'
     },
     de: {
-      'site.title': 'Indie-Entwickler C0 · C0 STUDIO', 'site.description': 'Spiele und Tools von Indie-Entwickler C0, darunter Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Spiele und Tools von Indie-Entwickler C0, darunter Stardream Gallery.',
       'lang.select': 'Seitensprache auswählen', 'header.mood': 'STIMMUNG',
       'nav.panelLabel': 'Panelnavigation', 'nav.closeLabel': 'Panel schließen', 'nav.openInfo': '≡ Info',
       'nav.cards': 'Daten', 'nav.cam': 'Studio', 'nav.rank': 'Rangliste', 'nav.logs': 'Protokoll', 'nav.inspiration': 'Inspiration', 'nav.works': 'Projekte', 'nav.about': 'Über uns', 'nav.ads': 'Werbung',
@@ -349,7 +349,7 @@
       'ticker.sleep': 'Die Katze schläft seit 6 Stunden', 'ticker.snow': 'Ungewöhnlicher Schneefall bei Frostspine', 'ticker.arcade': 'Der Runner unten ist spielbar'
     },
     la: {
-      'site.title': 'C0, artifex ludorum · C0 STUDIO', 'site.description': 'Ludi et instrumenta a C0, artifice independenter, facta; inter quae Stardream Gallery.',
+      'site.title': 'C0 STUDIO', 'site.description': 'Ludi et instrumenta a C0, artifice independenter, facta; inter quae Stardream Gallery.',
       'lang.select': 'Linguam situs elige', 'header.mood': 'ANIMUS',
       'nav.panelLabel': 'Navigatio tabularum', 'nav.closeLabel': 'Tabulam claude', 'nav.openInfo': '≡ Notitia',
       'nav.cards': 'Numeri', 'nav.cam': 'Officina', 'nav.rank': 'Ordines', 'nav.logs': 'Acta', 'nav.inspiration': 'Inspiratio', 'nav.works': 'Opera', 'nav.about': 'De nobis', 'nav.ads': 'Publicitas',
