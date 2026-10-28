@@ -10,13 +10,14 @@
   function spark(g, x, y, color) { box(g, x - 2, y, 5, 1, color); box(g, x, y - 2, 1, 5, color); }
   function placement(cue) {
     if (!cue || !cue.performance) return 0;
-    var p = cue.progress, offset = cue.performance === 'deepseek' ? cue.stage === 0 ? -5 + p * 10 : 5 :
+    var p = cue.progress, offset = window.StudioOriginalPerformance&&StudioOriginalPerformance.supported(cue)?StudioOriginalPerformance.placement(cue):cue.performance === 'deepseek' ? cue.stage === 0 ? -5 + p * 10 : 5 :
       cue.performance === 'claude' ? cue.stage === 0 ? -3 + p * 6 : 3 :
       cue.performance === 'grok' && cue.effect === 'dance' ? Math.sin(p * Math.PI * 4) * 2 : 0;
     return cue.mainDirection === 'left' ? -offset : offset;
   }
   function props(g, actor, cue) {
     if (!cue || !cue.performance) return;
+    if(window.StudioOriginalPerformance&&StudioOriginalPerformance.behind(g,actor,cue))return;
     var e = cue.effect, p = cue.progress, color = actor.color, mirror = cue.mainDirection === 'left';
     g.save(); g.translate(Math.round(actor.renderX), Math.round(actor.renderY)); if (mirror) g.scale(-1, 1);
     function label(value, x, y, width, ink) {
@@ -90,5 +91,7 @@
     lines.forEach(function (line, index) { text(g, Array.from(line).slice(0, left).join(''), x + 5, y + 4 + index * 9, '#594a72', size); left = Math.max(0, left - Array.from(line).length); });
     g.restore();
   }
-  window.StudioPerformance = { placement: placement, props: props, copies: copies, speech: speech };
+  window.StudioPerformance = { placement: placement, props: props, copies: copies, speech: speech,
+    foreground:function(g,actor,cue){if(window.StudioOriginalPerformance)StudioOriginalPerformance.front(g,actor,cue);}
+  };
 }());
