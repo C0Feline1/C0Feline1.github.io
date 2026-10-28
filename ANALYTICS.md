@@ -18,7 +18,7 @@
 - `GET /api/site-analytics/visits/{id}`：单次访问时间线，同样只允许站长。
 - nginx 对该前缀固定代理 8000，避免 Feline2/Feline3 路由 Cookie 干扰，并关闭该 location 的访问日志；现有服务器其他网络/错误日志不属于统计数据库。
 - 明细按进入时间保留约 90 天，小时定时清理：`feline-site-analytics-cleanup.timer`。查询会排除过期访问；事件跟随访问级联删除。
-- 后台静态文件：`/var/www/html/admin.html`、`/var/www/html/assets/app.js`。新增统计默认入口，旧业务保留；留言板目前只预留入口。
+- 后台静态文件：`/var/www/html/admin.html`、`/var/www/html/assets/app.js`。新增统计默认入口，旧业务保留；留言板现已接入，详见 `GUESTBOOK.md`。
 - 部署前备份：`/opt/feline1/backups/site-analytics-20261028T055234Z/`。
 - 本机可维护源码与验证脚本：工作区 `site-analytics/`。服务端测试使用临时数据库，不写入生产统计。
 
@@ -26,6 +26,6 @@
 
 项目根目录 `python3 -m http.server 8765`。本地页面可预览统计设置，但正式采集接口故意拒绝 localhost Origin，避免开发访问混入统计。
 
-## 后续留言板
+## 留言板
 
-尚未实现访客提交、审核或公开展示。后续应另建表和公开接口，管理接口复用站长鉴权；不把留言内容混入埋点事件。
+已接入独立留言数据库、访客提交、站长审核和公开展示，见 [GUESTBOOK.md](GUESTBOOK.md)。留言内容不进入埋点事件。

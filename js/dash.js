@@ -228,7 +228,7 @@
      when that costs less than 10 %, so the pixels stay crisp. Phones (<= 520 px) always stack and use the full width. */
   /* tabbed dock inside the fixed frame: which panels share the dock depends on the frame (portrait / phone landscape: all of
      them; landscape: everything except the stats and the studio cam) */
-  var DOCK = { land: ['lb', 'term', 'chart', 'works', 'legal', 'ad'], port: ['cards', 'cam', 'lb', 'term', 'chart', 'works', 'legal', 'ad'] };
+  var DOCK = { land: ['lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad'], port: ['cards', 'cam', 'lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad'] };
   DOCK.phl = DOCK.port;
   var docRoot = document.documentElement, dockTab = 'lb';
   try { dockTab = localStorage.getItem('dash-tab') || 'lb'; } catch (e) { }
