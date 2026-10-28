@@ -23,7 +23,7 @@
     "title": "💌 GUESTBOOK",
     "tag": "SAY HELLO",
     "tab": "Notes",
-    "intro": "Leave a hello. Nicknames and messages are stored on the owner’s feline1.top server and become public after approval. Please keep contact details and other personal information out of your message.",
+    "intro": "Stopped by? Leave a little hello.",
     "nickname": "Nickname",
     "nicknameHint": "1–24 characters",
     "nicknamePlaceholder": "What should we call you?",
@@ -51,7 +51,7 @@
     "title": "💌 GUESTBOOK · 留言板",
     "tag": "SAY HELLO",
     "tab": "留言",
-    "intro": "来过这里，留句话吧。昵称与留言保存在站长的 feline1.top 服务器，审核后公开展示。请勿填写联系方式或其他个人隐私信息。",
+    "intro": "来过这里，留句话吧。",
     "nickname": "昵称",
     "nicknameHint": "1–24 个字",
     "nicknamePlaceholder": "怎么称呼你？",
@@ -79,7 +79,7 @@
     "title": "💌 ゲストブック",
     "tag": "ひとことどうぞ",
     "tab": "伝言",
-    "intro": "訪問の記念に、ひとことどうぞ。ニックネームとメッセージは管理人の feline1.top サーバーに保存され、承認後に公開されます。連絡先などの個人情報は書かないでください。",
+    "intro": "訪問の記念に、ひとことどうぞ。",
     "nickname": "ニックネーム",
     "nicknameHint": "1～24 文字",
     "nicknamePlaceholder": "お名前を教えてください",
@@ -107,7 +107,7 @@
     "title": "💌 ГОСТЕВАЯ КНИГА",
     "tag": "ПЕРЕДАЙТЕ ПРИВЕТ",
     "tab": "Отзывы",
-    "intro": "Оставьте привет! Псевдонимы и сообщения сохраняются на сервере владельца feline1.top и публикуются после одобрения. Не указывайте контактные данные и другую личную информацию.",
+    "intro": "Заглянули к нам? Оставьте пару слов.",
     "nickname": "Псевдоним",
     "nicknameHint": "1–24 символа",
     "nicknamePlaceholder": "Как к вам обращаться?",
@@ -135,7 +135,7 @@
     "title": "💌 LIBRO DE VISITAS",
     "tag": "¡SALUDA!",
     "tab": "Mensajes",
-    "intro": "Deja un saludo. Los nombres y mensajes se guardan en el servidor feline1.top del propietario y se publican tras su aprobación. No incluyas datos de contacto ni otra información personal.",
+    "intro": "¿Pasaste por aquí? Deja un saludo.",
     "nickname": "Nombre",
     "nicknameHint": "1–24 caracteres",
     "nicknamePlaceholder": "¿Cómo te llamamos?",
@@ -163,7 +163,7 @@
     "title": "💌 LIVRO DE VISITAS",
     "tag": "DEIXA UM OLÁ",
     "tab": "Mensagens",
-    "intro": "Deixa um olá. Os nomes e as mensagens ficam guardados no servidor feline1.top do proprietário e são publicados após aprovação. Não incluas contactos nem outras informações pessoais.",
+    "intro": "Passaste por aqui? Deixa uma mensagem.",
     "nickname": "Nome",
     "nicknameHint": "1–24 carateres",
     "nicknamePlaceholder": "Como te devemos chamar?",
@@ -191,7 +191,7 @@
     "title": "💌 LIVRO DE VISITAS",
     "tag": "MANDE UM OLÁ",
     "tab": "Mensagens",
-    "intro": "Deixe um olá. Os nomes e as mensagens são armazenados no servidor feline1.top do proprietário e publicados após aprovação. Não inclua contatos nem outras informações pessoais.",
+    "intro": "Passou por aqui? Deixe um recadinho.",
     "nickname": "Apelido",
     "nicknameHint": "1–24 caracteres",
     "nicknamePlaceholder": "Como podemos chamar você?",
@@ -219,7 +219,7 @@
     "title": "💌 GÄSTEBUCH",
     "tag": "SAG HALLO",
     "tab": "Gästebuch",
-    "intro": "Hinterlasse einen Gruß. Namen und Nachrichten werden auf dem Server feline1.top des Betreibers gespeichert und nach Freigabe veröffentlicht. Bitte gib keine Kontaktdaten oder anderen persönlichen Informationen an.",
+    "intro": "Schön, dass du da bist. Hinterlasse einen Gruß.",
     "nickname": "Nickname",
     "nicknameHint": "1–24 Zeichen",
     "nicknamePlaceholder": "Wie sollen wir dich nennen?",
@@ -247,7 +247,7 @@
     "title": "💌 LIBER HOSPITUM",
     "tag": "SALUTEM RELINQUE",
     "tab": "Hospites",
-    "intro": "Salutationem relinque. Nomina et nuntii in servitore domini feline1.top servantur et post approbationem publicantur. Ne inscriptiones contactus aliasve res privatas scribas.",
+    "intro": "Advenisti? Pauca verba relinque.",
     "nickname": "Nomen",
     "nicknameHint": "1–24 litterae",
     "nicknamePlaceholder": "Quo nomine te appellamus?",
@@ -272,6 +272,7 @@
     "listLabel": "Nuntii publici"
   }
 };
+
   function pack() { var language = window.I18N ? I18N.getLocale() : 'zh-CN'; return words[language] || words.en; }
   function text(key) { return pack()[key] || key; }
   function el(tag, cls, value) {
