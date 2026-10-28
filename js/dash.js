@@ -363,7 +363,7 @@
       cg.fillStyle = up ? 'rgba(93,255,143,.75)' : 'rgba(255,79,106,.75)'; cg.fillRect(i * bw, h - bh, Math.max(1, bw - 1), bh);
     });
     cg.fillStyle = '#ff9fc4'; cg.font = '11px DotGothic16, monospace';
-    cg.fillText('灵感', 6, 14);
+    cg.fillText(T('chart.canvasLabel'), 6, 14);
   }
   setInterval(function () {
     var last = data[data.length - 1], nv = last + (R() - 0.47) * 2000;
@@ -375,6 +375,7 @@
   }, 900);
   if (window.ResizeObserver) new ResizeObserver(function () { drawChart(); }).observe(ch.parentNode); /* box is out of the canvas' reach: no loop */
   else window.addEventListener('resize', drawChart);
+  window.addEventListener('c0-language-change', function () { if (chartVis) drawChart(); });
   drawChart();
 
 

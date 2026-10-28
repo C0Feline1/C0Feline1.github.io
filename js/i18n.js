@@ -538,10 +538,22 @@
     }
   };
 
+  var studioLabels = {
+    'zh-CN': '像素工作室动画：三个角色正在工作', en: 'Pixel studio animation: three characters at work',
+    ja: 'ピクセルスタジオのアニメーション：作業中の3人', ru: 'Пиксельная студия: три персонажа за работой',
+    es: 'Estudio de píxeles animado: tres personajes trabajando', 'pt-PT': 'Estúdio de píxeis animado: três personagens a trabalhar',
+    'pt-BR': 'Estúdio de pixels animado: três personagens trabalhando', de: 'Animiertes Pixelstudio: drei Figuren bei der Arbeit',
+    la: 'Officina picta animata: tres personae laborant'
+  };
+  Object.keys(studioLabels).forEach(function (key) { messages[key]['studio.canvasLabel'] = studioLabels[key]; });
+
+  var chartLabels = { 'zh-CN': '灵感', en: 'Inspiration', ja: 'ひらめき', ru: 'Вдохновение', es: 'Inspiración', 'pt-PT': 'Inspiração', 'pt-BR': 'Inspiração', de: 'Inspiration', la: 'Inspiratio' };
+  Object.keys(chartLabels).forEach(function (key) { messages[key]['chart.canvasLabel'] = chartLabels[key]; });
+
   var LANGS = Object.keys(messages), locale = 'en', manual = false, localeSource = 'fallback', localeGeneration = 0;
   var autoNames = { 'zh-CN': '自动', en: 'Automatic', ja: '自動', ru: 'Автоматически', es: 'Automático', 'pt-PT': 'Automático', 'pt-BR': 'Automático', de: 'Automatisch', la: 'Automatice' };
   function savedLocale() {
-    try { var saved = localStorage.getItem('c0-site-language'); return saved && messages[saved] ? saved : ''; } catch (e) { return ''; }
+    try { var saved = localStorage.getItem('c0-site-language'); return LANGS.indexOf(saved) >= 0 ? saved : ''; } catch (e) { return ''; }
   }
   function matchLanguage(value) {
     if (typeof value !== 'string') return '';
@@ -577,7 +589,7 @@
       var response = await fetch('https://feline1.top/api/site-locale', options);
       if (!response.ok) return;
       var data = await response.json();
-      if (generation !== localeGeneration || manual || !data || data.source !== 'ip' || !messages[data.locale]) return;
+      if (generation !== localeGeneration || manual || !data || data.source !== 'ip' || LANGS.indexOf(data.locale) < 0) return;
       locale = data.locale; localeSource = 'ip'; apply(); notify();
     } catch (e) { /* Offline, blocked country lookup or timeout leaves English usable. */ }
     finally { clearTimeout(timeout); }
@@ -615,7 +627,7 @@
       try { localStorage.removeItem('c0-site-language'); } catch (e) { }
       return automaticLocale();
     }
-    if (!messages[next]) return;
+    if (LANGS.indexOf(next) < 0) return;
     ++localeGeneration; manual = true; locale = next; localeSource = 'saved';
     try { localStorage.setItem('c0-site-language', locale); } catch (e) { }
     apply(); notify();

@@ -3,6 +3,175 @@
    dig a tunnel (always used to get past the console), nap, dance and wave at the cursor. */
 (function () {
   if (!window.PX) return;
+  /* All built-in speech is localized at display time; movement and random choices stay unchanged. */
+  var SPIDER_LOCALES = {
+    "cheer": {"en":"Go for it!","ja":"がんばれ！","ru":"Вперёд!","es":"¡Ánimo!","pt-PT":"Força!","pt-BR":"Vai nessa!","de":"Los geht’s!","la":"Age!"},
+    "jump": {"en":"Jump!","ja":"ジャンプ！","ru":"Прыгай!","es":"¡Salta!","pt-PT":"Salta!","pt-BR":"Pula!","de":"Spring!","la":"Sali!"},
+    "obstacle": {"en":"Watch your step!","ja":"足元に気をつけて！","ru":"Смотри под ноги!","es":"¡Cuidado al pisar!","pt-PT":"Cuidado onde pisas!","pt-BR":"Olha onde pisa!","de":"Pass auf, wo du hintrittst!","la":"Pedibus cave!"},
+    "fast": {"en":"That catgirl is so fast!","ja":"猫娘、速いなあ！","ru":"Какая быстрая кошечка!","es":"¡Qué rápida es la chica gata!","pt-PT":"A rapariga-gato é tão rápida!","pt-BR":"A garota-gato é tão rápida!","de":"Das Katzenmädchen ist so schnell!","la":"Puella felina tam velox est!"},
+    "play": {"en":"Want to play together?","ja":"一緒に遊ぼう？","ru":"Поиграем вместе?","es":"¿Jugamos?","pt-PT":"Vamos jogar juntos?","pt-BR":"Vamos jogar juntos?","de":"Spielen wir zusammen?","la":"Una ludamus?"},
+    "watch": {"en":"I’ll watch from here.","ja":"ここで見てるね。","ru":"Я посмотрю отсюда.","es":"Miraré desde aquí.","pt-PT":"Vou ficar aqui a ver.","pt-BR":"Vou ficar aqui olhando.","de":"Ich schaue von hier aus zu.","la":"Hinc spectabo."},
+    "work": {"en":"What is everyone doing?","ja":"みんな何してるの？","ru":"Чем все заняты?","es":"¿Qué hacen todos?","pt-PT":"O que estão todos a fazer?","pt-BR":"O que todo mundo está fazendo?","de":"Was machen denn alle?","la":"Quid omnes faciunt?"},
+    "artist": {"en":"X0 draws so well!","ja":"X0、絵が上手！","ru":"X0 отлично рисует!","es":"¡X0 dibuja muy bien!","pt-PT":"A X0 desenha tão bem!","pt-BR":"A X0 desenha tão bem!","de":"X0 zeichnet so schön!","la":"X0 pulchre pingit!"},
+    "catSleep": {"en":"The cat is asleep again.","ja":"猫ちゃん、また寝てる。","ru":"Кошка опять уснула.","es":"El gato volvió a dormirse.","pt-PT":"O gato adormeceu outra vez.","pt-BR":"O gato dormiu de novo.","de":"Die Katze schläft schon wieder.","la":"Feles rursus dormit."},
+    "coffee": {"en":"That coffee smells lovely.","ja":"コーヒー、いい香り。","ru":"Как вкусно пахнет кофе.","es":"Qué bien huele el café.","pt-PT":"Que bom cheiro a café.","pt-BR":"Que cheiro bom de café.","de":"Der Kaffee duftet gut.","la":"Coffea suaviter olet."},
+    "inspiration": {"en":"Inspiration is rising!","ja":"ひらめき上昇中！","ru":"Вдохновение растёт!","es":"¡Sube la inspiración!","pt-PT":"A inspiração está a subir!","pt-BR":"A inspiração está subindo!","de":"Die Inspiration steigt!","la":"Ingenium crescit!"},
+    "chart": {"en":"Is that chart real?","ja":"このグラフ、本物？","ru":"Этот график настоящий?","es":"¿Es real esa gráfica?","pt-PT":"Este gráfico é real?","pt-BR":"Esse gráfico é de verdade?","de":"Ist dieses Diagramm echt?","la":"Estne haec figura vera?"},
+    "logs": {"en":"Another commit… more logs!","ja":"またコミット…ログも増えた！","ru":"Снова коммит… и новые логи!","es":"Otro commit… ¡más registros!","pt-PT":"Outro commit… mais registos!","pt-BR":"Outro commit… mais registros!","de":"Noch ein Commit… noch mehr Logs!","la":"Iterum mutatio… plures commentarii!"},
+    "rankings": {"en":"Who leads the rankings?","ja":"ランキング１位は誰？","ru":"Кто первый в рейтинге?","es":"¿Quién lidera la clasificación?","pt-PT":"Quem lidera a classificação?","pt-BR":"Quem está no topo do ranking?","de":"Wer führt die Rangliste an?","la":"Quis in ordine primus est?"},
+    "bugs": {"en":"More bugs again?","ja":"またバグが増えた？","ru":"Опять больше багов?","es":"¿Otra vez más errores?","pt-PT":"Mais erros outra vez?","pt-BR":"Mais bugs de novo?","de":"Schon wieder mehr Bugs?","la":"Rursus plura vitia?"},
+    "coffeeLimit": {"en":"That’s enough coffee!","ja":"コーヒー飲みすぎ！","ru":"Хватит кофе!","es":"¡Basta de café!","pt-PT":"Já chega de café!","pt-BR":"Já chega de café!","de":"Genug Kaffee!","la":"Satis coffeae!"},
+    "gallery": {"en":"Stardream Gallery!","ja":"スタードリーム・ギャラリー！","ru":"Stardream Gallery!","es":"¡Stardream Gallery!","pt-PT":"Stardream Gallery!","pt-BR":"Stardream Gallery!","de":"Stardream Gallery!","la":"Stardream Gallery!"},
+    "mystery": {"en":"I wonder what comes next!","ja":"次は何だろう？","ru":"Интересно, что дальше!","es":"¡A ver qué viene después!","pt-PT":"O que virá a seguir?","pt-BR":"O que vem por aí?","de":"Was kommt wohl als Nächstes?","la":"Quid deinde veniet?"},
+    "verified": {"en":"All checks passed! ✓","ja":"チェック完了！✓","ru":"Все проверки пройдены! ✓","es":"¡Todo verificado! ✓","pt-PT":"Tudo verificado! ✓","pt-BR":"Tudo verificado! ✓","de":"Alle Prüfungen bestanden! ✓","la":"Omnia probata! ✓"},
+    "bed": {"en":"Is it bedtime yet?","ja":"もう寝る時間かな？","ru":"Уже пора спать?","es":"¿Ya es hora de dormir?","pt-PT":"Já são horas de dormir?","pt-BR":"Já está na hora de dormir?","de":"Ist es schon Schlafenszeit?","la":"Iamne hora dormiendi est?"},
+    "pinwheel": {"en":"A lovely pinwheel!","ja":"きれいな風車！","ru":"Какая красивая вертушка!","es":"¡Qué bonito molinillo!","pt-PT":"Que moinho tão bonito!","pt-BR":"Que cata-vento bonito!","de":"Ein hübsches Windrad!","la":"Quam pulchra rota venti!"},
+    "rent": {"en":"Can a spider rent this spot?","ja":"蜘蛛でもここを借りられる？","ru":"Паук может арендовать это место?","es":"¿Puede una araña alquilar este espacio?","pt-PT":"Uma aranha pode alugar este espaço?","pt-BR":"Uma aranha pode alugar este espaço?","de":"Kann eine Spinne diesen Platz mieten?","la":"Potestne aranea hunc locum conducere?"},
+    "spin": {"en":"Round and round!","ja":"くるくる～！","ru":"Кругом-кругом!","es":"¡Gira que gira!","pt-PT":"Às voltas!","pt-BR":"Gira, gira!","de":"Immer im Kreis!","la":"In orbem!"},
+    "name": {"en":"I’m Xiao Ba.","ja":"小八だよ。","ru":"Я Сяо Ба.","es":"Soy Xiao Ba.","pt-PT":"Sou o Xiao Ba.","pt-BR":"Sou o Xiao Ba.","de":"Ich bin Xiao Ba.","la":"Ego sum Xiao Ba."},
+    "view": {"en":"What a lovely day!","ja":"今日もいい日だね！","ru":"Какой чудесный день!","es":"¡Qué bonito día!","pt-PT":"Que belo dia!","pt-BR":"Que dia bonito!","de":"Was für ein schöner Tag!","la":"Quam pulcher dies!"},
+    "patrol": {"en":"On patrol!","ja":"パトロール中！","ru":"На обходе!","es":"¡De patrulla!","pt-PT":"Em patrulha!","pt-BR":"Patrulhando!","de":"Auf Patrouille!","la":"Excubias ago!"},
+    "hmm": {"en":"Hmm…","ja":"うーん…","ru":"Хм…","es":"Mmm…","pt-PT":"Hum…","pt-BR":"Hum…","de":"Hm…","la":"Hmm…"},
+    "curious": {"en":"What are you looking at?","ja":"何を見てるの？","ru":"На что ты смотришь?","es":"¿Qué estás mirando?","pt-PT":"O que estás a ver?","pt-BR":"O que você está olhando?","de":"Was schaust du dir an?","la":"Quid spectas?"},
+    "hello": {"en":"Hello over there!","ja":"やっほー！","ru":"Привет!","es":"¡Hola!","pt-PT":"Olá!","pt-BR":"Oi!","de":"Hallo da drüben!","la":"Salve!"},
+    "cursor": {"en":"That cursor is huge!","ja":"カーソル、大きいね！","ru":"Какой огромный курсор!","es":"¡Qué cursor tan grande!","pt-PT":"Que cursor enorme!","pt-BR":"Que cursor enorme!","de":"Der Mauszeiger ist riesig!","la":"Quam magnus est cursor!"},
+    "scared": {"en":"Eek! Don’t poke me!","ja":"わっ、つつかないで！","ru":"Ой! Не трогай меня!","es":"¡Ay! ¡No me pinches!","pt-PT":"Ai! Não me piques!","pt-BR":"Ai! Não cutuca!","de":"Huch! Nicht anstupsen!","la":"Heu! Noli me pungere!"},
+    "touch": {"en":"Let me have a look…","ja":"ちょっと触ってみよう…","ru":"Дай посмотрю…","es":"Déjame ver…","pt-PT":"Deixa-me ver…","pt-BR":"Deixa eu ver…","de":"Lass mich mal schauen…","la":"Sine me videre…"},
+    "dig": {"en":"A tunnel shortcut!","ja":"トンネルで近道！","ru":"Короткий путь через туннель!","es":"¡Un atajo por el túnel!","pt-PT":"Um atalho pelo túnel!","pt-BR":"Um atalho pelo túnel!","de":"Eine Abkürzung durch den Tunnel!","la":"Via brevior per cuniculum!"},
+    "dug": {"en":"Made it through!","ja":"出てきたよ！","ru":"Я выбрался!","es":"¡Ya salí!","pt-PT":"Já saí!","pt-BR":"Consegui sair!","de":"Geschafft, wieder draußen!","la":"Evasī!"},
+    "heart": {"en":"A heart for you! ♥","ja":"ハートをどうぞ！♥","ru":"Сердечко для тебя! ♥","es":"¡Un corazón para ti! ♥","pt-PT":"Um coração para ti! ♥","pt-BR":"Um coração para você! ♥","de":"Ein Herz für dich! ♥","la":"Cor tibi dono! ♥"},
+    "star": {"en":"A star!","ja":"お星さま！","ru":"Звёздочка!","es":"¡Una estrella!","pt-PT":"Uma estrela!","pt-BR":"Uma estrela!","de":"Ein Stern!","la":"Stella!"},
+    "smile": {"en":"Give me a smile!","ja":"にっこりして！","ru":"Улыбнись!","es":"¡Sonríe!","pt-PT":"Sorri!","pt-BR":"Sorria!","de":"Lächle mal!","la":"Ride!"},
+    "cat": {"en":"Meow, a kitty!","ja":"にゃー、猫ちゃん！","ru":"Мяу, котик!","es":"¡Miau, un gatito!","pt-PT":"Miau, um gatinho!","pt-BR":"Miau, um gatinho!","de":"Miau, ein Kätzchen!","la":"Miau, felis!"},
+    "signature": {"en":"C0’s signature!","ja":"C0のサイン！","ru":"Подпись C0!","es":"¡La firma de C0!","pt-PT":"A assinatura do C0!","pt-BR":"A assinatura do C0!","de":"C0s Unterschrift!","la":"Subscriptio C0!"},
+    "song": {"en":"♪ La la la!","ja":"♪ ラララ～！","ru":"♪ Ла-ла-ла!","es":"♪ ¡La, la, la!","pt-PT":"♪ Lá, lá, lá!","pt-BR":"♪ Lá, lá, lá!","de":"♪ La la la!","la":"♪ La la la!"},
+    "weave": {"en":"Time to weave a web!","ja":"巣を編もう！","ru":"Пора плести паутину!","es":"¡A tejer una telaraña!","pt-PT":"Hora de tecer uma teia!","pt-BR":"Hora de tecer uma teia!","de":"Zeit, ein Netz zu weben!","la":"Tempus est telam texere!"},
+    "swing": {"en":"Wheee, I’m flying!","ja":"わーい、飛んでる！","ru":"Ура, я лечу!","es":"¡Estoy volando!","pt-PT":"Estou a voar!","pt-BR":"Estou voando!","de":"Hui, ich fliege!","la":"Euge, volo!"},
+    "dizzy": {"en":"Feeling dizzy…","ja":"目が回る…","ru":"Голова кружится…","es":"Me mareo…","pt-PT":"Estou tonto…","pt-BR":"Estou tonto…","de":"Mir ist schwindelig…","la":"Caput vertitur…"},
+    "again": {"en":"One more try?","ja":"もう一回？","ru":"Ещё разок?","es":"¿Otra vez?","pt-PT":"Mais uma vez?","pt-BR":"Mais uma vez?","de":"Noch ein Versuch?","la":"Iterum?"},
+    "high": {"en":"So high up!","ja":"高いなあ！","ru":"Как высоко!","es":"¡Qué alto!","pt-PT":"Tão alto!","pt-BR":"Que alto!","de":"So hoch oben!","la":"Tam alte!"},
+    "awake": {"en":"Oh, I fell asleep!","ja":"あ、寝ちゃった！","ru":"Ой, я уснул!","es":"¡Uy, me dormí!","pt-PT":"Oh, adormeci!","pt-BR":"Opa, dormi!","de":"Oh, ich bin eingeschlafen!","la":"O, obdormivi!"},
+    "sleep": {"en":"Time for a nap…","ja":"ちょっとお昼寝…","ru":"Пора вздремнуть…","es":"Una siestecita…","pt-PT":"Uma sesta…","pt-BR":"Uma soneca…","de":"Zeit für ein Nickerchen…","la":"Tempus somni…"},
+    "dance": {"en":"Let’s dance!","ja":"踊ろう！","ru":"Потанцуем!","es":"¡A bailar!","pt-PT":"Vamos dançar!","pt-BR":"Vamos dançar!","de":"Tanzen wir!","la":"Saltemus!"},
+    "tickle": {"en":"That tickles!","ja":"くすぐったい！","ru":"Щекотно!","es":"¡Qué cosquillas!","pt-PT":"Isso faz cócegas!","pt-BR":"Faz cócegas!","de":"Das kitzelt!","la":"Prurit!"},
+    "friendly": {"en":"I’m a friendly spider!","ja":"いい蜘蛛だよ！","ru":"Я добрый паучок!","es":"¡Soy una araña buena!","pt-PT":"Sou uma aranha simpática!","pt-BR":"Sou uma aranha amigável!","de":"Ich bin eine freundliche Spinne!","la":"Aranea amica sum!"},
+    "record": {"en":"A new record! Amazing!","ja":"新記録！すごい！","ru":"Новый рекорд! Здорово!","es":"¡Nuevo récord! ¡Genial!","pt-PT":"Novo recorde! Fantástico!","pt-BR":"Novo recorde! Incrível!","de":"Neuer Rekord! Großartig!","la":"Novum maximum! Optime!"},
+    "close": {"en":"So close!","ja":"あと少し！","ru":"Почти получилось!","es":"¡Por poco!","pt-PT":"Quase!","pt-BR":"Quase!","de":"Ganz knapp!","la":"Paene!"},
+    "flung": {"en":"Whoa! That pinwheel flung me!","ja":"わあ、風車に飛ばされた！","ru":"Ой! Вертушка меня подбросила!","es":"¡Ese molinillo me lanzó!","pt-PT":"O moinho atirou-me!","pt-BR":"O cata-vento me lançou!","de":"Huch! Das Windrad hat mich weggeschleudert!","la":"Heu! Rota me proiecit!"},
+    "neverAgain": {"en":"No more touching pinwheels…","ja":"もう風車には触らない…","ru":"Больше не трону вертушку…","es":"No volveré a tocar molinillos…","pt-PT":"Não volto a tocar no moinho…","pt-BR":"Nunca mais mexo no cata-vento…","de":"Ich fasse keine Windräder mehr an…","la":"Rotam venti iam non tangam…"},
+    "rank": {"en":"On the board! Rank {rank}!","ja":"ランクイン！{rank}位！","ru":"В рейтинге! Место {rank}!","es":"¡En la clasificación! Puesto {rank}!","pt-PT":"Na classificação! Lugar {rank}!","pt-BR":"No ranking! Posição {rank}!","de":"Auf der Rangliste! Platz {rank}!","la":"In ordine! Locus {rank}!"},
+    "soundOn": {"en":"Xiao Ba sound: on","ja":"小八の音：オン","ru":"Звук Сяо Ба: вкл.","es":"Sonido de Xiao Ba: activado","pt-PT":"Som do Xiao Ba: ligado","pt-BR":"Som do Xiao Ba: ligado","de":"Xiao Bas Ton: an","la":"Sonus Xiao Ba: activus"},
+    "soundOff": {"en":"Xiao Ba sound: off","ja":"小八の音：オフ","ru":"Звук Сяо Ба: выкл.","es":"Sonido de Xiao Ba: desactivado","pt-PT":"Som do Xiao Ba: desligado","pt-BR":"Som do Xiao Ba: desligado","de":"Xiao Bas Ton: aus","la":"Sonus Xiao Ba: inactivus"}
+  };
+  var SPIDER_PHRASES = {
+    "加油！": "cheer",
+    "跳啊！": "jump",
+    "前面有障碍！": "obstacle",
+    "小心脚下！": "obstacle",
+    "猫娘好快……": "fast",
+    "八条腿也跑不过猫娘": "fast",
+    "我也想玩": "play",
+    "一起玩吗？": "play",
+    "我在旁边看着～": "watch",
+    "他们在摸鱼吗？": "work",
+    "大家在干嘛？": "work",
+    "X0 画得真好看": "artist",
+    "猫猫又睡了": "catSleep",
+    "咖啡好香": "coffee",
+    "灵感涨了！": "inspiration",
+    "梭哈灵感！": "inspiration",
+    "这曲线是真的吗？": "chart",
+    "日志好长": "logs",
+    "fixed？真的假的": "logs",
+    "又在 commit 了": "logs",
+    "第一名是谁？": "rankings",
+    "我也想上榜": "rankings",
+    "排行榜好热闹": "rankings",
+    "bug 怎么又多了": "bugs",
+    "咖啡喝太多啦": "coffeeLimit",
+    "星梦画廊！": "gallery",
+    "？？？是什么呀": "mystery",
+    "期待新作品": "mystery",
+    "全是绿灯 ✓": "verified",
+    "验证通过！": "verified",
+    "几点啦？": "bed",
+    "该睡觉了吧": "bed",
+    "这个风车好好看": "pinwheel",
+    "风车！": "pinwheel",
+    "广告位？我能租吗": "rent",
+    "小鱼干租金……付不起": "rent",
+    "转啊转～": "spin",
+    "我叫小八": "name",
+    "这里风景不错": "view",
+    "今天也是好天气": "view",
+    "巡逻中": "patrol",
+    "我来巡逻了": "patrol",
+    "嗯……": "hmm",
+    "嗯？": "hmm",
+    "你在看什么？": "curious",
+    "嗨～": "hello",
+    "你好呀！": "hello",
+    "看这里看这里": "hello",
+    "你的鼠标好大": "cursor",
+    "哇！": "scared",
+    "别抓我！": "scared",
+    "溜了溜了": "scared",
+    "别推我！": "scared",
+    "别戳我！": "scared",
+    "让我摸摸看": "touch",
+    "挖洞逃跑！": "dig",
+    "挖个洞过去～": "dig",
+    "抄近路！": "dig",
+    "游戏机挡路了，挖过去": "dig",
+    "嘿咻嘿咻": "dig",
+    "挖通了！": "dug",
+    "我又出来啦": "dug",
+    "哈，从这里冒出来": "dug",
+    "送你一颗心 ♥": "heart",
+    "是星星！": "star",
+    "笑一个～": "smile",
+    "喵～是猫猫": "cat",
+    "C0 的签名～": "signature",
+    "♪ 啦啦啦～": "song",
+    "♫ 嗒嗒嗒": "song",
+    "织个网～": "weave",
+    "看我的手艺": "weave",
+    "要织什么好呢": "weave",
+    "吐丝～": "weave",
+    "荡秋千～": "swing",
+    "呼～～": "swing",
+    "飞起来啦": "swing",
+    "好晕……": "dizzy",
+    "头好晕……": "dizzy",
+    "@_@ 转晕了": "dizzy",
+    "再来一次！": "again",
+    "啊……再来一次？": "again",
+    "好高～": "high",
+    "醒了！": "awake",
+    "啊，睡着了": "awake",
+    "好困……": "sleep",
+    "打个盹": "sleep",
+    "跳个舞～": "dance",
+    "痒……": "tickle",
+    "我是好蜘蛛！": "friendly",
+    "不吃 bug，只看 bug": "friendly",
+    "新纪录！好厉害！": "record",
+    "差一点点！": "close",
+    "哇啊啊——！": "flung",
+    "呀～～飞了！": "flung",
+    "风车好凶！": "flung",
+    "再也不碰风车了……": "neverAgain"
+  };
+  function spiderLocale() { return window.I18N ? I18N.getLocale() : 'zh-CN'; }
+  function spiderText(key) { var pack = SPIDER_LOCALES[key], locale = spiderLocale(); return pack && (pack[locale] || pack.en) || key; }
+  function localizeSpeech(value) {
+    value = String(value);
+    if (spiderLocale() === 'zh-CN') return value;
+    var rank = /^上榜啦！第 (.+) 名！$/.exec(value);
+    if (rank) return spiderText('rank').replace('{rank}', rank[1]);
+    var key = SPIDER_PHRASES[value];
+    return key ? spiderText(key) : value;
+  }
   var LS = 72, K = window.matchMedia('(max-width: 600px)').matches ? 2 : 3, CSS = LS * K, HALF = CSS / 2;
   var R = Math.random, pick = function (a) { return a[Math.floor(R() * a.length)]; };
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -34,7 +203,9 @@
   /* 小八's own little sound switch (independent of the game's SOUND switch) */
   var sndBtn = document.createElement('button'); sndBtn.className = 'spider-snd'; sndBtn.type = 'button'; sndBtn.textContent = '🕷';
   (document.querySelector('.frame') || document.body).appendChild(sndBtn); /* inside the pink frame, bottom-left corner */
-  function sndLabel(v) { sndBtn.classList.toggle('off', !v); sndBtn.title = sndBtn.ariaLabel = '小八的声音：' + (v ? '开' : '关'); sndBtn.setAttribute('aria-pressed', v ? 'true' : 'false'); }
+  var spiderSoundOn = false;
+  function sndLabel(v) { spiderSoundOn = !!v; sndBtn.classList.toggle('off', !v); var label = spiderLocale() === 'zh-CN' ? '小八的声音：' + (v ? '开' : '关') : spiderText(v ? 'soundOn' : 'soundOff'); sndBtn.title = label; sndBtn.setAttribute('aria-label', label); sndBtn.setAttribute('aria-pressed', v ? 'true' : 'false'); }
+  window.addEventListener('c0-language-change', function () { sndLabel(spiderSoundOn); if (lastSpeech !== null) { bub.textContent = localizeSpeech(lastSpeech); placeBubble(); } });
   if (window.SND && SND.onSpider) SND.onSpider(sndLabel); else sndBtn.hidden = true;
   sndBtn.addEventListener('click', function (e) { e.stopPropagation(); if (window.SND) SND.toggleSpider(); });
   function snd(kind, opt) { if (window.SND && SND.spider) SND.spider(kind, opt); }
@@ -128,8 +299,8 @@
   }
 
   /* ---------- speech ---------- */
-  var sayUntil = 0;
-  function say(text, ms) { var n = String(text).replace(/[^\u4e00-\u9fffA-Za-z]/g, '').length; if (n <= 1) snd('chirp'); else snd('babble', { n: Math.ceil(n / 1.5) }); bub.textContent = text; bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
+  var sayUntil = 0, lastSpeech = null;
+  function say(text, ms) { var n = String(text).replace(/[^\u4e00-\u9fffA-Za-z]/g, '').length; if (n <= 1) snd('chirp'); else snd('babble', { n: Math.ceil(n / 1.5) }); lastSpeech = String(text); bub.textContent = localizeSpeech(lastSpeech); bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
   function placeBubble() {
     var w = bub.offsetWidth, F = FR || { l: 0, t: 0, r: document.documentElement.clientWidth, b: 1e9 };
     var bx = clamp(S.x - w / 2, F.l + 4, F.r - w - 4), by = S.y - S.hop - 26 * K;
