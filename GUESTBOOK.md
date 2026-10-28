@@ -22,7 +22,7 @@
 - `POST /api/guestbook/messages`：JSON `{nickname,message,website:""}`，昵称 1–24 字、留言 1–1000 字。返回 202 待审核。仅允许正式主页 Origin。
 - `GET /api/guestbook/admin/messages?status=pending&page=1`：状态可为 pending/approved/hidden/deleted/all，返回留言、分类数量和分页信息。
 - `PATCH /api/guestbook/admin/messages/{id}`：JSON `{status?,reply?}`；回复最多 1000 字。管理只接受站长 JWT，API key 和其他用户不可访问。
-- 防滥用：4 KB 请求上限、输入检查、蜜罐、每来源地址每小时最多 5 条新留言、10 分钟最多 20 次尝试、10 分钟内相同留言重试去重。
+- 防滥用：8 KB 请求上限、输入检查、蜜罐、每来源地址每小时最多 5 条新留言、10 分钟最多 20 次尝试、10 分钟内相同留言重试去重。
 - 不保存原始 IP；限流用进程内随机盐摘要；nginx 此 API 前缀关闭访问日志。其他服务器日志不属于留言库。
 - 待审核、隐藏和已删除留言及其回复均不从公开接口返回。已打开的页面须刷新留言列表才能反映最新审核状态。
 - 留言没有自动到期清理，后台删除可恢复。
@@ -31,4 +31,4 @@
 
 源码维护包在本机工作区 `site-analytics/`；部署前备份 `/opt/feline1/backups/guestbook-20261028T060153Z/`。后台静态资源 `/var/www/html/admin.html`、`/var/www/html/assets/app.js`。首次部署脚本不可直接作为更新脚本重复执行。
 
-验证：后端5组隔离数据库测试；前端安全文本、分页、输入校验、失败和超时保留输入、成功待审核提示、语言切换测试；上线后浏览器验证提交、审核、回复展示、隐藏和恢复。
+验证：后端6组隔离数据库测试；前端安全文本、分页、输入校验、失败和超时保留输入、成功待审核提示、语言切换测试；上线后浏览器验证提交、审核、回复展示、隐藏和恢复。
