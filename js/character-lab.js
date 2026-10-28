@@ -28,9 +28,34 @@
   var selected=casts.find(function(c){return c.id==='Feline1';})||casts[0];
   var initialUnique=typeof hero.uniqueActions==='function'?hero.uniqueActions(selected.id):[];
   var state=initialUnique.length?initialUnique[0].id:'walk',gaitAction=state,direction='right',playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches,frame=0,speed=1,elapsed=0,last=0,lastPaint=0;
-  var showGrid=false,showLogo=true,showPersonality=false,groundMotion=true,visible=true,comparison=false,referencePromise=null;
+  var showGrid=false,showLogo=true,showPersonality=false,groundMotion=true,comparison=false,referencePromise=null;
   var castViews=[],signatureCastViews=[],directionViews=[],actionViews=[],uniqueViews=[],gaitViews=[],portraitCast=null;
   var stage=$('characterStage'),sg=stage.getContext('2d');
+  var views=new Map(),raf=0,running=false,paintCount=0,gaitMetaKey='',frameUiKey='';
+  // Observe the actual canvases: a visible page section must not keep every
+  // offscreen demonstration rendering. Static sheets never drive the clock.
+  var viewObserver=window.IntersectionObserver?new IntersectionObserver(function(entries){
+    var changed=false;entries.forEach(function(e){var v=views.get(e.target);if(!v)return;var on=e.isIntersecting&&e.intersectionRatio>0;if(v.visible!==on){v.visible=on;changed=true;}});
+    if(changed)paint();else schedule();
+  },{threshold:0.001}):null;
+  function watch(canvas,kind){
+    views.set(canvas,{canvas:canvas,kind:kind,visible:false});
+    if(viewObserver)viewObserver.observe(canvas);
+  }
+  function release(list){list.forEach(function(v){if(viewObserver)viewObserver.unobserve(v.canvas);views.delete(v.canvas);});}
+  function onScreen(canvas){var v=views.get(canvas);return!!(v&&v.visible);}
+  function animated(v){return v.kind!=='cast'&&v.kind!=='gait'&&(v.kind!=='comparison'||comparison);}
+  function hasAnimation(){var found=false;views.forEach(function(v){if(v.visible&&animated(v))found=true;});return found;}
+  function schedule(){
+    if(document.hidden||!playing||!hasAnimation()){
+      if(raf)cancelAnimationFrame(raf);raf=0;running=false;last=0;lastPaint=0;return;
+    }
+    if(!running){running=true;last=0;lastPaint=0;}
+    if(!raf)raf=requestAnimationFrame(loop);
+  }
+  function refreshVisibility(){
+    views.forEach(function(v){var r=v.canvas.getBoundingClientRect();v.visible=r.width>0&&r.height>0&&r.right>0&&r.bottom>0&&r.left<innerWidth&&r.top<innerHeight;});paint();
+  }
   var colour=function(hex){return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)].join(',');};
   var count=function(action){return(selected.kit.states[action]||{count:1}).count;};
   function frameMs(action){return(selected.kit.states[action]||{}).frameMs||(action==='run'?70:action==='walk'?100:170);}
@@ -48,7 +73,7 @@
     var b=document.createElement('button');b.type='button';b.className='cast-card';b.style.setProperty('--cast-color',c.color);b.dataset.id=c.id;b.setAttribute('aria-label','查看 '+c.name);b.setAttribute('aria-pressed','false');
     var canvas=makeCanvas(96,128);canvas.setAttribute('aria-hidden','true');var name=document.createElement('strong');name.textContent=c.name;b.append(canvas,name);
     var icon=window.AIStudioBadges&&AIStudioBadges.createIcon(c.id);if(icon){var mark=document.createElement('span');mark.className='cast-mark';mark.appendChild(icon);b.appendChild(mark);}
-    b.addEventListener('click',function(){select(c);});$('castGrid').appendChild(b);castViews.push({canvas:canvas,button:b,c:c});
+    b.addEventListener('click',function(){select(c);});$('castGrid').appendChild(b);castViews.push({canvas:canvas,button:b,c:c});watch(canvas,'cast');
   }
   function makeSignatureSelector(c){
     var button=document.createElement('button');button.type='button';button.title=c.name;button.dataset.id=c.id;button.style.setProperty('--cast-color',c.color);button.setAttribute('aria-label','查看 '+c.name+' 的特有动作');button.setAttribute('aria-pressed','false');
@@ -73,22 +98,22 @@
     card.addEventListener('click',function(){openPortrait(c);});$('portraitGallery').appendChild(card);
   }
   function makeUniqueControls(){
-    uniqueViews=[];$('uniqueActionControls').replaceChildren();$('uniqueActionGallery').replaceChildren();
+    release(uniqueViews);uniqueViews=[];$('uniqueActionControls').replaceChildren();$('uniqueActionGallery').replaceChildren();
     uniqueActions().forEach(function(a,index){
       var button=document.createElement('button');button.type='button';button.dataset.action=a.id;button.textContent=a.name;button.title=a.description||a.name;button.setAttribute('aria-pressed','false');button.addEventListener('click',function(){chooseAction(a.id);});$('uniqueActionControls').appendChild(button);
       var card=document.createElement('button');card.type='button';card.className='unique-motion-card';card.dataset.action=a.id;card.setAttribute('aria-pressed','false');
       var top=document.createElement('span');top.className='unique-card-top';top.textContent='0'+(index+1)+' / '+selected.name+' ONLY';
       var canvas=makeCanvas(192,224);canvas.setAttribute('aria-hidden','true');var caption=document.createElement('span');caption.className='motion-caption';var name=document.createElement('strong');name.textContent=a.name;var countLabel=document.createElement('small');countLabel.textContent=String(count(a.id)).padStart(2,'0')+'F';caption.append(name,countLabel);
       var description=document.createElement('p');description.textContent=a.description||a.name;card.append(top,canvas,caption,description);
-      card.addEventListener('click',function(){chooseAction(a.id);stage.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});$('uniqueActionGallery').appendChild(card);uniqueViews.push({canvas:canvas,button:card,action:a.id});
+      card.addEventListener('click',function(){chooseAction(a.id);stage.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});$('uniqueActionGallery').appendChild(card);uniqueViews.push({canvas:canvas,button:card,action:a.id});watch(canvas,'unique');
     });
   }
   function makeFrameCards(n){
-    gaitViews=[];$('gaitGallery').replaceChildren();
+    release(gaitViews);gaitViews=[];gaitMetaKey='';$('gaitGallery').replaceChildren();
     for(var i=0;i<n;i++)(function(index){
       var card=document.createElement('button');card.type='button';card.className='gait-card';card.setAttribute('aria-label','检查动作第 '+(index+1)+' 帧');card.setAttribute('aria-pressed','false');
       var canvas=makeCanvas(144,160);canvas.setAttribute('aria-hidden','true');var caption=document.createElement('span');caption.className='gait-caption';var number=document.createElement('strong');number.textContent=String(index+1).padStart(2,'0');var phase=document.createElement('small');caption.append(number,phase);var support=document.createElement('em');card.append(canvas,caption,support);
-      card.addEventListener('click',function(){state=gaitAction;playing=false;frame=index;elapsed=frame*frameMs(state);sync();paint();});$('gaitGallery').appendChild(card);gaitViews.push({canvas:canvas,button:card,phase:phase,support:support,index:index});
+      card.addEventListener('click',function(){state=gaitAction;playing=false;frame=index;elapsed=frame*frameMs(state);sync();paint();});$('gaitGallery').appendChild(card);gaitViews.push({canvas:canvas,button:card,phase:phase,support:support,index:index});watch(canvas,'gait');
     })(i);
   }
   function makeControls(){
@@ -98,17 +123,27 @@
       var b=document.createElement('button');b.type='button';b.textContent=d[1];b.dataset.direction=d[0];b.setAttribute('aria-pressed','false');b.addEventListener('click',function(){direction=d[0];sync();paint();});$('directionControls').appendChild(b);
       var card=document.createElement('button');card.type='button';card.className='direction-card';card.setAttribute('aria-pressed','false');card.dataset.direction=d[0];
       var label=document.createElement('span');label.textContent=d[1];var small=document.createElement('small');small.textContent=d[2];label.appendChild(small);var canvas=makeCanvas(144,160);canvas.setAttribute('aria-hidden','true');card.append(label,canvas);
-      card.addEventListener('click',function(){direction=d[0];sync();paint();});$('directionGallery').appendChild(card);directionViews.push({canvas:canvas,button:card,direction:d[0]});
+      card.addEventListener('click',function(){direction=d[0];sync();paint();});$('directionGallery').appendChild(card);directionViews.push({canvas:canvas,button:card,direction:d[0]});watch(canvas,'direction');
     });
     ACTIONS.forEach(function(a){
       var b=document.createElement('button');b.type='button';b.textContent=a[1];b.dataset.action=a[0];b.setAttribute('aria-pressed','false');b.addEventListener('click',function(){chooseAction(a[0]);});$('actionControls').appendChild(b);
       var card=document.createElement('button');card.type='button';card.className='motion-card';card.setAttribute('aria-pressed','false');card.dataset.action=a[0];
       var canvas=makeCanvas(144,160);canvas.setAttribute('aria-hidden','true');var caption=document.createElement('span');caption.className='motion-caption';var name=document.createElement('strong');name.textContent=a[1];var small=document.createElement('small');small.textContent='';caption.append(name,small);card.append(canvas,caption);
-      card.addEventListener('click',function(){chooseAction(a[0]);stage.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});});$('actionGallery').appendChild(card);actionViews.push({canvas:canvas,button:card,action:a[0],countLabel:small});
+      card.addEventListener('click',function(){chooseAction(a[0]);stage.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});});$('actionGallery').appendChild(card);actionViews.push({canvas:canvas,button:card,action:a[0],countLabel:small});watch(canvas,'action');
     });
   }
   function select(c){var wasUnique=!!uniqueAction(state),changed=c.id!==selected.id;selected=c;if(wasUnique&&changed){var own=uniqueActions();state=own.length?own[0].id:'idle';gaitAction=state;}showPersonality=false;$('personalityToggle').checked=false;frame=0;elapsed=0;makeUniqueControls();sync();paint();}
   function chooseAction(action){state=action;gaitAction=action;frame=0;elapsed=0;showPersonality=false;$('personalityToggle').checked=false;sync();paint();}
+  function gaitMetadata(){
+    var key=[selected.id,gaitAction,direction].join('|');if(key===gaitMetaKey)return;gaitMetaKey=key;
+    gaitViews.forEach(function(v){
+      var locomotion=gaitAction==='walk'||gaitAction==='run',p=locomotion&&window.StudioGait&&StudioGait.sample(gaitAction,v.index),labels={contact:'落脚',down:'承重',passing:'交叉',up:'抬脚'};
+      var phases=(selected.kit.states[gaitAction]||{}).phaseLabels;
+      v.phase.textContent=phases&&phases[v.index]||(p?(p.flight?'腾空':labels[p.phaseName]||p.phaseName):'过渡');
+      v.support.textContent=p?(p.near.planted?'近脚支撑':p.far.planted?'远脚支撑':'双脚腾空'):'';
+      v.button.setAttribute('aria-label','检查'+actionName(gaitAction)+'第 '+(v.index+1)+' 帧，'+v.phase.textContent);
+    });
+  }
   function sync(){
     var note=NOTES[selected.id],n=casts.indexOf(selected)+1;
     document.documentElement.style.setProperty('--accent',selected.color);document.documentElement.style.setProperty('--accent-rgb',colour(selected.color));
@@ -128,6 +163,7 @@
     actionViews.forEach(function(v){v.countLabel.textContent=String(count(v.action)).padStart(2,'0')+'F';});
     document.querySelectorAll('[data-gait]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.gait===gaitAction));});
     if(gaitViews.length!==count(gaitAction))makeFrameCards(count(gaitAction));
+    gaitMetadata();frameUiKey='';
     $('gaitTitle').textContent=count(gaitAction)+' 帧动作分解 · '+actionName(gaitAction);
     document.querySelectorAll('[data-gait]').forEach(function(b){b.textContent=actionName(b.dataset.gait)+' · '+count(b.dataset.gait)+' 帧';});
     $('sheetHelp').textContent=count(state)+' 列动作帧 × 4 行朝向 · '+selected.kit.width*count(state)+' × '+selected.kit.height*4+' 透明 PNG；正面、右前、左前、背面。';
@@ -174,37 +210,41 @@
     return Math.floor(((time%cycle)+cycle)%cycle/cycle*8)%8;
   }
   function paintComparison(){
-    if(!comparison||!window.StudioReference8)return;
+    if(!comparison||!window.StudioReference8||(!onScreen($('comparison8'))&&!onScreen($('comparison12'))))return;
     var oldKit=selected.kit===hero?StudioReference8.heroes:StudioReference8.ai;
     var oldIndex=referenceFrame();
     [['comparison8',oldKit,oldIndex],['comparison12',selected.kit,frame]].forEach(function(v){
-      var canvas=$(v[0]),ctx=canvas.getContext('2d'),scale=4,w=v[1].width*scale,h=v[1].height*scale,x=Math.round((canvas.width-w)/2),y=291-h;
+      var canvas=$(v[0]);if(!onScreen(canvas))return;
+      var key=[selected.id,state,v[2],direction].join('|');if(canvas.dataset.poseKey===key)return;canvas.dataset.poseKey=key;
+      var ctx=canvas.getContext('2d'),scale=4,w=v[1].width*scale,h=v[1].height*scale,x=Math.round((canvas.width-w)/2),y=291-h;
       ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#26374c';ctx.fillRect(44,291,272,1);ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(132,286,96,5);
       v[1].draw(ctx,selected.id,state,v[2],x,y,w,direction==='left',direction);
     });
-    $('comparison8Counter').textContent=String(oldIndex+1).padStart(2,'0')+' / 08';
-    $('comparison12Counter').textContent=String(frame+1).padStart(2,'0')+' / '+count(state);
-    $('comparisonCycle').textContent='两边每轮均为 '+(frameMs(state)*count(state)/1000).toFixed(2)+' 秒';
+    var oldText=String(oldIndex+1).padStart(2,'0')+' / 08',newText=String(frame+1).padStart(2,'0')+' / '+count(state),cycleText='两边每轮均为 '+(frameMs(state)*count(state)/1000).toFixed(2)+' 秒';
+    if($('comparison8Counter').textContent!==oldText)$('comparison8Counter').textContent=oldText;
+    if($('comparison12Counter').textContent!==newText)$('comparison12Counter').textContent=newText;
+    if($('comparisonCycle').textContent!==cycleText)$('comparisonCycle').textContent=cycleText;
   }
   function loadReference(){
     if(window.StudioReference8)return Promise.resolve();if(referencePromise)return referencePromise;
     referencePromise=new Promise(function(resolve,reject){var script=document.createElement('script');script.src='js/studio-reference8.js?v=20261028twelve9';script.onload=resolve;script.onerror=function(){referencePromise=null;script.remove();reject(new Error('reference unavailable'));};document.head.appendChild(script);});return referencePromise;
   }
   function paint(){
-    stageFrame();paintComparison();$('frameScrubber').value=frame;$('frameCounter').textContent=String(frame+1).padStart(2,'0')+' / '+String(count(state)).padStart(2,'0');
-    castViews.forEach(function(v){smallView(v.canvas,v.c,'idle',0,'front',2);});
-    directionViews.forEach(function(v){smallView(v.canvas,selected,state,frame,v.direction,2);});
-    actionViews.forEach(function(v){var n=count(v.action),index=playing?Math.floor(elapsed/frameMs(v.action))%n:frame%n;smallView(v.canvas,selected,v.action,index,direction,2);});
-    uniqueViews.forEach(function(v){var n=count(v.action),index=playing?Math.floor(elapsed/frameMs(v.action))%n:frame%n;smallView(v.canvas,selected,v.action,index,direction,3);});
+    if(document.hidden){schedule();return;}
+    paintCount++;if(onScreen(stage))stageFrame();paintComparison();
+    var key=[state,gaitAction,frame,count(state)].join('|');
+    if(frameUiKey!==key){
+      frameUiKey=key;$('frameScrubber').value=frame;$('frameCounter').textContent=String(frame+1).padStart(2,'0')+' / '+String(count(state)).padStart(2,'0');
+      gaitViews.forEach(function(v){var pressed=String(state===gaitAction&&frame===v.index);if(v.button.getAttribute('aria-pressed')!==pressed)v.button.setAttribute('aria-pressed',pressed);});
+    }
+    castViews.forEach(function(v){if(onScreen(v.canvas))smallView(v.canvas,v.c,'idle',0,'front',2);});
+    directionViews.forEach(function(v){if(onScreen(v.canvas))smallView(v.canvas,selected,state,frame,v.direction,2);});
+    actionViews.forEach(function(v){if(!onScreen(v.canvas))return;var n=count(v.action),index=playing?Math.floor(elapsed/frameMs(v.action))%n:frame%n;smallView(v.canvas,selected,v.action,index,direction,2);});
+    uniqueViews.forEach(function(v){if(!onScreen(v.canvas))return;var n=count(v.action),index=playing?Math.floor(elapsed/frameMs(v.action))%n:frame%n;smallView(v.canvas,selected,v.action,index,direction,3);});
     gaitViews.forEach(function(v){
-      smallView(v.canvas,selected,gaitAction,v.index,direction,2);
-      var locomotion=gaitAction==='walk'||gaitAction==='run',p=locomotion&&window.StudioGait&&StudioGait.sample(gaitAction,v.index),labels={contact:'落脚',down:'承重',passing:'交叉',up:'抬脚'};
-      var phases=(selected.kit.states[gaitAction]||{}).phaseLabels;
-      v.phase.textContent=phases&&phases[v.index]|| (p?(p.flight?'腾空':labels[p.phaseName]||p.phaseName):'过渡');
-      v.support.textContent=p?(p.near.planted?'近脚支撑':p.far.planted?'远脚支撑':'双脚腾空'):'';
-      v.button.setAttribute('aria-label','检查'+actionName(gaitAction)+'第 '+(v.index+1)+' 帧，'+v.phase.textContent);
-      v.button.setAttribute('aria-pressed',String(state===gaitAction&&frame===v.index));
+      if(onScreen(v.canvas))smallView(v.canvas,selected,gaitAction,v.index,direction,2);
     });
+    schedule();
   }
   function step(delta){playing=false;frame=(frame+delta+count(state))%count(state);sync();paint();}
   function togglePlay(){playing=!playing;elapsed=frame*frameMs(state);sync();paint();}
@@ -223,21 +263,22 @@
     var a=document.createElement('a');a.download=(selected.name+'-'+state+'-4directions-'+n+'frames.png').toLowerCase();a.href=c.toDataURL('image/png');a.click();
   });
   $('comparisonToggle').addEventListener('click',function(){
-    var button=this;if(comparison){comparison=false;$('comparisonBoard').hidden=true;button.textContent='开启对照';button.setAttribute('aria-expanded','false');return;}
+    var button=this;if(comparison){comparison=false;$('comparisonBoard').hidden=true;button.textContent='开启对照';button.setAttribute('aria-expanded','false');schedule();return;}
     button.disabled=true;button.textContent='正在准备…';loadReference().then(function(){comparison=true;$('comparisonBoard').hidden=false;button.disabled=false;button.textContent='收起对照';button.setAttribute('aria-expanded','true');paint();}).catch(function(){button.disabled=false;button.textContent='加载失败，点此重试';});
   });
   $('closePortrait').addEventListener('click',function(){$('portraitDialog').close();});
   $('portraitDialog').addEventListener('click',function(e){if(e.target===this){var r=this.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.close();}});
   $('portraitMotion').addEventListener('click',function(){if(!portraitCast)return;select(portraitCast);$('portraitDialog').close();stage.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});stage.focus({preventScroll:true});});
+  watch(stage,'stage');watch($('comparison8'),'comparison');watch($('comparison12'),'comparison');
   casts.forEach(makeCharacterButton);casts.forEach(makeSignatureSelector);casts.forEach(makePortrait);makeControls();makeUniqueControls();sync();paint();
   function loop(ts){
-    requestAnimationFrame(loop);if(!last)last=ts;var dt=Math.min(120,ts-last);last=ts;
-    if(document.hidden||!visible||!playing)return;elapsed+=dt*speed;
-    if(ts-lastPaint<1000/30)return;lastPaint=ts;frame=Math.floor(elapsed/frameMs(state))%count(state);paint();
+    raf=0;if(document.hidden||!playing||!hasAnimation()){running=false;last=0;lastPaint=0;return;}
+    if(!last)last=ts;var dt=Math.min(120,ts-last);last=ts;elapsed+=dt*speed;
+    if(ts-lastPaint>=1000/30){lastPaint=ts;frame=Math.floor(elapsed/frameMs(state))%count(state);paint();}
+    schedule();
   }
-  document.addEventListener('visibilitychange',function(){last=0;});
+  document.addEventListener('visibilitychange',function(){last=0;if(!document.hidden)paint();else schedule();});
   var motion=window.matchMedia('(prefers-reduced-motion: reduce)');if(motion.addEventListener)motion.addEventListener('change',function(e){if(e.matches){playing=false;sync();paint();}});
-  if(window.IntersectionObserver)new IntersectionObserver(function(entries){visible=entries.some(function(e){return e.isIntersecting;});}).observe(document.querySelector('main'));
-  requestAnimationFrame(loop);
-  window.CharacterLab={snapshot:function(){return{selected:selected.id,name:selected.name,state:state,actionKind:uniqueAction(state)?'unique':'common',direction:direction,frame:frame,count:count(state),frameMs:frameMs(state),cycleMs:frameMs(state)*count(state),playing:playing,speed:speed,grid:showGrid,logo:showLogo,personality:showPersonality,groundMotion:groundMotion,gaitAction:gaitAction,comparison:comparison,referenceFrame:comparison?referenceFrame():null,width:selected.kit.width,height:selected.kit.height,characters:casts.length,commonActions:ACTIONS.length,uniqueActions:uniqueActions().map(function(a){return{id:a.id,name:a.name};}),actions:ACTIONS.length+uniqueActions().length};}};
+  if(!viewObserver){window.addEventListener('scroll',refreshVisibility,{passive:true});window.addEventListener('resize',refreshVisibility);refreshVisibility();}
+  window.CharacterLab={snapshot:function(){var onscreen=0,animations=0;views.forEach(function(v){if(v.visible){onscreen++;if(animated(v))animations++;}});return{selected:selected.id,name:selected.name,state:state,actionKind:uniqueAction(state)?'unique':'common',direction:direction,frame:frame,count:count(state),frameMs:frameMs(state),cycleMs:frameMs(state)*count(state),playing:playing,speed:speed,grid:showGrid,logo:showLogo,personality:showPersonality,groundMotion:groundMotion,gaitAction:gaitAction,comparison:comparison,referenceFrame:comparison?referenceFrame():null,width:selected.kit.width,height:selected.kit.height,characters:casts.length,commonActions:ACTIONS.length,uniqueActions:uniqueActions().map(function(a){return{id:a.id,name:a.name};}),actions:ACTIONS.length+uniqueActions().length,running:running,visibleCanvases:onscreen,visibleAnimations:animations,paints:paintCount};}};
 })();

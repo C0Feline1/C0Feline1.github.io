@@ -299,17 +299,21 @@
   }
 
   /* ---------- speech ---------- */
-  var sayUntil = 0, lastSpeech = null;
+  var sayUntil = 0, lastSpeech = null, bubbleLayout = null, fontEpoch = 0;
   function say(text, ms) { var n = String(text).replace(/[^\u4e00-\u9fffA-Za-z]/g, '').length; if (n <= 1) snd('chirp'); else snd('babble', { n: Math.ceil(n / 1.5) }); lastSpeech = String(text); bub.textContent = localizeSpeech(lastSpeech); bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
   function placeBubble() {
     var F = FR || { l: 0, t: 0, r: document.documentElement.clientWidth, b: 1e9 };
-    bub.style.maxWidth = Math.max(80, F.r - F.l - 8) + 'px';
-    var w = bub.offsetWidth;
+    var maxWidth = Math.max(80, F.r - F.l - 8), layoutKey = bub.textContent + '|' + maxWidth + '|' + fontEpoch;
+    if (!bubbleLayout || bubbleLayout.key !== layoutKey) {
+      bub.style.maxWidth = maxWidth + 'px';
+      bubbleLayout = { key: layoutKey, w: bub.offsetWidth, h: bub.offsetHeight };
+    }
+    var w = bubbleLayout.w, h = bubbleLayout.h;
     var bx = clamp(S.x - w / 2, F.l + 4, F.r - w - 4), by = S.y - S.hop - 26 * K;
     /* keep the bubble off the header clock/ticker: flip it below 小八 when it would overlap the top bar */
-    var hd = document.querySelector('.top'); if (hd) { var hr = hd.getBoundingClientRect(), hb = hr.bottom + window.scrollY; if (by < hb + 4 && S.y < hb + 140) by = S.y + 14 * K; }
-    by = clamp(by, F.t + 4, F.b - bub.offsetHeight - 12);
-    var h = bub.offsetHeight, spots = [[bx, by], [bx, S.y + 14 * K],
+    if (headerRect) { var hb = headerRect.b; if (by < hb + 4 && S.y < hb + 140) by = S.y + 14 * K; }
+    by = clamp(by, F.t + 4, F.b - h - 12);
+    var spots = [[bx, by], [bx, S.y + 14 * K],
       [S.x - w - 20 * K, S.y - h / 2], [S.x + 20 * K, S.y - h / 2]];
     var safe = spots.map(function (p) { return [clamp(p[0], F.l + 4, F.r - w - 4), clamp(p[1], F.t + 4, F.b - h - 12)]; })
       .filter(function (p) { return !overlapsProtected({ l: p[0] - 3, t: p[1] - 3, r: p[0] + w + 4, b: p[1] + h + 9 }, 2); })[0];
@@ -319,14 +323,20 @@
 
   /* Whole-body avoidance plus a shared exclusion mask for every decorative effect. */
   var NG = null, protectedRects = [], clipSignature = '', FR = null, P = 18 * K;
+  var frameNode = document.querySelector('.frame'), headerNode = document.querySelector('.top'), headerRect = null, geometryDirty = true;
+  var spinNode = window.AdSpin && AdSpin.el || document.getElementById('adSpin'), pinwheelCenter = null;
+  var protectedNodes = [document.querySelector('.arcade > .panel') || document.querySelector('.gba'), document.querySelector('.cam') || document.getElementById('studio')].filter(Boolean);
   function pageRect(e) { var r = e.getBoundingClientRect(); return { l: r.left + window.scrollX, t: r.top + window.scrollY, r: r.right + window.scrollX, b: r.bottom + window.scrollY }; }
-  function refreshNoGo() {
-    var e = document.querySelector('.arcade > .panel') || document.querySelector('.gba');
-    protectedRects = [e, document.querySelector('.cam') || document.getElementById('studio')].filter(function (node) {
-      return node && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0;
-    }).map(pageRect);
+  function invalidateGeometry() { geometryDirty = true; }
+  function refreshNoGo(force) {
+    if (force === false && !geometryDirty) return;
+    geometryDirty = false;
+    protectedRects = protectedNodes.map(pageRect).filter(function (r) { return r.r > r.l && r.b > r.t; });
     NG = protectedRects[0] || null;
-    var f = document.querySelector('.frame'), nf = f ? pageRect(f) : null;
+    headerRect = headerNode ? pageRect(headerNode) : null;
+    var spinRect = spinNode ? pageRect(spinNode) : null;
+    pinwheelCenter = spinRect && spinRect.r > spinRect.l ? [(spinRect.l + spinRect.r) / 2, (spinRect.t + spinRect.b) / 2, (spinRect.r - spinRect.l) * .42] : null;
+    var nf = frameNode ? pageRect(frameNode) : null;
     if (nf && (!FR || nf.l !== FR.l || nf.t !== FR.t || nf.r !== FR.r || nf.b !== FR.b)) {
       FR = nf;
       layer.style.cssText = 'left:' + FR.l + 'px;top:' + FR.t + 'px;width:' + (FR.r - FR.l) + 'px;height:' + (FR.b - FR.t) + 'px';
@@ -348,6 +358,28 @@
         layer.style.webkitClipPath = layer.style.clipPath;
       }
     }
+  }
+  // Keep the exclusion mask current when layout changes, rather than forcing
+  // layout reads after every animation frame's transform writes.
+  var geometryNodes = protectedNodes.concat([frameNode, headerNode, spinNode]).filter(Boolean);
+  if (window.ResizeObserver) {
+    var geometryObserver = new ResizeObserver(invalidateGeometry);
+    geometryNodes.forEach(function (node) { geometryObserver.observe(node); });
+  } else setInterval(invalidateGeometry, 250);
+  if (window.MutationObserver) {
+    var geometryAttributes = new MutationObserver(invalidateGeometry);
+    [document.documentElement].concat(geometryNodes).forEach(function (node) {
+      geometryAttributes.observe(node, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    });
+  }
+  window.addEventListener('scroll', invalidateGeometry, { capture: true, passive: true });
+  window.addEventListener('pageshow', invalidateGeometry);
+  document.addEventListener('visibilitychange', invalidateGeometry);
+  window.addEventListener('c0-language-change', invalidateGeometry);
+  function fontsChanged() { fontEpoch++; invalidateGeometry(); }
+  if (document.fonts) {
+    document.fonts.ready.then(fontsChanged);
+    if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fontsChanged);
   }
   function inFrame(x, y, m) { return !FR || (x > FR.l + m && x < FR.r - m && y > FR.t + m && y < FR.b - m); }
   function noGo(pad) { return NG ? { l: NG.l - pad, t: NG.t - pad, r: NG.r + pad, b: NG.b + pad } : null; }
@@ -667,9 +699,7 @@
   /* ---------- the AD SPACE pinwheel: touch it and get flung away (toss physics), then recover ---------- */
   var lastFling = -1e9;
   function spinCenter() {
-    var el = window.AdSpin && AdSpin.el; if (!el) return null;
-    var r = el.getBoundingClientRect(); if (!r.width) return null;
-    return [r.left + window.scrollX + r.width / 2, r.top + window.scrollY + r.height / 2, r.width * 0.42];
+    return pinwheelCenter;
   }
   function checkSpin(now) {
     if (CALM[S.mode] || S.scale < 0.9 || now - lastFling < 3000) return;
@@ -714,7 +744,7 @@
     requestAnimationFrame(tick);
     var dt = Math.min(3, (now - lastT) / 16.67); lastT = now;
     if (document.hidden) return;
-    refreshNoGo(); S.t += dt; updateDirt(dt);
+    refreshNoGo(false); S.t += dt; updateDirt(dt);
     if (onScreen(S.x, S.y)) {
       if (S.mode !== sndMode) { var M = { swing: 'swing', dangle: 'swing', dig: 'dig', weave: 'web', wave: 'wave', dance: 'dance' }; if (M[S.mode]) snd(M[S.mode]); sndMode = S.mode; sndT = 0; }
       sndT += dt;
