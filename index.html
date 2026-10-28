@@ -42,6 +42,7 @@
 })();
 </script>
 <style>
+  @font-face { font-family: 'Fusion Pixel'; src: url('media/studio/fonts/fusion-pixel-12px-zh_hans.woff2') format('woff2'); font-display: swap; }
   :root {
     --pink: #ff4fa3; --pink2: #ff9fc4; --cyan: #4fe3ff; --violet: #b48cff; --gold: #ffd45e; --green: #5dff8f; --red: #ff4f6a;
     --bg: #07050d; --panel: #0e0a18; --panel2: #140f22; --line: #2a1f3d; --dim: #8b7fa8; --text: #f2ecff;
@@ -110,6 +111,10 @@
   .studio-caption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .studio-caption a { flex: none; color: var(--dim); }
   .studio-links { display: flex; flex: none; gap: 10px; }
+  .studio-audio { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:5px 0; color:var(--dim); font-size:10px; }
+  .studio-audio button { border:1px solid var(--line); background:#171124; color:var(--dim); font:inherit; padding:3px 6px; cursor:pointer; }
+  .studio-audio button[aria-pressed="true"] { color:var(--cyan); border-color:var(--cyan); }
+  .studio-audio input { width:70px; height:14px; margin:0; accent-color:var(--pink); }
   .studio-hint { margin: 4px 0 0; color: var(--dim); font-size: 10px; }
   .studio-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media (max-width: 520px) { .studio-controls { padding: 5px 6px; } .studio-roster-row > button { font-size: 10px; padding: 4px 5px; } .studio-hint { line-height: 1.4; } }
@@ -556,7 +561,8 @@
           <div class="studio-roster" id="studioRoster" role="group" data-i18n-aria-label="studio.rosterLabel" aria-label="选择角色"></div>
           <button type="button" id="studioPhoto" data-i18n="studio.photo">全员合照</button>
         </div>
-        <div class="studio-caption"><span id="studioStatus" role="status" aria-live="polite"></span><div class="studio-links"><a href="studio-characters.html" target="_blank" rel="noopener" data-i18n="studio.gallery">角色图鉴 ↗</a><a href="media/ai-studio/README.md" target="_blank" rel="noopener" data-i18n="studio.credit">形象来源</a></div></div>
+        <div class="studio-audio"><button type="button" id="studioSound" aria-pressed="false">演出声音：关</button><label for="studioVolume">音量</label><input id="studioVolume" type="range" min="0" max="100" value="25" aria-label="演出音量"><span id="studioSoundStatus" class="studio-sr" role="status" aria-live="polite"></span></div>
+        <div class="studio-caption"><span id="studioStatus" role="status" aria-live="polite"></span><div class="studio-links"><a href="studio-credits.html" target="_blank" rel="noopener" data-i18n="studio.credit">形象来源</a></div></div>
         <p class="studio-hint" id="studioHint" data-i18n="studio.hint">点标记切换跟随 · 点地面带伙伴逛逛 · 双击角色看拿手动作</p>
         <span id="studioKeys" class="studio-sr" data-i18n="studio.keys">← → 移动 · Shift 跑步 · 空格 暂停</span>
       </div>
@@ -655,20 +661,24 @@
 <script src="js/audio.js?v=20261018m"></script>
 <script src="js/game.js?v=20261022e"></script>
 <script src="js/music.js?v=20261018o"></script>
-<script src="js/logs.js?v=20261028director10"></script>
+<script src="js/studio-cast.js?v=20261028ensemble16"></script>
+<script src="js/logs.js?v=20261028ensemble16"></script>
 <script src="js/i18n.js?v=20261028workspace11"></script>
 <script src="js/dash.js?v=20261028workspace11"></script>
 <script src="js/studio-room.js?v=20261028studio2"></script>
-<script src="js/studio-world.js?v=20261028workspace11"></script>
+<script src="js/studio-world.js?v=20261028ensemble16"></script>
 <script src="js/studio-navigation.js?v=20261028workspace11"></script>
 <script src="js/studio-motion.js?v=20261028twelve9"></script>
-<script src="js/studio-gait.js?v=20261028twelve9"></script>
-<script src="js/studio-heroes.js?v=20261028turn13"></script>
-<script src="js/ai-sprites.js?v=20261028anatomy13"></script>
+<script src="js/studio-gait.js?v=20261028wrist14"></script>
+<script src="js/studio-expressions.js?v=20261028faces15"></script>
+<script src="js/studio-heroes.js?v=20261028faces15"></script>
+<script src="js/ai-sprites.js?v=20261028faces15"></script>
 <script src="js/ai-badges.js?v=20261028polish7"></script>
-<script src="js/studio-personality.js?v=20261028studio2"></script>
-<script src="js/studio-director.js?v=20261028workspace11"></script>
-<script src="js/studio.js?v=20261028workspace11"></script>
+<script src="js/studio-personality.js?v=20261028ensemble16"></script>
+<script src="js/studio-director.js?v=20261028ensemble16"></script>
+<script src="js/studio-performance.js?v=20261028ensemble16"></script>
+<script src="js/studio-voice.js?v=20261028ensemble16"></script>
+<script src="js/studio.js?v=20261028ensemble16"></script>
 <script src="js/spider.js?v=20261028efficient12"></script>
 <script src="js/board.js?v=20261018p"></script>
 <script src="js/guestbook.js?v=20261028f" defer></script>

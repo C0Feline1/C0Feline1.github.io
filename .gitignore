@@ -1,0 +1,13 @@
+.DS_Store
+/.deepseekv4flash_*
+
+# The character art workbench and authoring sources stay on this computer.
+/studio-characters.html
+/js/character-lab.js
+/js/studio-reference8.js
+/media/ai-studio/
+/local-studio/
+/action-proposals/
+/STUDIO.md
+/tools/build_ai_sprites.py
+/tools/build_studio_portraits.py

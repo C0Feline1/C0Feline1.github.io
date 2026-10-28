@@ -43,7 +43,8 @@
     }
     function emit(job, type, phase, extra) {
       if (!options.onEvent) return;
-      var detail = { type: type, phase: phase, actors: job.actors.map(function (a) { return a.id; }), action: job.actions[0], scene: job.story ? job.story.id : null, stage: job.stage || 0, job: job.id };
+      var detail = { type: type, phase: phase, actors: job.actors.map(function (a) { return a.id; }), action: job.actions[0], scene: job.story ? job.story.id : null, performance: job.performance ? job.performance.id : null, stage: job.stage || 0, job: job.id };
+      if (job.performance) { var beat = job.performance.beats[job.stage]; detail.line = beat.line; detail.label = beat.label; }
       if (extra) Object.keys(extra).forEach(function (key) { detail[key] = extra[key]; });
       options.onEvent(detail);
     }
@@ -91,14 +92,17 @@
     }
     function startStage(job, stage) {
       job.phase = 'perform'; job.stage = stage; job.startMs = now;
+      if (stage === 0) job.performanceStartMs = now;
       if (job.story && stage === 0) { firstStory = false; storyStarted[job.story.id]++; }
-      var spec = job.story ? job.story.stages[stage] : { actions: job.actions, delays: [0], moods: [job.mood] };
+      var beat = job.performance && job.performance.beats[stage];
+      var spec = job.story ? job.story.stages[stage] : { actions: [beat ? beat.pose : job.actions[0]], delays: [0], moods: [job.mood] };
       job.actions = spec.actions.slice(); job.delays = spec.delays.slice(); job.moods = spec.moods.slice();
-      job.loops = job.actions.map(function () { return 2; });
-      job.durations = job.actions.map(function (state, i) { return cycle(job.actors[i], state) * job.loops[i]; });
+      job.loops = job.actions.map(function () { return beat ? beat.playback === 'loop' ? Infinity : 1 : 2; });
+      job.durations = job.actions.map(function (state, i) { return beat ? beat.seconds * 1000 : cycle(job.actors[i], state) * job.loops[i]; });
       job.endMs = now + Math.max.apply(null, job.durations.map(function (duration, i) { return duration + job.delays[i]; }));
       orient(job);
-      if (!job.story) {
+      if (job.performance && stage === 0) job.mainDirection = job.actors[0].direction;
+      if (!job.story && stage === 0) {
         var a = job.actors[0]; nextAction[a.id] = (nextAction[a.id] + 1) % Math.max(1, signatures(a).length); played[a.id]++;
       }
       emit(job, job.story ? 'scene' : 'perform', stage ? 'stage-start' : 'start');
@@ -115,9 +119,11 @@
     function solo(a, ctx, manual) {
       if (!a || jobs.some(function (j) { return !!j.story; }) || jobs.length >= 2 || !manual && !free(a, ctx, false)) return false;
       var list = signatures(a); if (!list.length) return false;
-      var state = list[nextAction[a.id] % list.length].id, target = destination(a, ctx, state);
+      var performance = window.StudioCast && StudioCast.story(a.id);
+      if (performance && !performance.beats.every(function (beat) { return cycle(a, beat.pose) > 0; })) return false;
+      var state = performance ? performance.beats[0].pose : list[nextAction[a.id] % list.length].id, target = destination(a, ctx, state);
       if (!pointValid(target) || !cycle(a, state)) return false;
-      return prepare({ id: ++serial, actors: [a], story: null, phase: 'approach', actions: [state], targets: [target], saved: [{ direction: a.direction, facingLeft: a.facingLeft }], createdMs: now, approachUntil: now + 20000, manual: !!manual, mood: ['symbols', 'music', 'heart'][nextAction[a.id] % 3] });
+      return prepare({ id: ++serial, actors: [a], story: null, performance: performance, phase: 'approach', actions: [state], targets: [target], saved: [{ direction: a.direction, facingLeft: a.facingLeft }], createdMs: now, approachUntil: now + 20000, manual: !!manual, mood: ['symbols', 'music', 'heart'][nextAction[a.id] % 3] });
     }
     function duo(ctx) {
       if (jobs.length || ctx.pairActive || !options.findStage) return false;
@@ -154,7 +160,8 @@
         } else if (job.actors.some(isMoving)) remove(job, true, 'host-navigation');
         else if (now >= job.endMs) {
           emit(job, job.story ? 'scene' : 'perform', 'stage', { complete: true });
-          if (job.story && job.stage + 1 < job.story.stages.length) startStage(job, job.stage + 1);
+          if (job.performance && job.stage + 1 < job.performance.beats.length) startStage(job, job.stage + 1);
+          else if (job.story && job.stage + 1 < job.story.stages.length) startStage(job, job.stage + 1);
           else { emit(job, job.story ? 'scene' : 'perform', 'complete'); remove(job, false); }
         }
       });
@@ -180,10 +187,29 @@
       var a = actor(value), job = a && jobs.filter(function (j) { return j.actors.indexOf(a) >= 0; })[0];
       if (!job || job.phase !== 'perform') return null;
       var sampleMs = finite(atMs, now);
-      var i = job.actors.indexOf(a), elapsed = sampleMs - job.startMs - job.delays[i], state = job.actions[i], timing = meta(a, state), complete = elapsed >= job.durations[i];
-      var waiting = elapsed < 0 || complete;
+      var i = job.actors.indexOf(a), elapsed = Math.max(0, sampleMs - job.startMs - job.delays[i]);
+      var state = job.actions[i], timing = meta(a, state), beat = job.performance && job.performance.beats[job.stage];
+      if (beat) {
+        var frameAt = function (spec, local) {
+          var data = meta(a, spec.pose), frame = Math.floor(Math.max(0, local) / data.frameMs);
+          return spec.playback === 'loop' ? frame % data.count : Math.min(data.count - 1, frame);
+        };
+        var frame;
+        if (beat.playback === 'hold' && job.stage > 0) {
+          var previous = job.performance.beats[job.stage - 1];
+          frame = frameAt(previous, previous.seconds * 1000 - .01);
+        } else frame = frameAt(beat, elapsed);
+        var total = job.performance.beats.reduce(function (sum, item) { return sum + item.seconds * 1000; }, 0);
+        return { isDirector: true, job: job.id, state: state, action: state, frame: frame,
+          direction: beat.facing === 'front' ? 'front' : job.mainDirection, mainDirection: job.mainDirection,
+          mood: null, expression: beat.expression, waiting: beat.playback === 'hold', loops: Math.floor(elapsed / Math.max(1, cycle(a, state))),
+          startMs: job.startMs, scene: null, performance: a.id, stage: job.stage, effect: beat.effect,
+          line: beat.line, label: beat.label, title: job.performance.title, localMs: elapsed, seconds: beat.seconds,
+          progress: Math.min(1, elapsed / (beat.seconds * 1000)), storyProgress: Math.max(0, Math.min(1, (sampleMs - job.performanceStartMs) / total)), beat: beat };
+      }
+      var complete = elapsed >= job.durations[i], waiting = sampleMs < job.startMs + job.delays[i] || complete;
       if (waiting) { state = 'idle'; timing = meta(a, state); }
-      var local = elapsed < 0 ? sampleMs - job.startMs : complete ? elapsed - job.durations[i] : elapsed;
+      var local = sampleMs < job.startMs + job.delays[i] ? sampleMs - job.startMs : complete ? elapsed - job.durations[i] : elapsed;
       var frame = timing ? Math.floor(Math.max(0, local) / timing.frameMs) % timing.count : 0;
       var speaking = !job.story || (sampleMs - job.startMs) / Math.max(1, job.endMs - job.startMs) < .5 ? i === 0 : i === 1;
       return { isDirector: true, job: job.id, state: state, action: job.actions[i], frame: frame, direction: a.direction, mood: speaking ? job.moods[i] : null, waiting: waiting, loops: Math.min(job.loops[i], Math.max(0, Math.floor(elapsed / Math.max(1, cycle(a, job.actions[i]))))), startMs: job.startMs + job.delays[i], scene: job.story ? job.story.id : null, stage: job.stage };
@@ -203,7 +229,7 @@
     }
     function snapshot() {
       return { tick: tick, timeMs: now, nextSolo: nextSolo, nextDuo: nextDuo, pending: pending ? { actor: pending.actor.id, expiresMs: pending.expiresMs } : null,
-        jobs: jobs.map(function (job) { return { id: job.id, type: job.story ? 'duo' : 'solo', scene: job.story ? job.story.id : null, phase: job.phase, stage: job.stage || 0, actions: job.actions.slice(), actors: job.actors.map(function (a) { return a.id; }), targets: job.targets.map(function (p) { return { x: p.x, y: p.y }; }), startMs: job.startMs === undefined ? null : job.startMs, remainingMs: Math.max(0, (job.phase === 'approach' ? job.approachUntil : job.endMs) - now), poses: job.actors.map(function (a) { return pose(a); }) }; }),
+        jobs: jobs.map(function (job) { return { id: job.id, type: job.story ? 'duo' : 'solo', scene: job.story ? job.story.id : null, performance: job.performance ? job.performance.id : null, phase: job.phase, stage: job.stage || 0, actions: job.actions.slice(), actors: job.actors.map(function (a) { return a.id; }), targets: job.targets.map(function (p) { return { x: p.x, y: p.y }; }), startMs: job.startMs === undefined ? null : job.startMs, remainingMs: Math.max(0, (job.phase === 'approach' ? job.approachUntil : job.endMs) - now), poses: job.actors.map(function (a) { return pose(a); }) }; }),
         played: Object.assign({}, played), nextAction: Object.assign({}, nextAction), storyStarted: Object.assign({}, storyStarted) };
     }
     return { update: update, pose: pose, owns: owns, cancel: cancel, cancelAll: function (reason) { return cancel(null, reason); }, requestSolo: requestSolo, snapshot: snapshot };

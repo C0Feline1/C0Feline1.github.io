@@ -109,6 +109,8 @@
     Feline1: 'F1', C0: 'C0', X0: 'X0', gpt: 'GPT', deepseek: 'DeepSeek',
     claude: 'Claude', grok: 'Grok', gemini: 'Gemini', kimi: 'Kimi', doubao: 'Doubao'
   };
+  function studioName(id){return window.StudioCast?StudioCast.name(id):studioNames[id];}
+  function studioText(value){return window.StudioCast?StudioCast.localizeText(value):String(value||'').replace(/\bFeline1\b/g,'F1');}
   var studioKinds = { work: 'c', walk: 'p', chat: 'p', heart: 'p', photo: 'ok', visit: 'p', quirk: 'p', perform: 'p', scene: 'ok' };
   var studioSignatureOwners = Object.create(null);
   var studioSignatureGroups = {
@@ -147,8 +149,8 @@
     stamp.className = 't';
     stamp.textContent = '[' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + '] ';
     speech.className = 'p'; speech.textContent = i18n.log('studio.dialogue.entry', {
-      name: id === 'doubao' && i18n.getLocale() === 'zh-CN' ? '豆包' : studioNames[id],
-      line: i18n.log('studio.dialogue.' + id)
+      name: studioName(id),
+      line: window.StudioCast&&StudioCast.get(id)&&i18n.getLocale()==='zh-CN'?StudioCast.get(id).beats[3].line:studioText(i18n.log('studio.dialogue.' + id))
     });
     line.appendChild(stamp); line.appendChild(speech);
     var cursor = terminal.querySelector('.cursor'); terminal.insertBefore(line, cursor);
@@ -183,8 +185,11 @@
     // a new log entry. Accept only known actions and the cast of that scene.
     if (isDirected) {
       if (detail.phase && detail.phase !== 'start') return;
-      if (isPerform && (ids.length !== 1 || !Object.prototype.hasOwnProperty.call(studioSignatureOwners, detail.action) ||
-          studioSignatureOwners[detail.action] !== ids[0])) return;
+      if (isPerform) {
+        var performance=window.StudioCast&&StudioCast.story(ids[0]);
+        var approved=performance&&detail.performance===ids[0]&&performance.beats[Number(detail.stage)||0];
+        if(ids.length!==1||!(approved?approved.pose===detail.action:studioSignatureOwners[detail.action]===ids[0]))return;
+      }
       if (isScene && (!Object.prototype.hasOwnProperty.call(studioScenes, detail.scene) || ids.length !== 2 ||
           !studioScenes[detail.scene].every(function (id) { return ids.indexOf(id) >= 0; }))) return;
     }
@@ -207,12 +212,14 @@
     var speaker = ids.filter(function (id) { return id !== 'Feline1' && id !== 'C0' && id !== 'X0'; })[0] || ids[0];
     var aside = isScene ? i18n.log('studio.scene.line.' + detail.scene) : isPerform ? '' : isQuirk ? i18n.log('studio.quirk.' + quirk) :
       (['work', 'chat', 'heart'].indexOf(detail.type) >= 0 ? i18n.log('studio.aside.' + speaker) : '');
-    aside = aside.replace(/\bFeline1\b/g, 'F1');
-    var action = isPerform ? i18n.log('studio.action.perform', { action: i18n.log('studio.signature.' + detail.action) }) :
+    aside = studioText(aside);
+    var castPerformance=isPerform&&window.StudioCast&&detail.performance===ids[0]&&StudioCast.story(ids[0]);
+    if(castPerformance&&i18n.getLocale()==='zh-CN')aside=castPerformance.beats[0].line;
+    var action = isPerform ? i18n.log('studio.action.perform', { action: castPerformance&&i18n.getLocale()==='zh-CN'?castPerformance.title:i18n.log('studio.signature.' + (castPerformance?studioSignatureGroups[ids[0]][0]:detail.action)) }) :
       isScene ? i18n.log('studio.action.scene', { scene: i18n.log('studio.scene.' + detail.scene) }) :
       i18n.log('studio.action.' + detail.type);
     var msg = i18n.log('studio.entry', {
-      actors: ids.map(function (id) { return id === 'doubao' && i18n.getLocale() === 'zh-CN' ? '豆包' : studioNames[id]; }).join(' / '),
+      actors: ids.map(function (id) { return studioName(id); }).join(' / '),
       zone: i18n.log('studio.zone.' + zone), action: action,
       aside: aside ? ' · ' + aside : ''
     });
@@ -220,7 +227,7 @@
     var now = new Date(time), pad = function (n) { return String(n).padStart(2, '0'); };
     timestamp.className = 't';
     timestamp.textContent = '[' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + '] ';
-    text.className = studioKinds[detail.type]; text.textContent = msg;
+    text.className = studioKinds[detail.type]; text.textContent = studioText(msg);
     line.appendChild(timestamp); line.appendChild(text);
     var cursor = terminal.querySelector('.cursor');
     // Upgrade the same actor's immediately preceding movement announcement in

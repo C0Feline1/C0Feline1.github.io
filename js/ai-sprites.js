@@ -1,6 +1,6 @@
 /* AI studio map sprites v9: twelve freshly rasterized poses per action, preserving each original cycle duration.
  * Native 48 x 64 grid, hand-refined at one-pixel resolution and cached. No raster crops are used
- * for map animation. Character credits: media/ai-studio/README.md.
+ * for map animation. Character credits: studio-credits.html.
  * The earlier detailed illustration remains available only as drawPortrait(). */
 (function () {
   'use strict';
@@ -20,7 +20,7 @@
     kimi:{hair:'#e3e0ee',shade:'#a3a2c8',light:'#fff8f3',cloth:'#36416b',dark:'#252d4d',accent:'#b2b8da',eye:'#7897c6',leg:'#eee8f0',shoe:'#353754'},
     doubao:{hair:'#574131',shade:'#332b2a',light:'#8c6546',cloth:'#484850',dark:'#30313c',accent:'#c9b28f',eye:'#735444',leg:'#ffe0cb',shoe:'#eee8d8'}
   };
-  Object.keys(palettes).forEach(function(id){var p=palettes[id];p.legShade=mix(p.leg,INK,.15);p.legLight=mix(p.leg,WHITE,.28);p.shoeShade=mix(p.shoe,INK,.2);p.eyeLight=mix(p.eye,WHITE,.45);});
+  Object.keys(palettes).forEach(function(id){var p=palettes[id];p.id=id;p.legShade=mix(p.leg,INK,.15);p.legLight=mix(p.leg,WHITE,.28);p.shoeShade=mix(p.shoe,INK,.2);p.eyeLight=mix(p.eye,WHITE,.45);});
   function sample8(values,frame){
     if(window.StudioMotion)return StudioMotion.sample8(values,frame);
     var q=((frame%12)+12)%12*8/12,a=Math.floor(q),t=q-a,b=(a+1)%8;
@@ -165,7 +165,31 @@
     for(var yy=0;yy<H;yy++)for(var xx=0;xx<W;xx++)if(rows[yy][xx]){g.fillStyle=rows[yy][xx];g.fillRect(flip?W-1-xx:xx,yy,1,1);}return c;
   };
   function star(r,x,y,color){r.rect(x,y-1,1,3,color);r.rect(x-1,y,3,1,color);}
+  // A right-front turn exposes the screen-left shoulder. Forward reach is
+  // separate from that lateral depth: props stay ahead, while the shoulder
+  // and elbow reconnect to the visible side of the ribcage.
+  function correctDepth(p,side,back){return side&&!back;}
+  function actionPlane(target,role,centre,paired,relaxed,heldFar,raised){
+    var dx=-2.5,projection={role:role,centre:centre,paired:paired,relaxed:relaxed,heldFar:heldFar,raised:raised};
+    return{target:target,armProjection:projection,
+      dot:function(x,y,c){target.dot(x+(raised&&Number.isFinite(projection.fingerShift)?projection.fingerShift:dx),y,c);},
+      rect:function(x,y,w,h,c){target.rect(x+dx,y,w,h,c);},
+      line:function(x1,y1,x2,y2,c,size){target.line(x1+dx,y1,x2+dx,y2,c,size);},
+      poly:function(points,c){target.poly(points.map(function(q){return[q[0]+dx,q[1]];}),c);}};
+  }
   function limb(r,shoulder,elbow,hand,sleeve,skin){
+    if(r.armProjection){
+      var projection=r.armProjection,far=projection.role==='far',authoredHandX=hand[0];
+      shoulder=[shoulder[0]+(far?5:-4),shoulder[1]];
+      var handX=projection.paired?projection.centre*2-hand[0]-2.5:projection.relaxed?hand[0]+(far?8:-7):far&&projection.heldFar?hand[0]-2.5:hand[0]+(far?5:-2.5);
+      if(projection.raised){
+        handX=7.5-(hand[0]-18)*.9+(shoulder[0]-9);
+        var lift=Math.max(0,Math.min(1,(shoulder[1]-hand[1])/9));
+        elbow=[(shoulder[0]+handX)*.5-lift*1.5,(shoulder[1]+hand[1])*.5+.5];
+      }else elbow=[shoulder[0]+(handX-shoulder[0])*.5+(far?-.35:.35),elbow[1]];
+      hand=[Math.max(2,Math.min(21.5,handX)),hand[1]];projection.fingerShift=hand[0]-authoredHandX;
+      r=r.target;
+    }
     r.line(shoulder[0],shoulder[1],elbow[0],elbow[1],sleeve,2);
     r.line(elbow[0],elbow[1],hand[0],hand[1],SKIN,2);
     if(!r.hands)r.hands=[];
@@ -218,16 +242,28 @@
     if(window.StudioGait)return StudioGait.sample(state,phase);
     return{bodyY:0,lean:0,armSwing:0,hairLag:0,near:{hip:{x:26,y:48},knee:{x:27,y:54},ankle:{x:27,y:59},planted:true},far:{hip:{x:21,y:47},knee:{x:20,y:53},ankle:{x:20,y:57},planted:true}};
   }
-  function nativeShoe(r,ankle,p,far,planted,roll){
+  function nativeShoe(r,ankle,p,far,planted,roll,side,back){
     var x=Math.round(ankle.x),y=Math.round(ankle.y),base=p.shoe;
-    // A planted foot has a flat sole; a lifted foot turns its toe down slightly.
-    if(planted){
-      if(roll==='heel')r.poly([[x-2,y],[x+2,y-1],[x+4,y+1],[x+3,y+2],[x-3,y+3],[x-3,y+1]],base);
-      else if(roll==='toe')r.poly([[x-2,y-1],[x+2,y],[x+4,y+2],[x+4,y+3],[x,y+3],[x-3,y+1]],base);
-      else r.poly([[x-2,y],[x+2,y],[x+4,y+2],[x+4,y+3],[x-3,y+3],[x-3,y+1]],base);
-      r.line(roll==='toe'?x:x-2,y+3,roll==='heel'?x:x+4,y+3,far?p.shoeShade:WHITE);r.line(x-1,y,x+2,y,far?p.shoe:p.accent);
+    if(!side){
+      // Front shows a centred rounded toe; the rear shows a narrower heel and
+      // its upright seam. Neither reuses a sideways shoe silhouette.
+      r.poly(back?[[x-2,y],[x+2,y],[x+3,y+3],[x+2,y+3],[x-2,y+3],[x-3,y+2]]:[[x-2,y],[x+2,y],[x+3,y+2],[x+2,y+3],[x-2,y+3],[x-3,y+2]],base);
+      r.line(x-2,y+3,x+2,y+3,p.shoeShade);
+      if(back){r.line(x-2,y+1,x+2,y+1,p.shoeShade);r.line(x,y+1,x,y+2,p.shoeShade);}
+      else r.line(x-1,y+2,x+1,y+2,WHITE);
+      return;
     }
-    else{r.poly([[x-2,y-1],[x+2,y],[x+3,y+2],[x+1,y+3],[x-2,y+2],[x-3,y]],base);r.line(x-1,y+2,x+2,y+3,far?p.shoeShade:WHITE);}
+    var heel=roll==='toe'?-1:0,toe=roll==='heel'?-1:0;
+    // The ankle sits above the rear third, with an upright heel behind it and
+    // a longer stepped toe pointing in the same direction as the face.
+    if(planted){
+      r.poly([[x-2,y-1+heel],[x+1,y-1+heel],[x+2,y+toe],[x+5,y+1+toe],[x+5,y+3+toe],[x-2,y+3+heel]],base);
+      r.line(x-2,y+3+heel,x+5,y+3+toe,p.shoeShade);
+      r.line(x-2,y+heel,x-2,y+2+heel,p.shoeShade);r.line(x+2,y+1+toe,x+4,y+1+toe,far?p.shoe:WHITE);
+    }else{
+      r.poly([[x-2,y-1],[x+1,y],[x+4,y+2],[x+4,y+3],[x,y+3],[x-2,y+1]],base);
+      r.line(x-2,y+1,x+3,y+3,p.shoeShade);r.dot(x+3,y+2,WHITE);
+    }
   }
   function nativeLegs(r,p,pose,side,back){
     function draw(j,far){
@@ -240,40 +276,64 @@
       r.line(hip.x,hip.y,knee.x,knee.y,p.leg,4);r.line(knee.x,knee.y,ankle.x,ankle.y,p.leg,3);
       r.line(hip.x,hip.y,knee.x,knee.y,p.legShade,1);r.line(knee.x,knee.y,ankle.x,ankle.y,p.legShade,1);
       if(!far)r.line(knee.x+2,knee.y+1,ankle.x+1,ankle.y-1,p.legLight,1);
-      nativeShoe(r,ankle,p,far||back,j.planted,j.roll);
+      nativeShoe(r,ankle,p,far,j.planted,j.roll,side,back);
     }
     draw(pose.far,true);draw(pose.near,false);
   }
-  function nativeMovingArm(r,p,pose,side,back,far){
-    var swing=pose.armSwing*(far?-1:1),sx=(far?18:31)+pose.lean,sy=38+pose.bodyY;
+  function nativeMovingArm(r,p,pose,side,back,far,state){
+    var swing=pose.armSwing*(far?-1:1),sx=(correctDepth(p,side,back)?(far?31:18):(far?18:31))+pose.lean,sy=38+pose.bodyY;
     if(!side)sx=far?14:33;
     var ex=sx+swing*.72,ey=sy+5-Math.abs(swing)*.15,hx=ex+swing*.55,hy=sy+10-Math.abs(swing)*.55;
+    if(window.StudioGait&&StudioGait.arm){
+      var joints=StudioGait.arm(state,pose,{x:sx,y:sy},far);
+      ex=joints.elbow.x;ey=joints.elbow.y;hx=joints.wrist.x;hy=joints.wrist.y;
+      if(!side){ex=sx+(ex-sx)*.35;hx=sx+(hx-sx)*.35;}
+    }
     var sleeve=far?p.dark:p.cloth;
     r.line(sx,sy,ex,ey,sleeve,4);r.line(ex,ey,hx,hy,SKIN,3);
     if(!far)r.line(sx,sy,ex,ey,p.light,1);
     r.rect(hx-1,hy-1,4,4,SKIN);
     nativeArmDetails(r,{hands:[{elbow:[ex,ey],hand:[hx-1,hy-1],sleeve:sleeve,far:far}]},p);
   }
-  function shoe(r,x,y,p,back){r.rect(x-1,y,4,2,p.shoe);r.rect(x,y+1,3,1,back?p.shoeShade:WHITE);}
+  function shoe(r,x,y,p,far,side,back){
+    if(side){
+      r.poly([[x-1,y],[x+.5,y],[x+1,y+.5],[x+2.5,y+1],[x+2.5,y+2],[x-1,y+2]],p.shoe);
+      r.line(x-1,y+2,x+2,y+2,p.shoeShade);r.line(x-1,y,x-1,y+1,p.shoeShade);r.dot(x+2,y+1,far?p.shoe:WHITE);
+    }else{
+      r.poly([[x-1,y],[x+1,y],[x+1.5,y+1],[x+1,y+2],[x-1,y+2],[x-1.5,y+1]],p.shoe);
+      r.line(x-1,y+2,x+1,y+2,p.shoeShade);r.line(x-1,y+1,x+1,y+1,back?p.shoeShade:WHITE);if(back)r.dot(x,y,p.shoeShade);
+    }
+  }
   function legs(r,p,side,back,state,phase,lean){
     var walking=state==='walk'||state==='run',running=state==='run';
     var steps=running?[-4,-2,2,4,2,-2]:[-3,-1,2,3,1,-2],s=walking?steps[phase%6]:0;
     var seated=state==='work'||state==='sit';
+    if(correctDepth(p,side,back)){
+      if(seated){
+        var toe=sample8(state==='sit'?[0,.5,1,1,.5,0,-.5,0]:[0,0,.5,0,-.5,0,.5,0],phase);
+        r.line(13,23.5,16,25.5,p.leg,2);r.line(16,25.5,16.5,28.5,p.leg,2);shoe(r,16.5,28.5,p,true,side,back);
+        r.line(10.5,24,14.5,26,p.leg,2);r.line(14.5,26,14.5+toe,29.5,p.leg,2);shoe(r,14.5+toe,29.5,p,false,side,back);
+      }else{
+        r.line(13,23.5,13,28.5,p.leg,2);shoe(r,13,28.5,p,true,side,back);
+        r.line(10.5,24,10.5,29.5,p.leg,2);shoe(r,10.5,29.5,p,false,side,back);
+      }
+      return;
+    }
     if(seated){
       var toeX=sample8(state==='sit'?[0,.5,1,1,.5,0,-.5,0]:[0,0,.5,0,-.5,0,.5,0],phase);
       var toeY=sample8(state==='sit'?[0,-.5,-1,-.5,0,.5,0,0]:[0,-.5,0,0,0,-.5,0,0],phase);
-      if(side){r.line(10,25,13,27,p.leg,2);r.line(13,27,14,29,p.leg,2);shoe(r,14,29,p,true);r.line(11,25,16,26,p.leg,2);r.line(16,26,16+toeX,29+toeY,p.leg,2);shoe(r,16+toeX,29+toeY,p,false);}
-      else{r.line(9,25,7,27,p.leg,2);r.line(7,27,8,29,p.leg,2);r.line(14,25,17,27,p.leg,2);r.line(17,27,16+toeX,29+toeY,p.leg,2);shoe(r,8,29,p,back);shoe(r,16+toeX,29+toeY,p,back);}return;
+      if(side){r.line(10,25,13,27,p.leg,2);r.line(13,27,14,29,p.leg,2);shoe(r,14,29,p,true,side,back);r.line(11,25,16,26,p.leg,2);r.line(16,26,16+toeX,29+toeY,p.leg,2);shoe(r,16+toeX,29+toeY,p,false,side,back);}
+      else{r.line(9,25,7,27,p.leg,2);r.line(7,27,8,29,p.leg,2);r.line(14,25,17,27,p.leg,2);r.line(17,27,16+toeX,29+toeY,p.leg,2);shoe(r,8,29,p,back,side,back);shoe(r,16+toeX,29+toeY,p,back,side,back);}return;
     }
     if(side){
       var footFar=10-s*.7,footNear=13+s*.7,farY=walking&&phase%3===1?27:29,nearY=walking&&phase%3===2?28:30;
       // Bent knees, crossed passing poses and planted heels make an actual stride.
-      r.line(10+lean,24,10-s*.4,26,p.leg,2);r.line(10-s*.4,26,footFar,farY,p.leg,2);shoe(r,footFar,farY,p,true);
-      r.line(13+lean,24,13+s*.4,27,p.leg,2);r.line(13+s*.4,27,footNear,nearY,p.leg,2);shoe(r,footNear,nearY,p,false);
+      r.line(10+lean,24,10-s*.4,26,p.leg,2);r.line(10-s*.4,26,footFar,farY,p.leg,2);shoe(r,footFar,farY,p,true,side,back);
+      r.line(13+lean,24,13+s*.4,27,p.leg,2);r.line(13+s*.4,27,footNear,nearY,p.leg,2);shoe(r,footNear,nearY,p,false,side,back);
     }else{
       var liftA=walking&&phase%6<3?Math.abs(s)*.65:0,liftB=walking&&phase%6>=3?Math.abs(s)*.65:0;
-      r.line(9,24,8-s*.3,27,p.leg,2);r.line(8-s*.3,27,8-s*.45,30-liftA,p.leg,2);shoe(r,8-s*.45,30-liftA,p,back);
-      r.line(14,24,15+s*.3,27,p.leg,2);r.line(15+s*.3,27,15+s*.45,30-liftB,p.leg,2);shoe(r,15+s*.45,30-liftB,p,back);
+      r.line(9,24,8-s*.3,27,p.leg,2);r.line(8-s*.3,27,8-s*.45,30-liftA,p.leg,2);shoe(r,8-s*.45,30-liftA,p,back,side,back);
+      r.line(14,24,15+s*.3,27,p.leg,2);r.line(15+s*.3,27,15+s*.45,30-liftB,p.leg,2);shoe(r,15+s*.45,30-liftB,p,back,side,back);
     }
   }
   function hairBack(r,id,p,side,back,bob,trail,lean){
@@ -409,6 +469,7 @@
   }
   function armBack(r,id,p,side,back,bob,lean,state,phase){
     if(back&&state==='work')return;
+    if(correctDepth(p,side,back))r=actionPlane(r,'far',0,false);
     var y=19+bob,swing=[-2,-1,1,2,1,-1][phase%6],run=state==='run',moving=run||state==='walk';
     if(side){
       var sx=10+lean;
@@ -487,6 +548,7 @@
     }
   }
   function armFront(r,id,p,side,back,bob,lean,state,phase){
+    if(correctDepth(p,side,back))r=actionPlane(r,'near',0,false,false,false,state==='wave'||state==='cheer');
     var i=phase%12,k=key8(phase),y=19+bob,sx=side?13+lean:16;
     var ease=sample8([0,.5,1,.5,0,-.5,-1,-.5],i);
     if(state==='work'){
@@ -558,7 +620,7 @@
         n=at([[17,23],[18,21],[19,19],[20,17],[21,16],[20,18],[19,20],[18,22]]);f=at([[6,23],[5,21],[4,19],[3,17],[2,16],[3,18],[4,20],[5,22]]);break;
       case'gpt_tea':
         py=sample8([24,23,22,21,21,22,23,24],i)+bob;n=[cx+3,py+1];f=[cx-3,py+1];
-        prop=function(){r.rect(cx-4,py,9,1,'#c5a575');r.rect(cx-2,py-2,3,2,WHITE);r.rect(cx-1,py-2,2,1,'#80584a');r.dot(cx+1,py-1,p.accent);r.rect(2,18+sample8([0,-.5,-1,-1.5,-1,-.5,0,.5],i)+bob,2,2,WHITE);};break;
+        prop=function(){r.rect(cx-4,py,9,1,'#c5a575');r.rect(cx-2,py-2,3,2,WHITE);r.rect(cx-1,py-2,2,1,'#80584a');r.dot(cx+1,py-1,p.accent);r.rect(2+(correctDepth(p,side,back)?2.5:0),18+sample8([0,-.5,-1,-1.5,-1,-.5,0,.5],i)+bob,2,2,WHITE);};break;
       case'deepseek_fish':
         n=at([[17,24],[18,21],[18,18],[16,20],[14,21],[14,22],[16,21],[15,23]]);f=at([[7,24],[6,24],[7,23],[8,22],[9,22],[8,23],[7,24],[7,23]]);
         prop=function(){if(k<3)fish(n[0]+1,n[1]-1);else if(k===3||k===6)fish(n[0]-1,n[1]);if(k===4||k===5)r.line(n[0]-2,n[1],n[0]+1,n[1],p.dark);};break;
@@ -608,13 +670,20 @@
         n=at([[17,24],[18,20],[18,15],[17,12],[21,12],[20,16],[18,21],[17,24]]);f=at([[7,24],[6,23],[5,22],[5,21],[4,17],[5,20],[6,23],[7,24]]);break;
       default:return;
     }
+    if(correctDepth(p,side,back)){
+      var paired=['gpt_wings','gpt_tea','deepseek_bowl','deepseek_tail','claude_scroll','gemini_stars','gemini_twins','kimi_moon','kimi_notes'].indexOf(state)>=0;
+      var spread=['gpt_wings','deepseek_tail','gemini_stars','gemini_twins'].indexOf(state)>=0;
+      var relaxed=state==='claude_soul'||state==='doubao_drool';
+      var heldFar=['gpt_think','claude_reconnect','kimi_search','doubao_cookie'].indexOf(state)>=0;
+      r=actionPlane(r,layer==='far'?'far':'near',spread?12:side?17:12,paired,relaxed,heldFar);
+    }
     // Some side silhouettes are foreshortened, but each arm still has its own
     // elbow path and reaches an actual hand-held prop, not a renamed idle pose.
     var ns=[side?13+lean:16,19+bob],fs=[side?10+lean:7,19+bob];
     var bend=sample8([.5,1,1.5,1,.5,0,-.5,0],i);
     function arm(s,h,far){var ex=s[0]+(h[0]-s[0])*.48+(far?-bend:bend)*.35,ey=Math.max(s[1],h[1])+(h[1]<s[1]?-2:1);limb(r,s,[ex,ey],h,far?p.dark:p.cloth,far?SKIN_D:SKIN);}
     if(layer==='far'){arm(fs,f,true);return;}
-    if(state!=='grok_axe'&&state!=='grok_spark'&&state!=='kimi_moon')prop();arm(ns,n,false);r.rect(f[0],f[1],1.5,1.5,SKIN_D);
+    if(state!=='grok_axe'&&state!=='grok_spark'&&state!=='kimi_moon')prop();arm(ns,n,false);if(!correctDepth(p,side,back))r.rect(f[0],f[1],1.5,1.5,SKIN_D);
     if(state==='grok_smirk'&&k>1&&k<6)r.line(n[0],n[1],n[0]+1,n[1],SKIN);
     if(state==='doubao_idea'&&k===4)r.line(n[0],n[1],n[0],n[1]-2,SKIN);
   }
@@ -648,7 +717,7 @@
     for(var yy=0;yy<H;yy++)for(var xx=0;xx<W;xx++)if(r.rows[yy][xx])outline.dot(xx,yy,r.rows[yy][xx]);
     return outline;
   }
-  function copyNative(target,layer){if(layer)for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(layer.rows[y][x])target.dot(x,y,layer.rows[y][x]);}
+  function copyNative(target,layer,offsetX){if(layer)for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(layer.rows[y][x])target.dot(x+(offsetX||0),y,layer.rows[y][x]);}
   function signatureFaceState(state,i){
     i=key8(i);
     if(state==='claude_soul')return i>0&&i<7?'nap':'idle';
@@ -683,7 +752,7 @@
   function mix(a,b,t){
     var out='#';for(var i=1;i<7;i+=2){var n=Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t);out+=n.toString(16).padStart(2,'0');}return out;
   }
-  function refine(r,id,p,side,back,headBob,lean,state,phase,bob,trail){
+  function refine(r,id,p,side,back,headBob,lean,state,phase,bob,trail,expression){
     var k=key8(phase);
     var hx=lean*2,hy=(5+headBob)*2,by=(18+bob)*2;
     var hair=[p.hair,p.shade,p.light],cloth=back?[p.cloth,p.dark,p.accent]:[p.cloth,p.dark,p.accent,p.light,WHITE];
@@ -795,6 +864,14 @@
       }
       var faceState=actionOwner[state]?signatureFaceState(state,phase):state;
       var eyeY=hy+16,blink=faceState==='nap'||faceState==='idle'&&k===1,happy=faceState==='wave'||faceState==='cheer';
+      var expressionPainted=false,expressions=window.StudioExpressions;
+      if(expression&&expressions&&typeof expressions.draw==='function'){
+        var near={x:(side?20:15)+hx,y:eyeY,w:side?5:4},far={x:(side?33:28)+hx,y:eyeY,w:side?3:4};
+        expressionPainted=expressions.draw(r,{near:near,far:far,side:side,skin:SKIN,skinShade:SKIN_D,white:WHITE,ink:INK,brow:p.shade,mouthColor:FACE_LINE,
+          irisNear:p.eye,irisFar:id==='gemini'?'#c29a46':p.eye,irisLightNear:p.eyeLight,irisLightFar:id==='gemini'?'#e1cb91':p.eyeLight,
+          mouth:{x:(side?30:24)+hx,y:hy+25},catMouth:false,blink:blink?1:0,speaking:state==='talk',gazeY:state==='read'?1:0,
+          browClip:function(x,y){return has(x,y,[SKIN,SKIN_D,'#f4c6b5','#efbcae']);}},expression,phase)===true;
+      }
       function eye(x,y,w,far,color){
         if(blink){r.line(x-1,y+2,x+w,y+2,'#725464');r.dot(x+w,y+1,'#725464');return;}
         if(happy){r.line(x-1,y+2,x+1,y,'#584151');r.line(x+1,y,x+w,y+2,'#584151');return;}
@@ -807,23 +884,45 @@
         var px=x+(side?(lookBack?0:w-pupilW):Math.floor((w-pupilW)/2));
         var down=state==='read'?1:0;
         r.rect(ix,y+1,irisW,5,color);r.rect(px,y+1+down,pupilW,3-down,'#49384f');
-        r.rect(x,y,w,1,'#49384f');r.dot(x-1,y,'#725464');
+        // A resting lid stays inside the eye width. The extra outer pixel made
+        // the straight lid read as a heavy, lowered eyebrow at native size.
+        r.rect(x,y,w,1,'#49384f');
         r.dot(ix,y+1,WHITE);
         r.dot(ix+irisW-1,y+4,color===p.eye?p.eyeLight:'#e1cb91');r.dot(x+w-1,y+6,'#d7a09c');
       }
+      function restingBrow(x,w){
+        // Keep brows level and registered to the actual near/far eye, leaving
+        // a skin gap before the lid. A lower flat row can clear the bangs;
+        // otherwise the hair naturally hides the brow instead of one stray dot.
+        var browY=eyeY-3,skin=[SKIN,'#f4c6b5'];
+        function exposed(y){var n=0;for(var i=0;i<w;i++)if(has(x+i,y,skin))n++;return n;}
+        if(exposed(browY)<2)browY=eyeY-2;
+        if(exposed(browY)<2)return;
+        for(var bx=0;bx<w;bx++)if(has(x+bx,browY,skin))r.dot(x+bx,browY,p.shade);
+      }
       if(side){
-        eye(20+hx,eyeY,3,true,p.eye);eye(30+hx,eyeY,5,false,id==='gemini'?'#c29a46':p.eye);
-        if(has(20+hx,eyeY-3,[SKIN,'#f4c6b5']))r.line(19+hx,eyeY-3,22+hx,eyeY-3,p.shade);
-        if(has(30+hx,eyeY-3,[SKIN]))r.line(30+hx,eyeY-3,34+hx,eyeY-2,p.shade);
+        if(!expressionPainted){
+          if(correctDepth(p,side,back)){eye(20+hx,eyeY,5,false,p.eye);eye(33+hx,eyeY,3,true,id==='gemini'?'#c29a46':p.eye);}
+          else{eye(20+hx,eyeY,3,true,p.eye);eye(30+hx,eyeY,5,false,id==='gemini'?'#c29a46':p.eye);}
+          if(blink||happy){
+            if(has(20+hx,eyeY-3,[SKIN,'#f4c6b5']))r.line(19+hx,eyeY-3,22+hx,eyeY-3,p.shade);
+            if(has(30+hx,eyeY-3,[SKIN]))r.line(30+hx,eyeY-3,34+hx,eyeY-2,p.shade);
+          }else if(correctDepth(p,side,back)){restingBrow(20+hx,4);restingBrow(33+hx,3);}
+          else{restingBrow(20+hx,3);restingBrow(30+hx,4);}
+          r.line(29+hx,hy+25,31+hx,hy+25,FACE_LINE);r.dot(30+hx,hy+26,SKIN_D);
+          if(state==='talk'&&k!==1)r.rect(30+hx,hy+24,2,2,FACE_LINE);
+        }
         r.dot(28+hx,hy+22,'#edb8a6');r.dot(29+hx,hy+22,'#f8d2bd');
         r.rect(17+hx,hy+23,3,1,'#eaa5a5');r.rect(35+hx,hy+23,2,1,'#eaa5a5');
-        r.line(29+hx,hy+25,31+hx,hy+25,FACE_LINE);r.dot(30+hx,hy+26,SKIN_D);
-        if(state==='talk'&&k!==1)r.rect(30+hx,hy+24,2,2,FACE_LINE);
       }else{
-        eye(15+hx,eyeY,4,false,p.eye);eye(28+hx,eyeY,4,false,id==='gemini'?'#c29a46':p.eye);
+        if(!expressionPainted){
+          eye(15+hx,eyeY,4,false,p.eye);eye(28+hx,eyeY,4,false,id==='gemini'?'#c29a46':p.eye);
+          if(!blink&&!happy){restingBrow(15+hx,4);restingBrow(28+hx,4);}
+          r.line(23+hx,hy+25,25+hx,hy+25,FACE_LINE);
+          if(state==='talk'&&k!==1)r.rect(24+hx,hy+24,2,2,FACE_LINE);
+        }
         r.rect(13+hx,hy+23,3,1,'#eaa5a5');r.rect(33+hx,hy+23,3,1,'#eaa5a5');
-        r.dot(24+hx,hy+22,SKIN_D);r.dot(25+hx,hy+22,SKIN);r.line(23+hx,hy+25,25+hx,hy+25,FACE_LINE);
-        if(state==='talk'&&k!==1)r.rect(24+hx,hy+24,2,2,FACE_LINE);
+        r.dot(24+hx,hy+22,SKIN_D);r.dot(25+hx,hy+22,SKIN);
       }
     }
     // Refined hair ornaments retain their original community identities.
@@ -854,23 +953,24 @@
     // A tiny stepped keybed keeps the work prop distinct from the bent wrist.
     if(state==='work'&&!back&&side){
       var keyY=Math.round((20+bob)*2);
-      r.line(37,keyY+1,45,keyY+1,p.dark);
-      for(var keyX=38;keyX<=44;keyX+=3)r.dot(keyX,keyY,WHITE);
+      var keyShift=correctDepth(p,side,back)?-5:0;
+      r.line(37+keyShift,keyY+1,45+keyShift,keyY+1,p.dark);
+      for(var keyX=38;keyX<=44;keyX+=3)r.dot(keyX+keyShift,keyY,WHITE);
     }
     // Fine prop surfaces are clipped to their original colours so hands stay in front.
     if(!back&&(state==='read'||id==='claude'&&state==='idle'&&k===5)){
-      var bx=((side?16:9)+sample8([0,0,0,.5,.5,0,-.5,0],phase))*2,py=(20+bob+sample8([0,0,-.5,-.5,0,.5,.5,0],phase))*2;
+      var bx=((side?16:9)+sample8([0,0,0,.5,.5,0,-.5,0],phase))*2-(correctDepth(p,side,back)?5:0),py=(20+bob+sample8([0,0,-.5,-.5,0,.5,.5,0],phase))*2;
       maskedLine(bx+2,py+2,bx+11,py+2,'#f0dbb7',['#74483f','#ba8a62','#eee2c4','#704840','#d4b88c']);
       maskedLine(bx+2,py+5,bx+10,py+5,'#b99a7b',['#74483f','#ba8a62','#eee2c4']);
       maskedLine(bx+6,py+2,bx+6,py+9,'#69504b',['#74483f','#ba8a62','#eee2c4']);
     }
     if(!back&&state==='coffee'){
-      var cupX=((side?19:17)+sample8([0,.5,.5,0,0,-.5,-.5,0],phase))*2,cupY=(sample8([20,19,17,15,14,15.5,17.5,19.5],phase)+bob)*2;
+      var cupX=((side?19:17)+sample8([0,.5,.5,0,0,-.5,-.5,0],phase))*2-(correctDepth(p,side,back)?5:0),cupY=(sample8([20,19,17,15,14,15.5,17.5,19.5],phase)+bob)*2;
       maskedLine(cupX+1,cupY+1,cupX+4,cupY+1,'#a4785c',['#80584a',WHITE]);
       maskedLine(cupX+1,cupY+3,cupX+1,cupY+5,'#fffef3',[WHITE]);
     }
   }
-  function build(id,state,phase,direction){
+  function build(id,state,phase,direction,expression){
     var r=new Raster(),p=palettes[id],side=direction==='left'||direction==='right',back=direction==='back';
     var walking=state==='walk'||state==='run',signature=!!actionOwner[state];
     var motion=walking?gait(state,phase):null,pose=walking?null:signature?signaturePose(state,phase):life(state,phase);
@@ -909,19 +1009,28 @@
       if(back)copyNative(hi,signatureProp);
       if(walking){
         nativeLegs(hi,p,motion,side,back);
-        nativeMovingArm(hi,p,motion,side,back,true);
-        if(back)nativeMovingArm(hi,p,motion,side,back,false);
+        nativeMovingArm(hi,p,motion,side,back,true,state);
+        if(back)nativeMovingArm(hi,p,motion,side,back,false,state);
       }
     };
-    if(walking&&!back)r.after=function(hi){nativeMovingArm(hi,p,motion,side,back,false);};
-    r.refine=function(hi){refine(hi,id,p,side,back,headBob,lean,state,phase,bob,trail);};
+    if(walking&&!back)r.after=function(hi){nativeMovingArm(hi,p,motion,side,back,false,state);};
+    r.refine=function(hi){refine(hi,id,p,side,back,headBob,lean,state,phase,bob,trail,expression);};
+    if((state==='wave'||state==='cheer')&&correctDepth(p,side,back)){
+      // Raised near arms sit in front of the head. Repaint the complete arm
+      // after facial refinement so a palm cannot lose its sleeve connection.
+      var raisedForeground=new Raster();armFront(raisedForeground,id,p,side,false,bob,lean,state,phase);
+      r.after=function(hi){
+        for(var yy=0;yy<BH;yy++)for(var xx=0;xx<BW;xx++)if(raisedForeground.rows[yy][xx])hi.rect(xx*2,yy*2,2,2,raisedForeground.rows[yy][xx]);
+        nativeArmDetails(hi,raisedForeground,p);
+      };
+    }
     if(state==='coffee'&&!back){
       // The sipping hand and cup sit in front of the face; the native eye/skin
       // pass must not turn a white cup back into a cheek.
       var foreground=new Raster();armFront(foreground,id,p,side,false,bob,lean,state,phase);
       r.after=function(hi){
         for(var yy=0;yy<BH;yy++)for(var xx=0;xx<BW;xx++)if(foreground.rows[yy][xx])hi.rect(xx*2,yy*2,2,2,foreground.rows[yy][xx]);
-        var cx=Math.round(((side?19:17)+sample8([0,.5,.5,0,0,-.5,-.5,0],phase))*2),cy=Math.round((sample8([20,19,17,15,14,15.5,17.5,19.5],phase)+bob)*2);
+        var cx=Math.round(((side?19:17)+sample8([0,.5,.5,0,0,-.5,-.5,0],phase))*2)-(correctDepth(p,side,back)?5:0),cy=Math.round((sample8([20,19,17,15,14,15.5,17.5,19.5],phase)+bob)*2);
         nativeArmDetails(hi,foreground,p);
         hi.line(cx+1,cy+1,cx+4,cy+1,'#a4785c');hi.line(cx+1,cy+3,cx+1,cy+5,WHITE);
       };
@@ -930,7 +1039,7 @@
       var signatureForeground=new Raster();
       if(!back)signatureGesture(signatureForeground,id,p,side,false,bob,lean,state,phase,'near');
       r.after=function(hi){
-        if(!back)copyNative(hi,signatureProp);
+        if(!back)copyNative(hi,signatureProp,correctDepth(p,side,back)?-5:0);
         if(!back)for(var yy=0;yy<BH;yy++)for(var xx=0;xx<BW;xx++)if(signatureForeground.rows[yy][xx])hi.rect(xx*2,yy*2,2,2,signatureForeground.rows[yy][xx]);
         if(!back)nativeArmDetails(hi,signatureForeground,p);
         var effects=new Raster(W,H);signatureEffects(effects,id,p,side,back,bob,lean,state,phase,headBob);
@@ -940,14 +1049,16 @@
     r.paletteOwner=p;r.palette=limitedColours(p,id);
     return r.canvas(direction==='left');
   }
-  function get(id,state,phase,direction){
-    var key=[id,state,phase,direction].join('|');return cache[key]||(cache[key]=build(id,state,phase,direction));
+  function get(id,state,phase,direction,expression){
+    var expressions=window.StudioExpressions;
+    if(expression===undefined||expression==='auto')expression=!actionOwner[state]&&expressions&&typeof expressions.resolve==='function'?expressions.resolve(id,state,phase):null;
+    var key=[id,state,phase,direction,expression||'base'].join('|');return cache[key]||(cache[key]=build(id,state,phase,direction,expression));
   }
-  function draw(ctx,id,state,frame,x,y,width,facingLeft,direction){
+  function draw(ctx,id,state,frame,x,y,width,facingLeft,direction,expression){
     if(!Object.prototype.hasOwnProperty.call(lookup,id))return false;
     state=validState(id,state);var count=states[state].count,n=Number(frame),phase=Number.isFinite(n)?((Math.floor(n)%count)+count)%count:0;
     direction=direction==='left'||direction==='right'||direction==='front'||direction==='back'?direction:(facingLeft?'left':state==='walk'||state==='run'||state==='work'?'right':'front');
-    width=width||27;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(get(id,state,phase,direction),x,y,width,width*H/W);ctx.restore();return true;
+    width=width||27;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(get(id,state,phase,direction,expression),x,y,width,width*H/W);ctx.restore();return true;
   }
   // Portraits stay as a separate display asset; they are never used for walking.
   var script=document.currentScript,portrait=new Image(),portraitReady=false,portraitStarted=false;
@@ -960,5 +1071,5 @@
   }
   window.AIStudioSprites={characters:characters,states:states,uniqueActions:uniqueActions,ready:Promise.resolve(true),isReady:function(){return true;},draw:draw,drawPortrait:drawPortrait,width:W,height:H,
     // Frame getter is read-only and useful for art QA without changing scene state.
-    frame:function(id,state,index,direction){if(!lookup[id])return null;state=validState(id,state);var count=states[state].count,n=Number(index),phase=Number.isFinite(n)?((Math.floor(n)%count)+count)%count:0;return get(id,state,phase,direction||'front');}};
+    frame:function(id,state,index,direction,expression){if(!lookup[id])return null;state=validState(id,state);var count=states[state].count,n=Number(index),phase=Number.isFinite(n)?((Math.floor(n)%count)+count)%count:0;return get(id,state,phase,direction||'front',expression);}};
 }());

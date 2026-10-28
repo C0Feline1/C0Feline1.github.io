@@ -23,7 +23,7 @@
     { id: 'kimi', name: 'KIMI', x: 860, y: 126, deskX: 845, color: '#bec8ed', kind: 'moon' },
     { id: 'doubao', name: 'DOUBAO', x: 985, y: 126, deskX: 970, color: '#b6d8e8', kind: 'cookie' }
   ];
-  workstations.forEach(function (s) { s.footY = 129; });
+  workstations.forEach(function (s) { s.footY = 129;if(window.StudioCast&&StudioCast.get(s.id))s.name=StudioCast.name(s.id,'zh-CN'); });
 
   function rect(g, x, y, w, h, color) {
     g.fillStyle = color;
@@ -287,19 +287,25 @@
     rect(g, mx + 13, 104, 4, 5, '#171220'); rect(g, mx + 9, 109, 12, 2, '#171220');
     rect(g, mx + 2, 84, 26, 1, '#31405a');
     rect(g, mx + 26, 102, 1, 1, d.color);
-    var labelW = PX.textWidth(d.name) + 6, labelX = Math.round(x + 54 - labelW / 2);
+    var cast=window.StudioCast&&StudioCast.get(d.id),name=cast?StudioCast.name(d.id):d.name;
+    if(cast){g.font='7px "Fusion Pixel", "PingFang SC", monospace';g.textBaseline='top';}
+    var labelW = (cast?Math.ceil(g.measureText(name).width):PX.textWidth(name)) + 6, labelX = Math.round(x + 54 - labelW / 2);
     rect(g, labelX, 73, labelW, 9, '#120d20');
     rect(g, labelX, 73, labelW, 1, d.color); rect(g, labelX, 81, labelW, 1, '#65516f');
-    PX.text(g, d.name, labelX + 3, 75, d.color);
+    if(cast){g.fillStyle=d.color;g.fillText(name,labelX+3,74);}else PX.text(g, name, labelX + 3, 75, d.color);
     deskKeepsake(g, d);
   }
-  var stationCaches = [];
+  var stationCaches = [],stationLabels=[];
+  function refreshLabels(){stationCaches=[];stationLabels=[];}
+  window.addEventListener('c0-language-change',refreshLabels);
   function drawWorkstations(g, actors, tick, bounds) {
     var byId = {}, phase = Math.floor((Number(tick) || 0) / 10);
     (actors || []).forEach(function (a) { byId[a.id] = a; });
     workstations.forEach(function (d, i) {
       if (bounds && (d.deskX + 82 < bounds.left || d.deskX > bounds.right)) return;
-      if (!stationCaches[i]) {
+      var label=window.StudioCast?StudioCast.name(d.id):d.name;
+      if (!stationCaches[i]||stationLabels[i]!==label) {
+        stationLabels[i]=label;
         var cache = PX.make(82, 58), p = cache.getContext('2d');
         p.translate(-d.deskX, -72); paintWorkstation(p, d); stationCaches[i] = cache;
       }
@@ -480,7 +486,7 @@
       occluders.forEach(function (p) { p.draw(g); });
       return canvas;
     },
-    drawWorkstations: drawWorkstations,
+    drawWorkstations: drawWorkstations,refreshLabels:refreshLabels,
     foreground: function (g) { drawWorkstations(g, [], 0); },
     occluders: occluders
   };

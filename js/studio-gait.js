@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  var COUNT = 12;
+  var COUNT = 12, NEAR_LENGTH = 6.25, FAR_LENGTH = 5.8;
   var states = {
     walk: { count: COUNT, frameMs: 800 / COUNT, cycleMs: 800, stridePixels: 20,
       phaseLabels: ['右脚落地', '接住重心', '压低承重', '左脚经过', '右脚推离', '重心抬高', '左脚落地', '接住重心', '压低承重', '右脚经过', '左脚推离', '重心抬高'] },
@@ -21,29 +21,29 @@
     // The other six poses recover through a bent-knee arc above that plane.
     x: [5, 10 / 3, 5 / 3, 0, -5 / 3, -10 / 3, -5, -4.5, -2, 1, 3.8, 5.2],
     y: [59, 59, 59, 59, 59, 59, 58, 55.5, 53.5, 53.8, 55.5, 58],
-    body: [0, 0.6, 0.9, 0.4, -0.2, -0.6, 0, 0.6, 0.9, 0.4, -0.2, -0.6],
+    body: [0.55, 0.8, 0.1, -0.65, -0.25, 0.15, 0.55, 0.8, 0.1, -0.65, -0.25, 0.15],
     arm: [-4, -3, -1.5, 0, 1.5, 3, 4, 3, 1.5, 0, -1.5, -3],
     hair: [0, 0, 0.5, 1, 1, 0.5, 0, 0, -0.5, -1, -1, -0.5],
     planted: [true, true, true, true, true, true, false, false, false, false, false, false],
     roll: ['heel', 'flat', 'flat', 'flat', 'flat', 'toe', 'air', 'air', 'air', 'air', 'air', 'air'],
     tilt: [-1, -0.5, 0, 0, 0.5, 1, 1, 0.5, 0, -0.5, -1, -1],
-    nearLength: 6.25,
-    farLength: 5.8
+    nearLength: NEAR_LENGTH,
+    farLength: FAR_LENGTH
   };
   var run = {
     // Three grounded poses and three flight poses per half-cycle. The second
     // leg takes over at +6; contact, compression and drive are separate poses.
     // Recovery ankle rises behind the knee, then swings under the body.
-    x: [9, 6, 3, 0, -4, -8, -10, -9, -6, -1, 4, 8],
-    y: [59, 59, 59, 56, 52, 50, 49.5, 49.5, 50.5, 52.5, 55, 58],
-    body: [0, 0.8, 1, 0, -1, -1.8, 0, 0.8, 1, 0, -1, -1.8],
+    x: [3, 0, -3, -5.5, -4.5, -3.5, -1, 2, 4.5, 6, 5, 4],
+    y: [59, 59, 59, 56.5, 53.5, 51.5, 51, 51.5, 53, 55.5, 57.5, 58.5],
+    body: [0, 0.8, 0.35, -0.6, -1.5, -0.8, 0, 0.8, 0.35, -0.6, -1.5, -0.8],
     arm: [-6, -4.5, -2, 0, 2.5, 4.5, 6, 4.5, 2, 0, -2.5, -4.5],
     hair: [1, 1, 0.75, 0.25, -0.5, -1, -1, -1, -0.75, -0.25, 0.5, 1],
     planted: [true, true, true, false, false, false, false, false, false, false, false, false],
     roll: ['heel', 'flat', 'toe', 'air', 'air', 'air', 'air', 'air', 'air', 'air', 'air', 'air'],
     tilt: [-0.5, 0, 1, 1, 0.5, 0, -0.5, -1, -1, -0.5, 0, -0.5],
-    nearLength: 7.5,
-    farLength: 6.8
+    nearLength: NEAR_LENGTH,
+    farLength: FAR_LENGTH
   };
 
   function point(x, y) { return { x: x, y: y }; }
@@ -62,7 +62,9 @@
   }
 
   function leg(data, phase, bodyY, far) {
-    var hip = point(far ? 21 : 26, (far ? 47 : 48) + bodyY);
+    // In a right-front three-quarter view the camera-near side is screen-left.
+    // Forward stride remains +X; exchanging depth must not reverse the gait.
+    var hip = point(far ? 26 : 21, (far ? 47 : 48) + bodyY);
     var ankle = point(hip.x + data.x[phase], data.y[phase] - (far ? 2 : 0));
     return {
       hip: hip,
@@ -75,11 +77,12 @@
   }
 
   function neutral() {
+    var nearHip=point(21,48),nearAnkle=point(21,59),farHip=point(26,47),farAnkle=point(26,57);
     return {
       phase: 0, phaseName: 'neutral', bodyY: 0, lean: 0, armSwing: 0,
       hairLag: 0, stridePixels: 0, flight: false,
-      near: { hip: point(26, 48), knee: point(26, 53), ankle: point(26, 59), planted: true, roll: 'flat', footTilt: 0 },
-      far: { hip: point(21, 47), knee: point(21, 52), ankle: point(21, 57), planted: true, roll: 'flat', footTilt: 0 }
+      near: { hip: nearHip, knee: knee(nearHip,nearAnkle,NEAR_LENGTH), ankle: nearAnkle, planted: true, roll: 'flat', footTilt: 0 },
+      far: { hip: farHip, knee: knee(farHip,farAnkle,FAR_LENGTH), ankle: farAnkle, planted: true, roll: 'flat', footTilt: 0 }
     };
   }
 
@@ -107,5 +110,25 @@
     };
   }
 
-  window.StudioGait = { states: states, sample: sample };
+  // Moving arms use two fixed segments, with angles measured from vertical.
+  // This keeps the elbow attached without lengthening the upper arm at the
+  // ends of its swing. Authored gestures keep their own hand targets.
+  function arm(state, pose, shoulder, far, options) {
+    options = options || {};
+    var running = state === 'run';
+    var upperLength = options.upperLength || 5;
+    var foreLength = options.foreLength || 5;
+    var drive = (pose.armSwing || 0) * (far ? -1 : 1);
+    var ratio = Math.max(-1, Math.min(1, drive / (running ? 6 : 4)));
+    var theta = ratio * (running ? 45 : 24) * Math.PI / 180;
+    var foreTheta = theta + (running ? 95 : 12) * Math.PI / 180;
+    var elbow = point(shoulder.x + Math.sin(theta) * upperLength,
+      shoulder.y + Math.cos(theta) * upperLength);
+    var wrist = point(elbow.x + Math.sin(foreTheta) * foreLength,
+      elbow.y + Math.cos(foreTheta) * foreLength);
+    return { shoulder: point(shoulder.x, shoulder.y), elbow: elbow, wrist: wrist,
+      upperLength: upperLength, foreLength: foreLength };
+  }
+
+  window.StudioGait = { states: states, sample: sample, arm: arm };
 })();
