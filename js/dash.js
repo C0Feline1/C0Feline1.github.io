@@ -226,17 +226,28 @@
      "stack" (screen on top, Joy-Cons below), then sizes the screen: as wide as the panel allows while the screen (with the
      panel title and its bezel) still fits the window height. Desktop snaps to an integer device-pixel scale of 240 px
      when that costs less than 10 %, so the pixels stay crisp. Phones (<= 520 px) always stack and use the full width. */
-  /* tabbed dock inside the fixed frame: which panels share the dock depends on the frame (portrait / phone landscape: all of
-     them; landscape: everything except the stats and the studio cam) */
-  var DOCK = { land: ['lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad'], port: ['cards', 'cam', 'lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad'] };
-  DOCK.phl = DOCK.port;
-  var docRoot = document.documentElement, dockTab = 'lb';
+  /* Portrait gives the studio the primary slot and opens the game in the dock.
+     Landscape retains its console-first layout and studio information tab. */
+  var DOCK = {
+    land: ['lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad'],
+    port: ['cards', 'game', 'lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad'],
+    phl: ['cards', 'cam', 'lb', 'term', 'chart', 'works', 'guestbook', 'legal', 'ad']
+  };
+  var docRoot = document.documentElement, dockTab = 'lb', dockMode = null, modeTabs = {};
   try { dockTab = localStorage.getItem('dash-tab') || 'lb'; } catch (e) { }
   function dockSync() {
-    var F = window.KR_FRAME; if (!F) return;
+    var F = window.KR_FRAME;
+    if (!F) { docRoot.classList.remove('game-dock'); return; }
+    if (dockMode && dockMode !== F.mode) {
+      modeTabs[dockMode] = dockTab;
+      if (modeTabs[F.mode]) dockTab = modeTabs[F.mode];
+    }
+    dockMode = F.mode;
     var set = DOCK[F.mode] || [];
+    if (F.mode === 'port' && dockTab === 'cam') dockTab = 'game';
     if (set.indexOf(dockTab) < 0) dockTab = set.indexOf('lb') >= 0 ? 'lb' : set[0];
     docRoot.classList.toggle('dock', set.length > 0);
+    docRoot.classList.toggle('game-dock', F.mode === 'port' && dockTab === 'game');
     document.querySelectorAll('[data-tab]').forEach(function (p) { var t = p.getAttribute('data-tab'); p.classList.toggle('tp', set.indexOf(t) >= 0); p.classList.toggle('tab-on', t === dockTab); });
     document.querySelectorAll('.dock-tabs button[data-t]').forEach(function (b) { var t = b.getAttribute('data-t'); b.hidden = t !== 'close' && set.indexOf(t) < 0; b.classList.toggle('on', t === dockTab); });
   }
@@ -256,6 +267,9 @@
     if (!shell || !scrCv) return;
     if (jcSet && (window.KR_FRAME || window.innerWidth <= 520)) { jcSet = 0; shell.style.removeProperty('--jcw'); shell.style.removeProperty('--bc'); } /* CSS sizes them there */
     var panel = shell.parentElement, ph = panel.querySelector('.ph');
+    // Hidden dock panels have no sizing budget. Their ResizeObserver runs again
+    // after a tab opens, keeping the existing canvas and input handlers intact.
+    if (!panel.clientWidth || !panel.clientHeight) return;
     var ps = getComputedStyle(panel), innerW = panel.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
     var ch = scrCv.offsetHeight || 1, scr = shell.querySelector('.scr'), jc = shell.querySelector('.jc');
     /* bezel from the computed padding + border, not offsetWidth - canvas: in the stack layout the bezel stretches to the grid width,
@@ -292,7 +306,16 @@
     /* the fixed frame decides the console form itself (CSS --force): landscape frames always use the full Switch row,
        the portrait frame stacks the Joy-Cons under a full-width screen */
     if (force === 'row') { row = true; maxW = Math.max(160, Math.min(rowW, fit === 'panel' ? hW : rowW)); }
-    else if (force === 'stack') { row = false; maxW = stackW; }
+    else if (force === 'stack') {
+      row = false; maxW = stackW;
+      if (F && F.mode === 'port') {
+        // The studio above owns a fixed-height row. Fit the complete console,
+        // including its touch controls, into the remaining portrait dock.
+        var controlsH = jc ? jc.offsetHeight : 198;
+        var availableH = panel.clientHeight - parseFloat(ps.paddingTop) - parseFloat(ps.paddingBottom) - extraY - controlsH - 4;
+        maxW = Math.min(stackW, Math.max(160, availableH * 1.5));
+      }
+    }
     shell.classList.toggle('row', row); shell.classList.toggle('stack', !row);
     var dpr = (window.devicePixelRatio || 1) * (F ? F.s : 1), s = Math.floor(maxW * dpr / 240), iw = s * 240 / dpr;
     var w = vW > 520 && s >= 2 && iw >= maxW * (F ? 0.95 : 0.9) ? iw : Math.floor(maxW); /* in the scaled frame only a near-free snap */

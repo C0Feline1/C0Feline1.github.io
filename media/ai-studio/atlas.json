@@ -1,0 +1,64 @@
+{
+  "width": 96,
+  "height": 112,
+  "columns": 14,
+  "states": {
+    "idle": {
+      "offset": 0,
+      "count": 2
+    },
+    "walk": {
+      "offset": 2,
+      "count": 4
+    },
+    "run": {
+      "offset": 6,
+      "count": 4
+    },
+    "work": {
+      "offset": 10,
+      "count": 2
+    },
+    "wave": {
+      "offset": 12,
+      "count": 2
+    }
+  },
+  "characters": [
+    {
+      "id": "gpt",
+      "name": "GPT",
+      "color": "#94cbb9"
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "color": "#7aaff0"
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "color": "#e9a16f"
+    },
+    {
+      "id": "grok",
+      "name": "Grok",
+      "color": "#dba0ba"
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "color": "#b7a0ef"
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi",
+      "color": "#a9b7eb"
+    },
+    {
+      "id": "doubao",
+      "name": "Doubao",
+      "color": "#b6d8e8"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>像素伙伴图鉴 · C0 STUDIO</title>
+  <meta name="description" content="C0 STUDIO 像素素材图鉴：十位伙伴的12帧公共与特有动作，支持四向逐帧、8/12同速对照与透明图集导出。">
+  <link rel="stylesheet" href="media/ai-studio/character-lab.css?v=20261028twelve9">
+</head>
+<body>
+  <div class="lab-shell">
+    <header class="lab-nav">
+      <a class="brand" href="./#studio"><span class="brand-mark" aria-hidden="true">✦</span><span>C0 STUDIO <small>/ CHARACTER LAB</small></span></a>
+      <a class="back-link" href="./#studio">返回工作室 <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="pageTitle">
+        <div><p class="eyebrow"><span></span> THE LITTLE MODEL CLUB / MOTION LIBRARY 09</p><h1 id="pageTitle">像素伙伴，细看一下。</h1><p class="intro-copy">十二帧，细看抬手到收回的每一次小动作。</p><nav class="collection-nav" aria-label="图鉴内容"><a href="#motionViewer">动作预览 ↓</a><a href="#uniqueMotions">特有动作 ↓</a><a href="#comparison">8 / 12 对照 ↓</a><a href="#portraits">立绘收藏 ↓</a></nav></div>
+        <div class="collection-stats" aria-label="图鉴内容"><div><b>10</b><span>位伙伴</span></div><div><b>12</b><span>公共动作</span></div><div><b>30</b><span>特有动作</span></div></div>
+      </section>
+
+      <section class="cast-section" aria-label="选择角色">
+        <div class="section-heading"><h2>今天想看看谁？</h2><span>SELECT A CHARACTER</span></div>
+        <div id="castGrid" class="cast-grid" role="group" aria-label="十位角色"></div>
+      </section>
+
+      <section id="motionViewer" class="workbench" aria-label="角色放大与动作检查">
+        <div class="viewer panel">
+          <div class="viewer-top"><span class="view-indicator"><i id="playIndicator"></i><span id="viewLabel">动作预览</span></span><span id="resolutionTag" class="resolution-tag">48 × 64 / PIXEL ART</span></div>
+          <div class="current-motion"><div><span id="activeActionCategory" class="motion-kind">公共动作</span><strong id="activeStateName">走路</strong></div><p id="activeActionDescription">双脚交替承重，头发与尾巴稍晚跟上。</p></div>
+          <div class="stage-wrap"><canvas id="characterStage" width="720" height="480" tabindex="0" aria-label="角色放大预览" aria-describedby="stageHelp"></canvas><div class="stage-corner"><span id="stageCharLabel">F1</span><small id="stageDirectionLabel">右前 45°</small></div><span class="stage-dimension">2.5D / THREE-QUARTER VIEW</span></div>
+          <div class="timeline">
+            <button type="button" id="playToggle" class="play-toggle" aria-pressed="true">暂停播放</button>
+            <button type="button" id="prevFrame" class="step-button" aria-label="上一帧">‹</button>
+            <input type="range" id="frameScrubber" min="0" max="11" value="0" aria-label="选择动作帧">
+            <button type="button" id="nextFrame" class="step-button" aria-label="下一帧">›</button>
+            <output id="frameCounter">01 / 12</output>
+            <select id="playSpeed" aria-label="播放速度"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+          </div>
+          <p class="stage-help" id="stageHelp">拖动进度条逐帧查看 · 聚焦画面后，← → 切帧，空格播放或暂停</p>
+        </div>
+
+        <aside class="inspector panel" aria-labelledby="characterName">
+          <div class="character-identity"><span id="characterNumber" class="character-number">03 / STUDIO FAMILY</span><h2 id="characterName">F1</h2><p id="characterTagline">工作室里的小小主心骨</p><div id="characterTraits" class="character-traits"></div></div>
+          <div class="inspector-group"><div class="control-heading"><h3>观察方向</h3><span>VIEW</span></div><div id="directionControls" class="direction-controls" role="group" aria-label="观察方向"></div></div>
+          <div class="inspector-group"><div class="control-heading"><h3>公共动作</h3><span>EVERYONE / 12</span></div><div id="actionControls" class="action-controls" role="group" aria-label="公共动作"></div></div>
+          <div class="inspector-group unique-controls-group"><div class="control-heading"><h3>特有动作</h3><span id="uniqueOwnerLabel">F1 / 03</span></div><div id="uniqueActionControls" class="unique-action-controls" role="group" aria-label="当前角色的特有动作"></div></div>
+          <div class="display-options"><label><input type="checkbox" id="pixelGridToggle"> 像素网格</label><label><input type="checkbox" id="logoToggle" checked> 头顶标记</label><label><input type="checkbox" id="groundMotionToggle" checked> 行进地面</label><label id="personalityOption"><input type="checkbox" id="personalityToggle"> 性格小剧场</label></div>
+          <div class="character-note"><span aria-hidden="true">✦</span><p id="characterNote">猫耳、肉垫和尾巴，都跟着小动作一起变化。</p></div>
+          <button type="button" id="exportFrame" class="export-button">导出当前帧 PNG <span aria-hidden="true">↗</span></button>
+          <button type="button" id="exportSheet" class="export-button sheet-button">导出此动作的四向图集 <span aria-hidden="true">↓</span></button><p class="sheet-help" id="sheetHelp">12 列动作帧 × 4 行朝向 · 576 × 256 透明 PNG；正面、右前、左前、背面。</p>
+        </aside>
+      </section>
+
+      <section id="uniqueMotions" class="unique-section" aria-labelledby="uniqueGalleryTitle"><div class="section-heading"><h2 id="uniqueGalleryTitle">F1 的三个小习惯</h2><span>CHARACTER ONLY / 03</span></div><p class="section-copy">点标记换位伙伴，再选一张动作卡片放大或逐帧查看。</p><div id="signatureCastControls" class="signature-cast-controls" role="group" aria-label="切换特有动作所属角色"></div><div id="uniqueActionGallery" class="unique-action-gallery"></div></section>
+
+      <section id="comparison" class="comparison-study" aria-labelledby="comparisonTitle"><div class="section-heading"><h2 id="comparisonTitle">8 / 12 帧，同速对照</h2><button type="button" id="comparisonToggle" aria-expanded="false" aria-controls="comparisonBoard">开启对照</button></div><p class="section-copy">跟随当前角色、动作和朝向。两边用相同的动作时长，比较中间姿势与回环。</p><div id="comparisonBoard" class="comparison-board" hidden><div class="comparison-context"><span id="comparisonActionLabel">F1 · 肉垫贴贴</span><span id="comparisonCycle"></span></div><div class="comparison-pair"><div class="comparison-tile"><div><strong>8 帧 · 上一版</strong><output id="comparison8Counter">01 / 08</output></div><canvas id="comparison8" width="360" height="320" aria-label="上一版八帧动作对照"></canvas></div><div class="comparison-tile"><div><strong>12 帧 · 这一版</strong><output id="comparison12Counter">01 / 12</output></div><canvas id="comparison12" width="360" height="320" aria-label="新版十二帧动作对照"></canvas></div></div></div></section>
+
+      <section class="gait-section" aria-labelledby="gaitTitle"><div class="section-heading"><h2 id="gaitTitle">12 帧动作分解</h2><div class="gait-tabs" role="group" aria-label="切换到走跑动作"><button type="button" data-gait="walk" aria-pressed="true">走路 · 12 帧</button><button type="button" data-gait="run" aria-pressed="false">跑步 · 12 帧</button></div></div><p class="section-copy">跟随所选动作展示完整十二帧。点击任一帧，检查重心、手势与道具遮挡。</p><div id="gaitGallery" class="gait-gallery"></div></section>
+
+      <section class="comparison-section" aria-labelledby="directionsTitle"><div class="section-heading"><h2 id="directionsTitle">换个角度认识她</h2><span>FRONT / THREE-QUARTER / BACK</span></div><div id="directionGallery" class="direction-gallery"></div></section>
+
+      <section class="actions-section" aria-labelledby="actionsTitle"><div class="section-heading"><h2 id="actionsTitle">大家都会的十二种动作</h2><span>SHARED MOTION SHEET</span></div><p class="section-copy">待机、走跑和日常生活。公共动作与上方的角色特有动作分别收藏。</p><div id="actionGallery" class="action-gallery"></div></section>
+
+      <section id="portraits" class="portrait-section" aria-labelledby="portraitTitle">
+        <div class="section-heading"><h2 id="portraitTitle">立绘收藏 · PIXEL PARTY</h2><span>THE WHOLE FAMILY / 10</span></div>
+        <p class="section-copy">保留第一版七位 AI 的像素立绘，C0、X0、F1 也来合照了。点开卡片，放大看看。</p>
+        <div id="portraitGallery" class="portrait-gallery"></div>
+        <details class="original-poster"><summary>展开最初的 AI PIXEL PARTY 海报 <span>VOL. 01 · 7 / 7</span></summary><figure><img src="media/ai-studio/ai-pixel-party-original.png" width="1680" height="1340" loading="lazy" alt="第一版 AI PIXEL PARTY 海报：GPT、DeepSeek、Claude、Grok、Gemini、Kimi 与豆包的七人像素立绘"><figcaption>最初的七人合影，原画保留。</figcaption></figure></details>
+      </section>
+    </main>
+
+    <footer class="lab-footer"><span>ONE STUDIO. TEN PERSONALITIES.</span><p>社区角色的像素同人演绎 · <a href="media/ai-studio/README.md">角色来源与署名</a></p><a href="./#studio">一起回工作室 →</a></footer>
+  </div>
+  <dialog id="portraitDialog" class="portrait-dialog" aria-labelledby="portraitDialogName"><button type="button" id="closePortrait" class="portrait-close" aria-label="关闭立绘">×</button><div class="portrait-dialog-art"><img id="portraitDialogImage" width="96" height="112" alt=""></div><div class="portrait-dialog-info"><span class="eyebrow">PIXEL PARTY / PORTRAIT</span><h2 id="portraitDialogName"></h2><p id="portraitDialogSubtitle"></p><div class="portrait-dialog-actions"><button type="button" id="portraitMotion">看看动作 ↗</button><a id="portraitDownload" download>保存立绘 PNG ↓</a></div></div></dialog>
+  <script src="js/studio-motion.js?v=20261028twelve9"></script>
+  <script src="js/studio-gait.js?v=20261028twelve9"></script>
+  <script src="js/studio-heroes.js?v=20261028twelve9"></script>
+  <script src="js/ai-sprites.js?v=20261028twelve9"></script>
+  <script src="js/ai-badges.js?v=20261028polish7"></script>
+  <script src="js/studio-personality.js?v=20261028detail1"></script>
+  <script src="js/character-lab.js?v=20261028twelve9"></script>
+</body>
+</html>

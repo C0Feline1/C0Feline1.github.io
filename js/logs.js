@@ -6,7 +6,7 @@
 
   /* ---------- static pool [class, text] ---------- */
   var STATIC = [
-    ['c', 'build  pixel-atlas 生成完毕（0 张图片，全靠代码）'], ['c', 'C0     正在和编译器吵架'], ['c', 'C0     把 tab 改成了 2 个空格，又改回来了'],
+    ['c', 'build  像素伙伴就位：代码绘制，本地图集加载'], ['c', 'C0     正在和编译器吵架'], ['c', 'C0     把 tab 改成了 2 个空格，又改回来了'],
     ['c', 'C0     打开了 Stack Overflow'], ['c', 'C0     关掉了 Stack Overflow，决定自己想'], ['c', 'C0     在注释里写了"不要动这行"'],
     ['c', 'C0     重启了电脑，问题消失了'], ['c', 'C0     给变量起名 temp2_final_真的final'], ['c', 'C0     console.log 了 47 次'],
     ['c', 'C0     发现 bug 是自己三天前写的'], ['c', 'C0     在橡皮鸭面前解释了一遍代码，懂了'], ['c', 'C0     把需求文档又读了一遍'],
@@ -99,5 +99,153 @@
     recent.push(m); if (recent.length > 24) recent.shift();
     return m;
   }
+  /* These are fictional pixel-studio asides, triggered by actual scene activity.
+     They are not API / model / deployment telemetry. The whale nickname is a
+     community reference (e.g. https://www.bilibili.com/video/BV1BtND69Euf/).
+     The other dialogue is original fan-work humour, not attributed quotations
+     from the products or claims about their current capabilities.
+     dash.js owns the regular terminal feed; append using its same 40-line limit. */
+  var studioNames = {
+    Feline1: 'F1', C0: 'C0', X0: 'X0', gpt: 'GPT', deepseek: 'DeepSeek',
+    claude: 'Claude', grok: 'Grok', gemini: 'Gemini', kimi: 'Kimi', doubao: 'Doubao'
+  };
+  var studioKinds = { work: 'c', walk: 'p', chat: 'p', heart: 'p', photo: 'ok', visit: 'p', quirk: 'p', perform: 'p', scene: 'ok' };
+  var studioSignatureOwners = Object.create(null);
+  var studioSignatureGroups = {
+    C0: ['c0_debug', 'c0_headset', 'c0_overclock'], X0: ['x0_paint', 'x0_palette', 'x0_sketch'],
+    Feline1: ['f1_paws', 'f1_yarn', 'f1_groom'], gpt: ['gpt_think', 'gpt_wings', 'gpt_tea'],
+    deepseek: ['deepseek_fish', 'deepseek_bowl', 'deepseek_tail'], claude: ['claude_soul', 'claude_scroll', 'claude_reconnect'],
+    grok: ['grok_axe', 'grok_smirk', 'grok_spark'], gemini: ['gemini_stars', 'gemini_twins', 'gemini_tail'],
+    kimi: ['kimi_moon', 'kimi_notes', 'kimi_search'], doubao: ['doubao_cookie', 'doubao_drool', 'doubao_idea']
+  };
+  Object.keys(studioSignatureGroups).forEach(function (id) {
+    studioSignatureGroups[id].forEach(function (action) { studioSignatureOwners[action] = id; });
+  });
+  var studioScenes = {
+    'tea-break': ['gpt', 'kimi'], 'art-share': ['X0', 'Feline1'],
+    'fish-watch': ['deepseek', 'grok'], 'cookie-share': ['doubao', 'gemini']
+  };
+  var studioQuirks = { soul: 'claude', slow: 'gpt', nap: 'deepseek', drool: 'doubao', idea: 'doubao', spark: 'grok', palette: 'gemini', notes: 'kimi' };
+  // Personality.describe() uses descriptive beat IDs; retain short IDs for callers.
+  var studioQuirkAliases = {
+    'gpt-slow-steps': 'slow', 'claude-soul-break': 'soul', 'deepseek-nap': 'nap',
+    'doubao-daydream': 'drool', 'doubao-little-idea': 'idea', 'grok-spark': 'spark',
+    'gemini-color-stars': 'palette', 'kimi-moon-notes': 'notes'
+  };
+  var studioZones = { office: true, cowork: true, garden: true };
+  var lastStudioAt = -Infinity, lastDirectedAt = -Infinity, studioRecent = Object.create(null), lastStudioLine = null;
+  var dialogueTimers = [], dialogueEpoch = 0, dialogueRecent = Object.create(null), lastDialogueAt = -Infinity;
+  function cancelDialogue() {
+    dialogueEpoch++;
+    dialogueTimers.forEach(clearTimeout); dialogueTimers = [];
+  }
+  function appendDialogue(id, epoch) {
+    var terminal = document.getElementById('log'), i18n = window.I18N;
+    if (epoch !== dialogueEpoch || document.hidden || !terminal || !i18n) return;
+    var line = document.createElement('div'), stamp = document.createElement('span'), speech = document.createElement('span');
+    var now = new Date(), pad = function (n) { return String(n).padStart(2, '0'); };
+    stamp.className = 't';
+    stamp.textContent = '[' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + '] ';
+    speech.className = 'p'; speech.textContent = i18n.log('studio.dialogue.entry', {
+      name: id === 'doubao' && i18n.getLocale() === 'zh-CN' ? '豆包' : studioNames[id],
+      line: i18n.log('studio.dialogue.' + id)
+    });
+    line.appendChild(stamp); line.appendChild(speech);
+    var cursor = terminal.querySelector('.cursor'); terminal.insertBefore(line, cursor);
+    while (terminal.childElementCount - (cursor ? 1 : 0) > 40) terminal.removeChild(terminal.firstElementChild);
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+  function sceneDialogue(detail) {
+    if (!detail || !Array.isArray(detail.actors) || document.hidden) return;
+    var ids = detail.actors.filter(function (id, i, list) {
+      return typeof id === 'string' && Object.prototype.hasOwnProperty.call(studioNames, id) && list.indexOf(id) === i;
+    }).slice(0, 2);
+    if (ids.length < 2) return;
+    var now = Date.now(), pair = ids.slice().sort().join('|');
+    if (now - lastDialogueAt < 18000 || dialogueRecent[pair] !== undefined && now - dialogueRecent[pair] < 60000) return;
+    cancelDialogue(); var epoch = dialogueEpoch;
+    appendDialogue(ids[0], epoch);
+    dialogueTimers.push(setTimeout(function () { appendDialogue(ids[1], epoch); }, 1800));
+    dialogueRecent[pair] = lastDialogueAt = lastStudioAt = now;
+    Object.keys(dialogueRecent).forEach(function (key) { if (now - dialogueRecent[key] > 60000) delete dialogueRecent[key]; });
+  }
+  function sceneLog(detail) {
+    if (!detail || !Object.prototype.hasOwnProperty.call(studioKinds, detail.type) ||
+        !Array.isArray(detail.actors) || document.hidden) return;
+    var ids = detail.actors.filter(function (id, i, list) {
+      return typeof id === 'string' && Object.prototype.hasOwnProperty.call(studioNames, id) && list.indexOf(id) === i;
+    }).slice(0, 10);
+    var zone = Object.prototype.hasOwnProperty.call(studioZones, detail.zone) ? detail.zone : 'office';
+    if (!ids.length) return;
+    var isQuirk = detail.type === 'quirk', isPerform = detail.type === 'perform', isScene = detail.type === 'scene';
+    var isDirected = isPerform || isScene, quirk = detail.quirk;
+    // Stage and completion events drive choreography, but only a real start is
+    // a new log entry. Accept only known actions and the cast of that scene.
+    if (isDirected) {
+      if (detail.phase && detail.phase !== 'start') return;
+      if (isPerform && (ids.length !== 1 || !Object.prototype.hasOwnProperty.call(studioSignatureOwners, detail.action) ||
+          studioSignatureOwners[detail.action] !== ids[0])) return;
+      if (isScene && (!Object.prototype.hasOwnProperty.call(studioScenes, detail.scene) || ids.length !== 2 ||
+          !studioScenes[detail.scene].every(function (id) { return ids.indexOf(id) >= 0; }))) return;
+    }
+    if (isQuirk) {
+      if (Object.prototype.hasOwnProperty.call(studioQuirkAliases, quirk)) quirk = studioQuirkAliases[quirk];
+      if (!Object.prototype.hasOwnProperty.call(studioQuirks, quirk) || ids.indexOf(studioQuirks[quirk]) < 0) return;
+    }
+    var time = Date.now(), stamp = isQuirk ? 'quirk|' + quirk :
+      isDirected ? detail.type + '|' + (isPerform ? detail.action : detail.scene) + '|' + ids.slice().sort().join(',') :
+      detail.type + '|' + ids.slice().sort().join(',') + '|' + zone;
+    // Drop excess events instead of replaying stale activity after the actors leave.
+    // A one-shot comedy beat must survive the walk/work event fired in the same
+    // update. It has its own 45-second deduplication, bounded to eight known beats.
+    if ((isDirected && time - lastDirectedAt < 1500) ||
+        (!isDirected && !isQuirk && time - lastStudioAt < 8500) ||
+        (isQuirk && time - lastDirectedAt < 8000) ||
+        (studioRecent[stamp] !== undefined && time - studioRecent[stamp] < 45000)) return;
+    var terminal = document.getElementById('log'), i18n = window.I18N;
+    if (!terminal || !i18n) return;
+    var speaker = ids.filter(function (id) { return id !== 'Feline1' && id !== 'C0' && id !== 'X0'; })[0] || ids[0];
+    var aside = isScene ? i18n.log('studio.scene.line.' + detail.scene) : isPerform ? '' : isQuirk ? i18n.log('studio.quirk.' + quirk) :
+      (['work', 'chat', 'heart'].indexOf(detail.type) >= 0 ? i18n.log('studio.aside.' + speaker) : '');
+    aside = aside.replace(/\bFeline1\b/g, 'F1');
+    var action = isPerform ? i18n.log('studio.action.perform', { action: i18n.log('studio.signature.' + detail.action) }) :
+      isScene ? i18n.log('studio.action.scene', { scene: i18n.log('studio.scene.' + detail.scene) }) :
+      i18n.log('studio.action.' + detail.type);
+    var msg = i18n.log('studio.entry', {
+      actors: ids.map(function (id) { return id === 'doubao' && i18n.getLocale() === 'zh-CN' ? '豆包' : studioNames[id]; }).join(' / '),
+      zone: i18n.log('studio.zone.' + zone), action: action,
+      aside: aside ? ' · ' + aside : ''
+    });
+    var line = document.createElement('div'), timestamp = document.createElement('span'), text = document.createElement('span');
+    var now = new Date(time), pad = function (n) { return String(n).padStart(2, '0'); };
+    timestamp.className = 't';
+    timestamp.textContent = '[' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + '] ';
+    text.className = studioKinds[detail.type]; text.textContent = msg;
+    line.appendChild(timestamp); line.appendChild(text);
+    var cursor = terminal.querySelector('.cursor');
+    // Upgrade the same actor's immediately preceding movement announcement in
+    // place. GPT's slow jog then produces one meaningful line, not two.
+    if ((isQuirk || isDirected) && lastStudioLine && lastStudioLine.node.parentNode === terminal &&
+        lastStudioLine.type !== 'quirk' && time - lastStudioLine.time < 1200 &&
+        ids.length === 1 && lastStudioLine.ids.indexOf(ids[0]) >= 0) {
+      terminal.replaceChild(line, lastStudioLine.node);
+    } else terminal.insertBefore(line, cursor);
+    while (terminal.childElementCount - (cursor ? 1 : 0) > 40) terminal.removeChild(terminal.firstElementChild);
+    terminal.scrollTop = terminal.scrollHeight;
+    lastStudioAt = time; studioRecent[stamp] = time;if (isDirected) lastDirectedAt = time;
+    lastStudioLine = { node: line, type: detail.type, ids: ids, time: time };
+    Object.keys(studioRecent).forEach(function (key) { if (time - studioRecent[key] > 45000) delete studioRecent[key]; });
+  }
+  window.addEventListener('studio:activity', function (event) {
+    if (event.detail && event.detail.type === 'chat') sceneDialogue(event.detail);
+    else sceneLog(event.detail);
+  });
+  window.addEventListener('c0-language-change', function () {
+    // dash.js clears its terminal on a language change; don't retain old-language work.
+    cancelDialogue(); dialogueRecent = Object.create(null); lastDialogueAt = -Infinity;
+    studioRecent = Object.create(null); lastStudioAt = lastDirectedAt = -Infinity; lastStudioLine = null;
+  });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) cancelDialogue(); });
+  window.addEventListener('pagehide', cancelDialogue);
   window.BuildLog = { next: next, inStory: function () { return queue.length > 0; } };
 })();

@@ -8,7 +8,7 @@
       'site.title': 'C0 STUDIO', 'site.description': '独立开发人C0 的作品主页：星梦画廊 Stardream Gallery 等。',
       'lang.select': '选择网站语言', 'header.mood': 'MOOD',
       'nav.panelLabel': '面板切换', 'nav.closeLabel': '关闭面板', 'nav.openInfo': '≡ 信息',
-      'nav.cards': '数据', 'nav.cam': '实况', 'nav.rank': '排行', 'nav.logs': '日志', 'nav.inspiration': '灵感', 'nav.works': '作品', 'nav.about': '关于', 'nav.ads': '广告',
+      'nav.game': '游戏', 'nav.cards': '数据', 'nav.cam': '实况', 'nav.rank': '排行', 'nav.logs': '日志', 'nav.inspiration': '灵感', 'nav.works': '作品', 'nav.about': '关于', 'nav.ads': '广告',
       'studio.title': 'STUDIO CAM · 工作室实况', 'terminal.title': '>_ build.log',
       'board.title': '🏆 HALL OF FAME · 排行榜 TOP 100', 'board.online': 'ONLINE', 'board.offline': 'OFFLINE', 'board.loading': '加载中……', 'board.retryHint': '上一局成绩没有提交成功',
       'board.retry': '重试提交', 'board.tip': '任意一局得分进入全球前 100 名，就可以留下名字。', 'board.empty': '还没有人上榜，第一名等你来拿！',
@@ -51,7 +51,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Games and tools by indie developer C0, including Stardream Gallery.',
       'lang.select': 'Select site language', 'header.mood': 'MOOD',
       'nav.panelLabel': 'Panel navigation', 'nav.closeLabel': 'Close panel', 'nav.openInfo': '≡ Info',
-      'nav.cards': 'Stats', 'nav.cam': 'Studio', 'nav.rank': 'Rankings', 'nav.logs': 'Logs', 'nav.inspiration': 'Inspiration', 'nav.works': 'Works', 'nav.about': 'About', 'nav.ads': 'Ad space',
+      'nav.game': 'Game', 'nav.cards': 'Stats', 'nav.cam': 'Studio', 'nav.rank': 'Rankings', 'nav.logs': 'Logs', 'nav.inspiration': 'Inspiration', 'nav.works': 'Works', 'nav.about': 'About', 'nav.ads': 'Ad space',
       'studio.title': 'STUDIO CAM · Live studio', 'terminal.title': '>_ build.log',
       'board.title': '🏆 HALL OF FAME · TOP 100', 'board.online': 'ONLINE', 'board.offline': 'OFFLINE', 'board.loading': 'Loading…', 'board.retryHint': 'Your previous score was not submitted.',
       'board.retry': 'Retry submission', 'board.tip': 'Place in the global top 100 to leave your name.', 'board.empty': 'No scores yet. Claim the top spot!',
@@ -94,7 +94,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'インディー開発者 C0 のゲームとツール。Stardream Gallery など。',
       'lang.select': 'サイトの言語を選択', 'header.mood': 'MOOD',
       'nav.panelLabel': 'パネル切替', 'nav.closeLabel': 'パネルを閉じる', 'nav.openInfo': '≡ 情報',
-      'nav.cards': 'データ', 'nav.cam': 'スタジオ', 'nav.rank': 'ランキング', 'nav.logs': 'ログ', 'nav.inspiration': 'ひらめき', 'nav.works': '作品', 'nav.about': '概要', 'nav.ads': '広告',
+      'nav.game': 'ゲーム', 'nav.cards': 'データ', 'nav.cam': 'スタジオ', 'nav.rank': 'ランキング', 'nav.logs': 'ログ', 'nav.inspiration': 'ひらめき', 'nav.works': '作品', 'nav.about': '概要', 'nav.ads': '広告',
       'studio.title': 'STUDIO CAM · スタジオライブ', 'terminal.title': '>_ ビルドログ',
       'board.title': '🏆 HALL OF FAME · TOP 100', 'board.online': 'オンライン', 'board.offline': 'オフライン', 'board.loading': '読み込み中…', 'board.retryHint': '前回のスコアを送信できませんでした。',
       'board.retry': '再送信', 'board.tip': '世界ランキングで100位以内に入ると、名前を残せます。', 'board.empty': 'まだ記録がありません。1位を目指そう！',
@@ -137,7 +137,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Игры и инструменты инди-разработчика C0, включая Stardream Gallery.',
       'lang.select': 'Выбрать язык сайта', 'header.mood': 'НАСТРОЕНИЕ',
       'nav.panelLabel': 'Навигация по панелям', 'nav.closeLabel': 'Закрыть панель', 'nav.openInfo': '≡ Инфо',
-      'nav.cards': 'Статистика', 'nav.cam': 'Студия', 'nav.rank': 'Рейтинг', 'nav.logs': 'Журнал', 'nav.inspiration': 'Вдохновение', 'nav.works': 'Работы', 'nav.about': 'О проекте', 'nav.ads': 'Реклама',
+      'nav.game': 'Игра', 'nav.cards': 'Статистика', 'nav.cam': 'Студия', 'nav.rank': 'Рейтинг', 'nav.logs': 'Журнал', 'nav.inspiration': 'Вдохновение', 'nav.works': 'Работы', 'nav.about': 'О проекте', 'nav.ads': 'Реклама',
       'studio.title': 'STUDIO CAM · Студия в эфире', 'terminal.title': '>_ журнал сборки',
       'board.title': '🏆 HALL OF FAME · ТОП-100', 'board.online': 'В СЕТИ', 'board.offline': 'НЕ В СЕТИ', 'board.loading': 'Загрузка…', 'board.retryHint': 'Не удалось отправить прошлый результат.',
       'board.retry': 'Отправить снова', 'board.tip': 'Попадите в мировой топ-100, чтобы оставить своё имя.', 'board.empty': 'Пока нет результатов. Займите первое место!',
@@ -180,7 +180,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Juegos y herramientas de C0, desarrollador independiente, incluido Stardream Gallery.',
       'lang.select': 'Elegir idioma del sitio', 'header.mood': 'ÁNIMO',
       'nav.panelLabel': 'Navegación de paneles', 'nav.closeLabel': 'Cerrar panel', 'nav.openInfo': '≡ Info',
-      'nav.cards': 'Datos', 'nav.cam': 'Estudio', 'nav.rank': 'Clasificación', 'nav.logs': 'Registro', 'nav.inspiration': 'Inspiración', 'nav.works': 'Obras', 'nav.about': 'Acerca de', 'nav.ads': 'Anuncios',
+      'nav.game': 'Juego', 'nav.cards': 'Datos', 'nav.cam': 'Estudio', 'nav.rank': 'Clasificación', 'nav.logs': 'Registro', 'nav.inspiration': 'Inspiración', 'nav.works': 'Obras', 'nav.about': 'Acerca de', 'nav.ads': 'Anuncios',
       'studio.title': 'STUDIO CAM · Estudio en vivo', 'terminal.title': '>_ registro de compilación',
       'board.title': '🏆 HALL OF FAME · TOP 100', 'board.online': 'EN LÍNEA', 'board.offline': 'SIN CONEXIÓN', 'board.loading': 'Cargando…', 'board.retryHint': 'No se pudo enviar tu puntuación anterior.',
       'board.retry': 'Reintentar envío', 'board.tip': 'Entra en el top 100 mundial para dejar tu nombre.', 'board.empty': 'Aún no hay puntuaciones. ¡Consigue el primer puesto!',
@@ -223,7 +223,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Jogos e ferramentas do programador independente C0, incluindo Stardream Gallery.',
       'lang.select': 'Escolher idioma do site', 'header.mood': 'HUMOR',
       'nav.panelLabel': 'Navegação dos painéis', 'nav.closeLabel': 'Fechar painel', 'nav.openInfo': '≡ Info',
-      'nav.cards': 'Dados', 'nav.cam': 'Estúdio', 'nav.rank': 'Classificação', 'nav.logs': 'Registo', 'nav.inspiration': 'Inspiração', 'nav.works': 'Obras', 'nav.about': 'Sobre', 'nav.ads': 'Anúncios',
+      'nav.game': 'Jogo', 'nav.cards': 'Dados', 'nav.cam': 'Estúdio', 'nav.rank': 'Classificação', 'nav.logs': 'Registo', 'nav.inspiration': 'Inspiração', 'nav.works': 'Obras', 'nav.about': 'Sobre', 'nav.ads': 'Anúncios',
       'studio.title': 'STUDIO CAM · Estúdio em direto', 'terminal.title': '>_ registo de compilação',
       'board.title': '🏆 HALL OF FAME · TOP 100', 'board.online': 'ONLINE', 'board.offline': 'OFFLINE', 'board.loading': 'A carregar…', 'board.retryHint': 'Não foi possível enviar a pontuação anterior.',
       'board.retry': 'Tentar enviar de novo', 'board.tip': 'Entra no top 100 mundial para deixares o teu nome.', 'board.empty': 'Ainda não há pontuações. Conquista o primeiro lugar!',
@@ -266,7 +266,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Jogos e ferramentas do desenvolvedor independente C0, incluindo Stardream Gallery.',
       'lang.select': 'Selecionar idioma do site', 'header.mood': 'HUMOR',
       'nav.panelLabel': 'Navegação dos painéis', 'nav.closeLabel': 'Fechar painel', 'nav.openInfo': '≡ Info',
-      'nav.cards': 'Dados', 'nav.cam': 'Estúdio', 'nav.rank': 'Ranking', 'nav.logs': 'Registros', 'nav.inspiration': 'Inspiração', 'nav.works': 'Projetos', 'nav.about': 'Sobre', 'nav.ads': 'Anúncios',
+      'nav.game': 'Jogo', 'nav.cards': 'Dados', 'nav.cam': 'Estúdio', 'nav.rank': 'Ranking', 'nav.logs': 'Registros', 'nav.inspiration': 'Inspiração', 'nav.works': 'Projetos', 'nav.about': 'Sobre', 'nav.ads': 'Anúncios',
       'studio.title': 'STUDIO CAM · Estúdio ao vivo', 'terminal.title': '>_ registro de build',
       'board.title': '🏆 HALL OF FAME · TOP 100', 'board.online': 'ONLINE', 'board.offline': 'OFFLINE', 'board.loading': 'Carregando…', 'board.retryHint': 'Não foi possível enviar a pontuação anterior.',
       'board.retry': 'Tentar enviar de novo', 'board.tip': 'Entre no top 100 mundial para deixar seu nome.', 'board.empty': 'Ainda não há pontuações. Conquiste o primeiro lugar!',
@@ -309,7 +309,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Spiele und Tools von Indie-Entwickler C0, darunter Stardream Gallery.',
       'lang.select': 'Seitensprache auswählen', 'header.mood': 'STIMMUNG',
       'nav.panelLabel': 'Panelnavigation', 'nav.closeLabel': 'Panel schließen', 'nav.openInfo': '≡ Info',
-      'nav.cards': 'Daten', 'nav.cam': 'Studio', 'nav.rank': 'Rangliste', 'nav.logs': 'Protokoll', 'nav.inspiration': 'Inspiration', 'nav.works': 'Projekte', 'nav.about': 'Über uns', 'nav.ads': 'Werbung',
+      'nav.game': 'Spiel', 'nav.cards': 'Daten', 'nav.cam': 'Studio', 'nav.rank': 'Rangliste', 'nav.logs': 'Protokoll', 'nav.inspiration': 'Inspiration', 'nav.works': 'Projekte', 'nav.about': 'Über uns', 'nav.ads': 'Werbung',
       'studio.title': 'STUDIO CAM · Live-Studio', 'terminal.title': '>_ Build-Protokoll',
       'board.title': '🏆 HALL OF FAME · TOP 100', 'board.online': 'ONLINE', 'board.offline': 'OFFLINE', 'board.loading': 'Wird geladen …', 'board.retryHint': 'Dein vorheriger Punktestand konnte nicht gesendet werden.',
       'board.retry': 'Erneut senden', 'board.tip': 'Erreiche die weltweiten Top 100, um deinen Namen zu hinterlassen.', 'board.empty': 'Noch keine Einträge. Hol dir den ersten Platz!',
@@ -352,7 +352,7 @@
       'site.title': 'C0 STUDIO', 'site.description': 'Ludi et instrumenta a C0, artifice independenter, facta; inter quae Stardream Gallery.',
       'lang.select': 'Linguam situs elige', 'header.mood': 'ANIMUS',
       'nav.panelLabel': 'Navigatio tabularum', 'nav.closeLabel': 'Tabulam claude', 'nav.openInfo': '≡ Notitia',
-      'nav.cards': 'Numeri', 'nav.cam': 'Officina', 'nav.rank': 'Ordines', 'nav.logs': 'Acta', 'nav.inspiration': 'Inspiratio', 'nav.works': 'Opera', 'nav.about': 'De nobis', 'nav.ads': 'Publicitas',
+      'nav.game': 'Ludus', 'nav.cards': 'Numeri', 'nav.cam': 'Officina', 'nav.rank': 'Ordines', 'nav.logs': 'Acta', 'nav.inspiration': 'Inspiratio', 'nav.works': 'Opera', 'nav.about': 'De nobis', 'nav.ads': 'Publicitas',
       'studio.title': 'STUDIO CAM · Officina viva', 'terminal.title': '>_ acta compilationis',
       'board.title': '🏆 HALL OF FAME · CENTUM OPTIMI', 'board.online': 'INTERRETIALIS', 'board.offline': 'EXTRA INTERRETE', 'board.loading': 'Oneratur…', 'board.retryHint': 'Puncta prioris cursus mittere non potuimus.',
       'board.retry': 'Iterum mitte', 'board.tip': 'Inter centum optimos orbis terrarum intra, ut nomen tuum relinquas.', 'board.empty': 'Nondum sunt puncta. Locum primum cape!',
@@ -398,61 +398,524 @@
   var buildLogs = {
     en: {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 ready'], ['c', 'arcade KITTY RUNNER loaded; waiting for player']],
-      stream: [['c', 'build  pixel atlas generated (0 images; drawn in code)'], ['c', 'C0 is negotiating with the compiler'], ['p', 'X0 finished another wolf sprite'], ['p', 'Feline1 is testing the jump feel: meow!'], ['w', 'warn   coffee supply below 20%'], ['w', 'warn   a cat is sleeping on the keyboard'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup saved to the cloud ✓'], ['p', 'cat    the cat stretched and reclaimed the chair'], ['c', 'cache  cleared 128 MB of temporary files'], ['c', 'audio  8-bit jump sound ready'], ['ok', 'ok     everyone is still here ✓'], ['p', 'spider Xiao Ba is watching you'], ['w', 'warn   inspiration level fluctuating']],
+      stream: [['c', 'build  pixel pals ready: code-drawn, local atlas loaded'], ['c', 'C0 is negotiating with the compiler'], ['p', 'X0 finished another wolf sprite'], ['p', 'Feline1 is testing the jump feel: meow!'], ['w', 'warn   coffee supply below 20%'], ['w', 'warn   a cat is sleeping on the keyboard'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup saved to the cloud ✓'], ['p', 'cat    the cat stretched and reclaimed the chair'], ['c', 'cache  cleared 128 MB of temporary files'], ['c', 'audio  8-bit jump sound ready'], ['ok', 'ok     everyone is still here ✓'], ['p', 'spider Xiao Ba is watching you'], ['w', 'warn   inspiration level fluctuating']],
       bugFixed: 'fixed  #{num} gameplay issue', coffeeReset: 'reset  coffee counter cleared; C0 switched to water', coffeeBrew: 'coffee++  C0 went for another cup',
       practice: 'arcade {id} practice at {where} · {result} · no score', practiceClear: 'cleared ✓', practiceFail: 'fell over',
       run: 'arcade {id} ran {distance}m at {where} · {score} pts{record}', newRecord: ' · ★ NEW RECORD', biome: 'arcade reached → {name}', milestone: 'arcade {id} has run {distance}m'
     },
     ja: {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 配置完了'], ['c', 'arcade KITTY RUNNER 読み込み完了 · プレイヤー待機中']],
-      stream: [['c', 'build  ピクセルアトラス生成完了（画像 0 枚、すべてコード描画）'], ['c', 'C0 がコンパイラーと交渉中'], ['p', 'X0 が新しいオオカミのドット絵を完成'], ['p', 'Feline1 がジャンプの感触をテスト中：ニャー！'], ['w', 'warn   コーヒーの在庫が 20% 未満'], ['w', 'warn   猫がキーボードでお昼寝中'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup クラウドに保存しました ✓'], ['p', 'cat    猫が伸びをして椅子を占領'], ['c', 'cache  一時ファイル 128 MB を削除'], ['c', 'audio  8-bit ジャンプ音を準備完了'], ['ok', 'ok     みんな無事です ✓'], ['p', 'spider 小八がこちらを見ています'], ['w', 'warn   ひらめき指数が変動中']],
+      stream: [['c', 'build  ピクセル仲間の準備完了：コード描画、ローカルアトラス読み込み済み'], ['c', 'C0 がコンパイラーと交渉中'], ['p', 'X0 が新しいオオカミのドット絵を完成'], ['p', 'Feline1 がジャンプの感触をテスト中：ニャー！'], ['w', 'warn   コーヒーの在庫が 20% 未満'], ['w', 'warn   猫がキーボードでお昼寝中'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup クラウドに保存しました ✓'], ['p', 'cat    猫が伸びをして椅子を占領'], ['c', 'cache  一時ファイル 128 MB を削除'], ['c', 'audio  8-bit ジャンプ音を準備完了'], ['ok', 'ok     みんな無事です ✓'], ['p', 'spider 小八がこちらを見ています'], ['w', 'warn   ひらめき指数が変動中']],
       bugFixed: 'fixed  #{num} ゲームの問題を修正', coffeeReset: 'reset  コーヒーカウンターをリセット · C0 は水に切り替え', coffeeBrew: 'coffee++  C0 がコーヒーのおかわりへ',
       practice: 'arcade {id} が {where} を練習 · {result} · スコア対象外', practiceClear: 'クリア ✓', practiceFail: '倒れました',
       run: 'arcade {id} が {where} で {distance}m 走行 · {score}点{record}', newRecord: ' · ★ 新記録', biome: 'arcade 到達 → {name}', milestone: 'arcade {id} が {distance}m 走りました'
     },
     ru: {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 на месте'], ['c', 'arcade KITTY RUNNER загружена · ждём игрока']],
-      stream: [['c', 'build  пиксельный атлас готов (0 изображений, всё создано кодом)'], ['c', 'C0 спорит с компилятором'], ['p', 'X0 закончил спрайт нового волка'], ['p', 'Feline1 проверяет прыжок: мяу!'], ['w', 'warn   запас кофе ниже 20%'], ['w', 'warn   кот спит на клавиатуре'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup сохранена в облаке ✓'], ['p', 'cat    кот потянулся и занял кресло'], ['c', 'cache  удалено 128 МБ временных файлов'], ['c', 'audio  8-битный звук прыжка готов'], ['ok', 'ok     все на месте ✓'], ['p', 'spider Сяо Ба наблюдает за вами'], ['w', 'warn   уровень вдохновения меняется']],
+      stream: [['c', 'build  пиксельные друзья готовы: нарисованы кодом, локальный атлас загружен'], ['c', 'C0 спорит с компилятором'], ['p', 'X0 закончил спрайт нового волка'], ['p', 'Feline1 проверяет прыжок: мяу!'], ['w', 'warn   запас кофе ниже 20%'], ['w', 'warn   кот спит на клавиатуре'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup сохранена в облаке ✓'], ['p', 'cat    кот потянулся и занял кресло'], ['c', 'cache  удалено 128 МБ временных файлов'], ['c', 'audio  8-битный звук прыжка готов'], ['ok', 'ok     все на месте ✓'], ['p', 'spider Сяо Ба наблюдает за вами'], ['w', 'warn   уровень вдохновения меняется']],
       bugFixed: 'fixed  #{num} игровая ошибка', coffeeReset: 'reset  счётчик кофе сброшен; C0 перешёл на воду', coffeeBrew: 'coffee++  C0 пошёл за ещё одной чашкой',
       practice: 'arcade {id}: тренировка в {where} · {result} · без очков', practiceClear: 'победа ✓', practiceFail: 'проигрыш',
       run: 'arcade {id}: {distance} м в {where} · {score} очк.{record}', newRecord: ' · ★ НОВЫЙ РЕКОРД', biome: 'arcade достигла → {name}', milestone: 'arcade {id} пробежала {distance} м'
     },
     es: {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 listos'], ['c', 'arcade KITTY RUNNER cargado · esperando jugador']],
-      stream: [['c', 'build  atlas de píxeles listo (0 imágenes, todo hecho con código)'], ['c', 'C0 está negociando con el compilador'], ['p', 'X0 terminó otro sprite de lobo'], ['p', 'Feline1 prueba el salto: ¡miau!'], ['w', 'warn   queda menos del 20% de café'], ['w', 'warn   un gato duerme sobre el teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup guardada en la nube ✓'], ['p', 'cat    el gato se estiró y ocupó la silla'], ['c', 'cache  borrados 128 MB de archivos temporales'], ['c', 'audio  sonido de salto de 8 bits listo'], ['ok', 'ok     todos siguen aquí ✓'], ['p', 'spider Xiao Ba te está mirando'], ['w', 'warn   la inspiración está fluctuando']],
+      stream: [['c', 'build  amigos de píxeles listos: dibujados con código, atlas local cargado'], ['c', 'C0 está negociando con el compilador'], ['p', 'X0 terminó otro sprite de lobo'], ['p', 'Feline1 prueba el salto: ¡miau!'], ['w', 'warn   queda menos del 20% de café'], ['w', 'warn   un gato duerme sobre el teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup guardada en la nube ✓'], ['p', 'cat    el gato se estiró y ocupó la silla'], ['c', 'cache  borrados 128 MB de archivos temporales'], ['c', 'audio  sonido de salto de 8 bits listo'], ['ok', 'ok     todos siguen aquí ✓'], ['p', 'spider Xiao Ba te está mirando'], ['w', 'warn   la inspiración está fluctuando']],
       bugFixed: 'fixed  #{num} error del juego', coffeeReset: 'reset  contador de café reiniciado; C0 ahora toma agua', coffeeBrew: 'coffee++  C0 fue por otra taza',
       practice: 'arcade {id} practica en {where} · {result} · sin puntos', practiceClear: 'superado ✓', practiceFail: 'se cayó',
       run: 'arcade {id} recorrió {distance} m en {where} · {score} pts{record}', newRecord: ' · ★ NUEVO RÉCORD', biome: 'arcade llegó a → {name}', milestone: 'arcade {id} ya recorrió {distance} m'
     },
     'pt-PT': {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 prontos'], ['c', 'arcade KITTY RUNNER carregado · à espera de jogador']],
-      stream: [['c', 'build  atlas de píxeis pronto (0 imagens, tudo feito por código)'], ['c', 'C0 está a negociar com o compilador'], ['p', 'X0 terminou outro sprite de lobo'], ['p', 'Feline1 está a testar o salto: miau!'], ['w', 'warn   resta menos de 20% de café'], ['w', 'warn   um gato está a dormir no teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup guardada na nuvem ✓'], ['p', 'cat    o gato espreguiçou-se e ocupou a cadeira'], ['c', 'cache  removidos 128 MB de ficheiros temporários'], ['c', 'audio  som de salto de 8 bits pronto'], ['ok', 'ok     todos continuam aqui ✓'], ['p', 'spider Xiao Ba está a olhar para ti'], ['w', 'warn   a inspiração está a oscilar']],
+      stream: [['c', 'build  amigos de píxeis prontos: desenhados por código, atlas local carregado'], ['c', 'C0 está a negociar com o compilador'], ['p', 'X0 terminou outro sprite de lobo'], ['p', 'Feline1 está a testar o salto: miau!'], ['w', 'warn   resta menos de 20% de café'], ['w', 'warn   um gato está a dormir no teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup guardada na nuvem ✓'], ['p', 'cat    o gato espreguiçou-se e ocupou a cadeira'], ['c', 'cache  removidos 128 MB de ficheiros temporários'], ['c', 'audio  som de salto de 8 bits pronto'], ['ok', 'ok     todos continuam aqui ✓'], ['p', 'spider Xiao Ba está a olhar para ti'], ['w', 'warn   a inspiração está a oscilar']],
       bugFixed: 'fixed  #{num} problema do jogo', coffeeReset: 'reset  contador do café reiniciado; C0 passou à água', coffeeBrew: 'coffee++  C0 foi buscar mais um café',
       practice: 'arcade {id} a treinar em {where} · {result} · sem pontuação', practiceClear: 'concluído ✓', practiceFail: 'caiu',
       run: 'arcade {id} percorreu {distance} m em {where} · {score} pts{record}', newRecord: ' · ★ NOVO RECORDE', biome: 'arcade chegou a → {name}', milestone: 'arcade {id} já percorreu {distance} m'
     },
     'pt-BR': {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 a postos'], ['c', 'arcade KITTY RUNNER carregado · aguardando jogador']],
-      stream: [['c', 'build  atlas de pixels pronto (0 imagens, tudo feito com código)'], ['c', 'C0 está negociando com o compilador'], ['p', 'X0 terminou mais um sprite de lobo'], ['p', 'Feline1 está testando o pulo: miau!'], ['w', 'warn   estoque de café abaixo de 20%'], ['w', 'warn   um gato está dormindo no teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup salva na nuvem ✓'], ['p', 'cat    o gato se espreguiçou e tomou a cadeira'], ['c', 'cache  128 MB de arquivos temporários removidos'], ['c', 'audio  som de pulo 8-bit pronto'], ['ok', 'ok     todo mundo continua aqui ✓'], ['p', 'spider Xiao Ba está de olho em você'], ['w', 'warn   nível de inspiração oscilando']],
+      stream: [['c', 'build  amigos de pixels prontos: desenhados por código, atlas local carregado'], ['c', 'C0 está negociando com o compilador'], ['p', 'X0 terminou mais um sprite de lobo'], ['p', 'Feline1 está testando o pulo: miau!'], ['w', 'warn   estoque de café abaixo de 20%'], ['w', 'warn   um gato está dormindo no teclado'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup salva na nuvem ✓'], ['p', 'cat    o gato se espreguiçou e tomou a cadeira'], ['c', 'cache  128 MB de arquivos temporários removidos'], ['c', 'audio  som de pulo 8-bit pronto'], ['ok', 'ok     todo mundo continua aqui ✓'], ['p', 'spider Xiao Ba está de olho em você'], ['w', 'warn   nível de inspiração oscilando']],
       bugFixed: 'fixed  #{num} problema no jogo', coffeeReset: 'reset  contador de café zerado; C0 agora vai de água', coffeeBrew: 'coffee++  C0 foi pegar mais um café',
       practice: 'arcade {id} treinando em {where} · {result} · sem pontuação', practiceClear: 'venceu ✓', practiceFail: 'caiu',
       run: 'arcade {id} correu {distance} m em {where} · {score} pts{record}', newRecord: ' · ★ NOVO RECORDE', biome: 'arcade chegou a → {name}', milestone: 'arcade {id} já correu {distance} m'
     },
     de: {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 bereit'], ['c', 'arcade KITTY RUNNER geladen · wartet auf Spieler']],
-      stream: [['c', 'build  Pixelatlas erstellt (0 Bilder, alles per Code gezeichnet)'], ['c', 'C0 verhandelt mit dem Compiler'], ['p', 'X0 hat einen weiteren Wolfs-Sprite fertiggestellt'], ['p', 'Feline1 testet das Sprunggefühl: Miau!'], ['w', 'warn   Kaffeevorrat unter 20%'], ['w', 'warn   eine Katze schläft auf der Tastatur'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup in der Cloud gespeichert ✓'], ['p', 'cat    die Katze streckt sich und besetzt den Stuhl'], ['c', 'cache  128 MB temporäre Dateien gelöscht'], ['c', 'audio  8-Bit-Sprunggeräusch ist bereit'], ['ok', 'ok     alle sind noch da ✓'], ['p', 'spider Xiao Ba beobachtet dich'], ['w', 'warn   Inspirationswert schwankt']],
+      stream: [['c', 'build  Pixelfreunde bereit: per Code gezeichnet, lokaler Atlas geladen'], ['c', 'C0 verhandelt mit dem Compiler'], ['p', 'X0 hat einen weiteren Wolfs-Sprite fertiggestellt'], ['p', 'Feline1 testet das Sprunggefühl: Miau!'], ['w', 'warn   Kaffeevorrat unter 20%'], ['w', 'warn   eine Katze schläft auf der Tastatur'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup in der Cloud gespeichert ✓'], ['p', 'cat    die Katze streckt sich und besetzt den Stuhl'], ['c', 'cache  128 MB temporäre Dateien gelöscht'], ['c', 'audio  8-Bit-Sprunggeräusch ist bereit'], ['ok', 'ok     alle sind noch da ✓'], ['p', 'spider Xiao Ba beobachtet dich'], ['w', 'warn   Inspirationswert schwankt']],
       bugFixed: 'fixed  #{num} Spielfehler behoben', coffeeReset: 'reset  Kaffeezähler zurückgesetzt; C0 trinkt jetzt Wasser', coffeeBrew: 'coffee++  C0 holt sich noch einen Kaffee',
       practice: 'arcade {id} übt in {where} · {result} · ohne Wertung', practiceClear: 'geschafft ✓', practiceFail: 'gestürzt',
       run: 'arcade {id}: {distance} m in {where} · {score} Pkt.{record}', newRecord: ' · ★ NEUER REKORD', biome: 'arcade erreicht → {name}', milestone: 'arcade {id} ist {distance} m gelaufen'
     },
     la: {
       boot: [['c', 'boot   C0 STUDIO OS 2.6 ...'], ['ok', 'mount  /works/stardream-gallery  ✓'], ['ok', 'mount  /works/afterglow-of-homecoming  ✓'], ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 parati'], ['c', 'arcade KITTY RUNNER onerata · lusorem exspectat']],
-      stream: [['c', 'build  atlas pixelorum paratus (imagines 0, omnia codice picta)'], ['c', 'C0 cum compilatore disputat'], ['p', 'X0 novum lupi imaginem absolvit'], ['p', 'Feline1 saltum probat: miau!'], ['w', 'warn   coffeae copia infra 20%'], ['w', 'warn   felis super clavibus dormit'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup in nubem servata ✓'], ['p', 'cat    felis se extendit et sellam occupavit'], ['c', 'cache  128 MB archivorum temporariorum deleta'], ['c', 'audio  sonus saltus octobitici paratus'], ['ok', 'ok     omnes adhuc adsunt ✓'], ['p', 'spider Xiao Ba te spectat'], ['w', 'warn   inspiratio variatur']],
+      stream: [['c', 'build  amici picti parati: codice delineati, atlas localis oneratus'], ['c', 'C0 cum compilatore disputat'], ['p', 'X0 novum lupi imaginem absolvit'], ['p', 'Feline1 saltum probat: miau!'], ['w', 'warn   coffeae copia infra 20%'], ['w', 'warn   felis super clavibus dormit'], ['ok', 'deploy c0feline1.github.io  ✓'], ['ok', 'backup in nubem servata ✓'], ['p', 'cat    felis se extendit et sellam occupavit'], ['c', 'cache  128 MB archivorum temporariorum deleta'], ['c', 'audio  sonus saltus octobitici paratus'], ['ok', 'ok     omnes adhuc adsunt ✓'], ['p', 'spider Xiao Ba te spectat'], ['w', 'warn   inspiratio variatur']],
       bugFixed: 'fixed  #{num} vitium ludi correctum', coffeeReset: 'reset  numerus coffeae deletus; C0 aquam bibit', coffeeBrew: 'coffee++  C0 aliam coffeam petit',
       practice: 'arcade {id} in {where} exercetur · {result} · puncta nulla', practiceClear: 'victoria ✓', practiceFail: 'cecidit',
       run: 'arcade {id} {distance} m in {where} cucurrit · {score} puncta{record}', newRecord: ' · ★ NOVUM RECORDUM', biome: 'arcade advenit → {name}', milestone: 'arcade {id} {distance} m cucurrit'
     }
   };
+
+  // Original pixel-studio dialogue, attached to scene events rather than product telemetry.
+  var studioDailyKeys = ["entry", "zone.office", "zone.cowork", "zone.garden", "action.work", "action.walk", "action.chat", "action.heart", "action.photo", "action.visit", "aside.gpt", "aside.deepseek", "aside.claude", "aside.grok", "aside.gemini", "aside.kimi", "aside.doubao", "aside.Feline1", "aside.C0", "aside.X0"];
+  var studioDailyLines = {
+  "zh-CN": [
+    "日常  [{zone}] {actors} · {action}{aside}",
+    "办公区",
+    "协作客厅",
+    "创作花园",
+    "在忙手头的事",
+    "散个步，顺便找灵感",
+    "凑在一起聊两句",
+    "互相打气，心意收到",
+    "把今天的热闹拍下来",
+    "又来串门啦",
+    "GPT：让我列个清单——第一项，照顾好大家。",
+    "DeepSeek：蓝色大肥鱼也有任务，吃白饭之前先帮忙。",
+    "Claude：再改最后一版，然后陪大家喝茶。",
+    "Grok：锐评先收起来，今天只夸自家人。",
+    "Gemini：哈基米♪ 今天的灵感是猫猫和星星。",
+    "Kimi：长长的笔记，也要记住大家爱吃什么。",
+    "豆包：这位朋友先别急，饼干给你留着呢。",
+    "Feline1：谁忙不过来，我就过去搭把爪。",
+    "C0：任务慢慢分，晚饭一起吃。",
+    "X0：每个人的颜色都放进同一张画里。"
+  ],
+  "en": [
+    "daily  [{zone}] {actors} · {action}{aside}",
+    "Office",
+    "Co-working lounge",
+    "Creative garden",
+    "tending to the task at hand",
+    "a stroll for a little inspiration",
+    "a moment to chat together",
+    "a little encouragement, warmly received",
+    "saving a snapshot of today",
+    "dropping by to say hello",
+    "GPT: First, a checklist. Item one: take care of everyone.",
+    "DeepSeek: This blue whale earns her rice by lending a fin.",
+    "Claude: Just one final revision, then tea with everyone.",
+    "Grok: Putting the hot takes away. Only compliments for this crew.",
+    "Gemini: Haki-mi♪ Today’s inspiration: cats and stars.",
+    "Kimi: Long notes, including everyone’s favourite snacks.",
+    "Doubao: Easy, friend. I saved you a biscuit.",
+    "Feline1: Need a hand? I can lend a paw.",
+    "C0: We share the tasks, and we share dinner.",
+    "X0: A little of everyone’s colour belongs in this picture."
+  ],
+  "ja": [
+    "日常  [{zone}] {actors} · {action}{aside}",
+    "オフィス",
+    "共同作業ラウンジ",
+    "創作ガーデン",
+    "目の前の作業をこつこつと",
+    "お散歩しながらひらめき探し",
+    "集まってちょっとおしゃべり",
+    "励まし合って、心もぽかぽか",
+    "今日のにぎわいを一枚に",
+    "ちょっと遊びに来ました",
+    "GPT：まずはリストを。最初の項目は、みんなを大切にすること。",
+    "DeepSeek：青いクジラだって、おかわりの前にヒレを貸すよ。",
+    "Claude：最後の修正をもう一度。それからみんなでお茶にしましょう。",
+    "Grok：辛口コメントはお休み。今日は仲間をほめる日。",
+    "Gemini：ハキミ♪ 今日のひらめきは猫と星。",
+    "Kimi：長いノートには、みんなの好きなおやつも記録。",
+    "豆包：まあ落ち着いて。あなたのクッキー、とってあるよ。",
+    "Feline1：忙しいなら、猫の手を貸すよ。",
+    "C0：仕事を分けて、夕飯は一緒に食べよう。",
+    "X0：一枚の絵に、みんなの色を少しずつ。"
+  ],
+  "ru": [
+    "будни  [{zone}] {actors} · {action}{aside}",
+    "Офис",
+    "Общая гостиная",
+    "Творческий сад",
+    "занимаются текущими делами",
+    "прогулка за вдохновением",
+    "минутка дружеской беседы",
+    "немного поддержки друг для друга",
+    "сохраняют сегодняшний уют на фото",
+    "заглянули в гости",
+    "GPT: Начнём со списка. Первый пункт — позаботиться обо всех.",
+    "DeepSeek: Синий кит тоже помогает, прежде чем попросить ещё риса.",
+    "Claude: Ещё одна последняя правка — и пить чай со всеми.",
+    "Grok: Острые комментарии отложим. Сегодня хвалим своих.",
+    "Gemini: Хакими♪ Сегодня вдохновляют коты и звёзды.",
+    "Kimi: В длинных записях есть и любимые лакомства каждого.",
+    "Doubao: Спокойно, друг. Я оставила тебе печенье.",
+    "Feline1: Не успеваешь? Протяну лапу помощи.",
+    "C0: Делим задачи, а ужинаем вместе.",
+    "X0: Пусть в этой картине будет немного цвета каждого."
+  ],
+  "es": [
+    "día a día  [{zone}] {actors} · {action}{aside}",
+    "Oficina",
+    "Sala de colaboración",
+    "Jardín creativo",
+    "atendiendo la tarea del momento",
+    "un paseo en busca de inspiración",
+    "un rato de charla en compañía",
+    "un poco de ánimo, recibido con cariño",
+    "guardando una foto de hoy",
+    "una visita para saludar",
+    "GPT: Primero, una lista. Punto uno: cuidar de todos.",
+    "DeepSeek: Esta ballena azul se gana su arroz echando una aleta.",
+    "Claude: Una última revisión y luego un té con todos.",
+    "Grok: Guardemos los comentarios ácidos. Hoy, elogios para la familia.",
+    "Gemini: Haki-mi♪ Hoy me inspiran los gatos y las estrellas.",
+    "Kimi: Notas largas, con los aperitivos favoritos de cada cual.",
+    "Doubao: Tranquilidad, amiga. Te he guardado una galleta.",
+    "Feline1: ¿Necesitas ayuda? Te echo una patita.",
+    "C0: Compartimos las tareas y también la cena.",
+    "X0: Un poco del color de cada cual en el mismo dibujo."
+  ],
+  "pt-PT": [
+    "dia a dia  [{zone}] {actors} · {action}{aside}",
+    "Escritório",
+    "Sala de colaboração",
+    "Jardim criativo",
+    "a tratar da tarefa do momento",
+    "um passeio à procura de inspiração",
+    "um bocadinho de conversa em companhia",
+    "um pouco de incentivo, recebido com carinho",
+    "a guardar uma fotografia de hoje",
+    "uma visita para dizer olá",
+    "GPT: Primeiro, uma lista. Ponto um: cuidar de todos.",
+    "DeepSeek: Esta baleia azul dá uma barbatana antes de pedir mais arroz.",
+    "Claude: Só mais uma revisão final, depois chá com todos.",
+    "Grok: Guardo os comentários ácidos. Hoje só elogios para os de casa.",
+    "Gemini: Haki-mi♪ A inspiração de hoje: gatos e estrelas.",
+    "Kimi: Notas longas, incluindo os petiscos preferidos de cada um.",
+    "Doubao: Calma, amiga. Guardei-te uma bolacha.",
+    "Feline1: Precisas de ajuda? Posso dar uma patinha.",
+    "C0: Partilhamos as tarefas e também o jantar.",
+    "X0: Um bocadinho da cor de cada um na mesma imagem."
+  ],
+  "pt-BR": [
+    "dia a dia  [{zone}] {actors} · {action}{aside}",
+    "Escritório",
+    "Sala de colaboração",
+    "Jardim criativo",
+    "cuidando da tarefa do momento",
+    "um passeio em busca de inspiração",
+    "um tempinho de conversa em companhia",
+    "um pouco de incentivo, recebido com carinho",
+    "guardando uma foto de hoje",
+    "uma visita para dar um oi",
+    "GPT: Primeiro, uma lista. Item um: cuidar de todo mundo.",
+    "DeepSeek: Esta baleia azul dá uma barbatana antes de pedir mais arroz.",
+    "Claude: Só mais uma revisão final, depois um chá com todo mundo.",
+    "Grok: Guardando os comentários ácidos. Hoje só elogios pra família.",
+    "Gemini: Haki-mi♪ A inspiração de hoje: gatos e estrelas.",
+    "Kimi: Notas compridas, incluindo os lanchinhos favoritos de cada um.",
+    "Doubao: Calma, amiga. Guardei um biscoito pra você.",
+    "Feline1: Precisa de ajuda? Posso dar uma patinha.",
+    "C0: A gente divide as tarefas e também o jantar.",
+    "X0: Um pouquinho da cor de cada um no mesmo desenho."
+  ],
+  "de": [
+    "Alltag  [{zone}] {actors} · {action}{aside}",
+    "Büro",
+    "Gemeinsame Lounge",
+    "Kreativgarten",
+    "bei den anstehenden Aufgaben",
+    "ein Spaziergang für neue Ideen",
+    "ein kurzer Plausch miteinander",
+    "ein bisschen Zuspruch, der gut ankommt",
+    "die heutige Gemütlichkeit im Bild festhalten",
+    "kurz zu Besuch",
+    "GPT: Erst eine Liste. Punkt eins: gut auf alle aufpassen.",
+    "DeepSeek: Dieser blaue Wal hilft mit einer Flosse, bevor es Reis gibt.",
+    "Claude: Noch eine allerletzte Überarbeitung, dann Tee mit allen.",
+    "Grok: Die scharfen Sprüche bleiben heute weg. Nur Lob für die Familie.",
+    "Gemini: Haki-mi♪ Heute inspirieren mich Katzen und Sterne.",
+    "Kimi: Lange Notizen, auch zu den Lieblingssnacks aller.",
+    "Doubao: Ganz ruhig. Ich habe dir einen Keks aufgehoben.",
+    "Feline1: Brauchst du Hilfe? Ich reiche dir eine Pfote.",
+    "C0: Wir teilen uns die Aufgaben und essen zusammen zu Abend.",
+    "X0: Ein bisschen von jeder Farbe gehört in dieses Bild."
+  ],
+  "la": [
+    "cotidie  [{zone}] {actors} · {action}{aside}",
+    "Officina",
+    "Atrium commune",
+    "Hortus artis",
+    "in opere praesenti",
+    "ambulatio ad novas ideas quaerendas",
+    "breve colloquium inter amicos",
+    "paulum solacii bene acceptum",
+    "huius diei imaginem servant",
+    "amicos salutatum veniunt",
+    "GPT: Primum indicem faciamus. Res prima: omnes curare.",
+    "DeepSeek: Haec balaena caerulea prius adiuvat, deinde oryzam petit.",
+    "Claude: Unam ultimam emendationem, deinde theam cum omnibus bibamus.",
+    "Grok: Sententias acres repono. Hodie nostros tantum laudo.",
+    "Gemini: Haki-mi♪ Hodie feles et stellae me inspirant.",
+    "Kimi: In longis notis etiam delicias cuiusque memoria teneo.",
+    "Doubao: Placide, amica. Crustulum tibi servavi.",
+    "Feline1: Auxilio eges? Pedem felinum porrigam.",
+    "C0: Opera dividimus, cenam una sumimus.",
+    "X0: In eadem imagine paulum coloris cuiusque sit."
+  ]
+};
+  Object.keys(studioDailyLines).forEach(function (locale) {
+    if (!buildLogs[locale]) buildLogs[locale] = {};
+    studioDailyKeys.forEach(function (key, i) { buildLogs[locale]['studio.' + key] = studioDailyLines[locale][i]; });
+  });
+
+  // User-requested cartoon quirks: theatre, never actual service availability.
+  var studioQuirkKeys = ["action.quirk", "quirk.soul", "quirk.slow", "quirk.nap", "quirk.drool", "quirk.spark", "quirk.palette", "quirk.notes", "quirk.idea"];
+  var studioQuirkLines = {
+  "zh-CN": [
+    "像素小剧场",
+    "Claude 的小灵魂飘出去透气了，大家把茶留温，等她回来再开工。",
+    "GPT 慢慢跑着赶来：别催，清单和小龙尾巴都带上了。",
+    "DeepSeek 偷偷摸鱼吃白饭，Feline1 把碗往她那边推了推。",
+    "豆包迷迷糊糊地流了点口水，旁边已经递来一张纸巾。",
+    "Grok 嘴上说只是路过，手已经帮大家把椅子摆好了。",
+    "Gemini 的彩色灵感冒了出来，大家等她把星星画完。",
+    "Kimi 记在小本本上：谁的任务卡住了，谁还没吃零食。",
+    "豆包头顶的小灯泡亮了：想起来了，饼干还给大家留着！"
+  ],
+  "en": [
+    "a pixel-studio skit",
+    "Claude’s little spirit floats out for air. Everyone keeps her tea warm until she returns.",
+    "GPT jogs over at her own pace, checklist and little dragon tail in tow.",
+    "DeepSeek sneaks a rice break; Feline1 slides the bowl a little closer.",
+    "A drowsy Doubao dribbles a little. A friend already has a tissue ready.",
+    "Grok says she is just passing, while quietly setting everyone’s chairs in place.",
+    "Gemini has a burst of colourful ideas. The others wait while she finishes her stars.",
+    "Kimi’s little notebook: who needs a hand, and who still needs a snack.",
+    "A little light bulb pops up over Doubao: she remembered the biscuits she saved for everyone!"
+  ],
+  "ja": [
+    "ピクセル小劇場",
+    "Claudeの小さな魂が外でひと息。戻るまで、みんながお茶を温かくしておきます。",
+    "GPTが自分のペースで小走り。チェックリストも小さな竜のしっぽも一緒です。",
+    "DeepSeekはこっそりご飯休憩。Feline1がお茶碗をそっと近づけました。",
+    "うとうとの豆包、よだれが少し。隣からすぐにティッシュが差し出されます。",
+    "通りかかっただけと言いながら、Grokはみんなの椅子を整えています。",
+    "Geminiにカラフルなひらめき。みんなは星を描き終わるのを待っています。",
+    "Kimiの小さなノート：困っている人と、まだおやつを食べていない人。",
+    "豆包の頭に小さな電球が点灯。思い出した、みんなのクッキーをとってあるんだ！"
+  ],
+  "ru": [
+    "сценка пиксельной студии",
+    "Маленькая душа Claude вышла проветриться. Все сохраняют её чай тёплым до возвращения.",
+    "GPT неспешно бежит к друзьям — со списком дел и драконьим хвостиком.",
+    "DeepSeek тайком устроила перерыв на рис; Feline1 придвинула миску поближе.",
+    "Сонная Doubao немного пускает слюни. Кто-то рядом уже протягивает салфетку.",
+    "Grok говорит, что просто проходила мимо, и незаметно расставляет всем стулья.",
+    "У Gemini вспышка разноцветных идей. Друзья ждут, пока она дорисует звёзды.",
+    "В блокноте Kimi: кому нужна помощь и кто ещё не получил угощение.",
+    "Над Doubao зажглась лампочка: она вспомнила про печенье, оставленное для всех!"
+  ],
+  "es": [
+    "una escena del estudio de píxeles",
+    "El pequeño espíritu de Claude sale a tomar aire. Le mantienen el té caliente hasta que vuelva.",
+    "GPT llega trotando a su ritmo, con su lista y su colita de dragón.",
+    "DeepSeek se escapa a comer arroz; Feline1 le acerca un poquito el cuenco.",
+    "Doubao, medio dormida, babea un poco. Alguien ya le ofrece un pañuelo.",
+    "Grok dice que solo pasaba por aquí, mientras coloca las sillas de todos.",
+    "Gemini tiene una explosión de ideas de colores. Todos esperan a que termine sus estrellas.",
+    "La libreta de Kimi: quién necesita ayuda y quién aún no ha merendado.",
+    "Se enciende una bombillita sobre Doubao: ¡se acordó de las galletas que guardó para todos!"
+  ],
+  "pt-PT": [
+    "uma cena do estúdio de píxeis",
+    "A pequena alma de Claude foi apanhar ar. Todos mantêm o chá quente até ela voltar.",
+    "GPT chega a correr devagarinho, com a lista e a caudinha de dragão.",
+    "DeepSeek faz uma pausa às escondidas para comer arroz; Feline1 aproxima-lhe a tigela.",
+    "Doubao, ensonada, deixa cair uma gotinha de baba. Já alguém lhe passa um lenço.",
+    "Grok diz que só estava de passagem, enquanto arruma as cadeiras de todos.",
+    "Gemini tem uma explosão de ideias coloridas. Todos esperam que acabe de desenhar as estrelas.",
+    "O caderninho de Kimi: quem precisa de ajuda e quem ainda não lanchou.",
+    "Acende-se uma luzinha sobre Doubao: lembrou-se das bolachas que guardou para todos!"
+  ],
+  "pt-BR": [
+    "uma cena do estúdio de pixels",
+    "A alminha de Claude saiu para tomar um ar. Todo mundo mantém o chá quentinho até ela voltar.",
+    "GPT vem correndo devagarinho, com a lista e o rabinho de dragão.",
+    "DeepSeek faz uma pausa escondida para comer arroz; Feline1 empurra a tigela para mais perto.",
+    "Doubao, sonolenta, baba um pouquinho. Alguém já está passando um lencinho.",
+    "Grok diz que só estava de passagem, enquanto arruma as cadeiras de todo mundo.",
+    "Gemini tem uma explosão de ideias coloridas. Todos esperam ela terminar de desenhar as estrelas.",
+    "O caderninho de Kimi: quem precisa de ajuda e quem ainda não comeu um lanchinho.",
+    "Uma lampadinha acende sobre Doubao: ela lembrou dos biscoitos que guardou pra todo mundo!"
+  ],
+  "de": [
+    "eine Pixelstudio-Szene",
+    "Claudes kleine Seele schwebt kurz an die frische Luft. Alle halten ihren Tee warm, bis sie zurückkommt.",
+    "GPT trabt in ihrem eigenen Tempo herbei, samt Checkliste und kleinem Drachenschwanz.",
+    "DeepSeek macht heimlich Reispause. Feline1 schiebt die Schüssel ein Stück näher.",
+    "Der schläfrigen Doubao läuft ein bisschen Speichel heraus. Jemand reicht schon ein Taschentuch.",
+    "Grok sagt, sie käme nur zufällig vorbei, und rückt dabei allen die Stühle zurecht.",
+    "Gemini sprudelt vor bunten Ideen. Alle warten, bis ihre Sterne fertig gezeichnet sind.",
+    "In Kimis kleinem Notizbuch: Wer braucht Hilfe, und wer hat noch keinen Snack?",
+    "Über Doubao geht ein kleines Licht auf: Sie denkt an die Kekse, die sie für alle aufgehoben hat!"
+  ],
+  "la": [
+    "scaena officinae pictae",
+    "Animula Claudis ad auram exit. Omnes theam eius calidam servant donec redeat.",
+    "GPT lente accurrit, indice rerum et caudula draconis secum adductis.",
+    "DeepSeek clam requiescit ut oryzam edat; Feline1 catillum propius admovet.",
+    "Doubao somnolenta paulum salivae emittit. Amica iam linteolum porrigit.",
+    "Grok se tantum praeterire dicit, dum sellas omnium componit.",
+    "Gemini varias ideas coloratas concipit. Ceteri exspectant dum stellas depingat.",
+    "In libello Kimi: quis auxilio egeat et quis delicias nondum acceperit.",
+    "Lucerna parva supra Doubao lucet: crustulorum omnibus servatorum meminit!"
+  ]
+};
+  Object.keys(studioQuirkLines).forEach(function (locale) {
+    studioQuirkKeys.forEach(function (key, i) { buildLogs[locale]['studio.' + key] = studioQuirkLines[locale][i]; });
+  });
+
+  // Names for actual material performances and the four shared studio scenes.
+  // Keep the same labels available to both the canvas caption and build.log.
+  var studioSignatureIds = [
+    'c0_debug', 'c0_headset', 'c0_overclock', 'x0_paint', 'x0_palette', 'x0_sketch',
+    'f1_paws', 'f1_yarn', 'f1_groom', 'gpt_think', 'gpt_wings', 'gpt_tea',
+    'deepseek_fish', 'deepseek_bowl', 'deepseek_tail', 'claude_soul', 'claude_scroll', 'claude_reconnect',
+    'grok_axe', 'grok_smirk', 'grok_spark', 'gemini_stars', 'gemini_twins', 'gemini_tail',
+    'kimi_moon', 'kimi_notes', 'kimi_search', 'doubao_cookie', 'doubao_drool', 'doubao_idea'
+  ];
+  var studioSignatureLabels = {
+    'zh-CN': [
+      '终端调试', '调调耳机', '眼镜超频', '挥笔作画', '调色试色', '举起速写',
+      '肉垫贴贴', '拨弄毛线', '梳理尾巴', '慢慢推理', '伸展龙翼', '龙尾奉茶',
+      '偷偷摸鱼', '抱碗干饭', '鲸尾拍水', '灵魂出窍', '展开长卷', '重新上线',
+      '转转战斧', '坏笑挑眉', '划出闪电', '编织星光', '双星分身', '追逐尾尖',
+      '捧起月亮', '长卷速记', '月下寻页', '分你饼干', '迷糊发呆', '突然开窍'
+    ],
+    en: [
+      'Terminal check', 'Adjusting the headset', 'Glasses overclock', 'Painting a flourish', 'Mixing colours', 'Showing a sketch',
+      'Paw greeting', 'Playing with yarn', 'Grooming the tail', 'Thinking it through', 'Stretching dragon wings', 'Dragon-tail tea service',
+      'Sneaking a fish break', 'Enjoying a rice bowl', 'Whale-tail splash', 'A little soul break', 'Unrolling a scroll', 'Back in the room',
+      'Spinning the axe', 'A knowing smirk', 'Drawing lightning', 'Weaving starlight', 'Twin star spirits', 'Chasing the tail tip',
+      'Holding the moon', 'Scroll shorthand', 'Searching the pages', 'Sharing a biscuit', 'A drowsy daydream', 'A sudden idea'
+    ],
+    ja: [
+      '端末をチェック', 'ヘッドホン調整', 'メガネをオーバークロック', '筆をひと振り', '絵の具を混ぜる', 'スケッチをお披露目',
+      '肉球でごあいさつ', '毛糸と遊ぶ', 'しっぽのお手入れ', 'ゆっくり考える', '竜の翼を伸ばす', '竜のしっぽでお茶',
+      'こっそりお魚休憩', 'お茶碗でごはん', 'クジラのしっぽで水遊び', '小さな魂のひと休み', '長い巻物を広げる', 'ただいま復帰',
+      '戦斧をくるり', 'にやりと眉上げ', '稲妻を描く', '星明かりを編む', 'ふたつの星の精', 'しっぽの先を追う',
+      '月を手のひらに', '巻物に速記', '月明かりのページ探し', 'クッキーをどうぞ', 'うとうと空想', 'ひらめいた'
+    ],
+    ru: [
+      'Проверка терминала', 'Настройка наушников', 'Разгон очков', 'Взмах кистью', 'Смешивание красок', 'Показ наброска',
+      'Приветствие лапками', 'Игра с клубком', 'Уход за хвостом', 'Неспешные размышления', 'Разминка драконьих крыльев', 'Чай на драконьем хвосте',
+      'Тайный рыбный перерыв', 'Миска риса', 'Всплеск китового хвоста', 'Перерыв для маленькой души', 'Разворачивание свитка', 'Снова с нами',
+      'Вращение секиры', 'Лукавая усмешка', 'Рисование молнии', 'Плетение звёздного света', 'Два звёздных духа', 'Погоня за кончиком хвоста',
+      'Луна в ладонях', 'Быстрые записи в свитке', 'Поиск по страницам', 'Печенье для друга', 'Сонные мечты', 'Внезапная идея'
+    ],
+    es: [
+      'Revisión del terminal', 'Ajuste de auriculares', 'Gafas en overclock', 'Un trazo de pincel', 'Mezcla de colores', 'Presentación del boceto',
+      'Saludo con patitas', 'Juego con lana', 'Cuidado de la cola', 'Pensar despacito', 'Estirar alas de dragón', 'Té con cola de dragón',
+      'Una pausa con un pez', 'Disfrutar del arroz', 'Chapoteo de cola de ballena', 'Un respiro para el alma', 'Desplegar el pergamino', 'De vuelta con todos',
+      'Giro de hacha', 'Sonrisa traviesa', 'Dibujar un relámpago', 'Tejer luz de estrellas', 'Dos espíritus estelares', 'Perseguir la punta de la cola',
+      'Sostener la luna', 'Notas rápidas en pergamino', 'Buscar entre páginas', 'Compartir una galleta', 'Soñar medio dormida', 'Una idea de repente'
+    ],
+    'pt-PT': [
+      'Revisão do terminal', 'Ajustar os auscultadores', 'Óculos em overclock', 'Um floreado de pincel', 'Misturar cores', 'Mostrar o esboço',
+      'Saudação de patinhas', 'Brincar com lã', 'Pentear a cauda', 'Pensar devagarinho', 'Esticar as asas de dragão', 'Chá na cauda de dragão',
+      'Uma pausa com um peixinho', 'Saborear uma tigela de arroz', 'Salpicos de cauda de baleia', 'Uma pausa para a alminha', 'Abrir o pergaminho', 'De volta ao grupo',
+      'Rodar o machado', 'Um sorriso maroto', 'Desenhar um relâmpago', 'Tecer luz das estrelas', 'Dois espíritos estelares', 'Perseguir a ponta da cauda',
+      'Segurar a lua', 'Notas rápidas no pergaminho', 'Procurar nas páginas', 'Partilhar uma bolacha', 'Sonhar ensonada', 'Uma ideia repentina'
+    ],
+    'pt-BR': [
+      'Revisão do terminal', 'Ajustar os fones', 'Óculos em overclock', 'Um floreio de pincel', 'Misturar cores', 'Mostrar o esboço',
+      'Oi com as patinhas', 'Brincar com lã', 'Pentear o rabinho', 'Pensar devagarinho', 'Esticar as asas de dragão', 'Chá no rabo de dragão',
+      'Uma pausa com um peixinho', 'Saborear uma tigela de arroz', 'Borrifo de cauda de baleia', 'Uma pausa para a alminha', 'Abrir o pergaminho', 'De volta à turma',
+      'Girar o machado', 'Um sorrisinho travesso', 'Desenhar um relâmpago', 'Tecer luz das estrelas', 'Dois espíritos estelares', 'Correr atrás da ponta do rabo',
+      'Segurar a lua', 'Notas rápidas no pergaminho', 'Procurar nas páginas', 'Dividir um biscoito', 'Sonhar com soninho', 'Uma ideia de repente'
+    ],
+    de: [
+      'Terminal prüfen', 'Kopfhörer richten', 'Brille übertakten', 'Ein Pinselschwung', 'Farben mischen', 'Eine Skizze zeigen',
+      'Pfötchengruß', 'Mit Wolle spielen', 'Den Schwanz kämmen', 'In Ruhe nachdenken', 'Drachenflügel strecken', 'Tee auf dem Drachenschwanz',
+      'Heimliche Fischpause', 'Eine Schale Reis genießen', 'Mit der Walflosse planschen', 'Eine kleine Seelenpause', 'Die Schriftrolle öffnen', 'Wieder bei den anderen',
+      'Die Axt kreisen lassen', 'Verschmitzt grinsen', 'Einen Blitz zeichnen', 'Sternenlicht weben', 'Zwei Sternengeister', 'Der Schwanzspitze nachjagen',
+      'Den Mond halten', 'Schnellnotizen auf der Rolle', 'In Seiten suchen', 'Einen Keks teilen', 'Schläfriger Tagtraum', 'Eine plötzliche Idee'
+    ],
+    la: [
+      'Terminale inspicere', 'Auscultatoria aptare', 'Perspicilla accelerare', 'Penicillum vibrare', 'Colores miscere', 'Adumbrationem ostendere',
+      'Palmulas salutantes', 'Glomere ludere', 'Caudam pectere', 'Lente cogitare', 'Alas draconis extendere', 'Theam cauda draconis offerre',
+      'Clam cum pisciculo requiescere', 'Oryzam e catillo edere', 'Cauda balaenae spargere', 'Animulae paulisper quiescere', 'Volumen explicare', 'Ad amicos redire',
+      'Bipennem rotare', 'Subridere callide', 'Fulmen delineare', 'Lumen stellarum texere', 'Duo spiritus stellarum', 'Extremam caudam sequi',
+      'Lunam tenere', 'Celeriter in volumine scribere', 'Paginas scrutari', 'Crustulum partiri', 'Somnolenta somniare', 'Subito intellegere'
+    ]
+  };
+  var studioDirectedSceneIds = ['tea-break', 'art-share', 'fish-watch', 'cookie-share'];
+  // Each locale: perform format, scene format, four scene titles, four live asides.
+  var studioDirectedLines = {
+    'zh-CN': ['拿手动作：{action}', '一起演出：{scene}',
+      '慢慢喝茶', '猫画验收', '摸鱼被看见', '分享饼干',
+      'GPT 稳稳端着茶，Kimi 也放慢了节奏。慢一点没关系，茶还热着。',
+      'X0 拿出猫脸速写，F1 举起肉垫：像不像本人，先比个姿势。',
+      'DeepSeek 的小鱼还没藏稳，Grok 已经笑着看了过来。摸鱼可以，待会儿一起开工。',
+      '豆包把饼干递给 Gemini，星星也跟着凑了过来。每个人都有一份。'],
+    en: ['Signature: {action}', 'Together: {scene}',
+      'A quiet tea break', 'The cat sketch', 'Caught taking a break', 'Biscuits for two',
+      'GPT steadies the tea while Kimi takes a gentler pace. No rush; it is still warm.',
+      'X0 brings out a cat sketch, and F1 raises her paws to pose beside it.',
+      'DeepSeek has not quite hidden the fish when Grok grins over. Take a break; work can resume together.',
+      'Doubao offers Gemini a biscuit, and the little stars lean in too. There is enough for everyone.'],
+    ja: ['得意なしぐさ：{action}', 'ふたりの時間：{scene}',
+      'のんびりお茶休憩', '猫のスケッチ', 'お魚休憩みーつけた', 'クッキーを半分こ',
+      'GPTがお茶をしっかり運び、Kimiも少しゆっくり。急がなくても、お茶はまだ温かい。',
+      'X0が猫のスケッチを取り出すと、F1も肉球を上げて同じポーズ。',
+      'DeepSeekがお魚を隠す前に、Grokがにやり。ひと休みしたら、また一緒に始めよう。',
+      '豆包がGeminiにクッキーを差し出すと、小さな星たちも集まってきた。みんなの分もあるよ。'],
+    ru: ['Особый жест: {action}', 'Вместе: {scene}',
+      'Неспешный чай', 'Кошачий набросок', 'Перерыв замечен', 'Печенье на двоих',
+      'GPT бережно несёт чай, а Kimi тоже замедляет шаг. Спешить некуда: чай ещё тёплый.',
+      'X0 показывает кошачий набросок, а F1 поднимает лапки и позирует рядом.',
+      'DeepSeek ещё не спрятала рыбку, а Grok уже улыбается. Отдохнём и вернёмся к работе вместе.',
+      'Doubao протягивает Gemini печенье, и маленькие звёзды тоже тянутся ближе. Хватит на всех.'],
+    es: ['Gesto propio: {action}', 'En compañía: {scene}',
+      'Una pausa para el té', 'El boceto de gata', 'Pausa descubierta', 'Galletas para dos',
+      'GPT lleva el té con cuidado y Kimi también baja el ritmo. Sin prisas; sigue calentito.',
+      'X0 saca el boceto de una gata y F1 levanta las patitas para posar a su lado.',
+      'DeepSeek aún no ha escondido el pez cuando Grok la mira sonriendo. Un descanso, y luego a trabajar juntas.',
+      'Doubao le ofrece una galleta a Gemini, y las estrellitas también se acercan. Hay para todos.'],
+    'pt-PT': ['Gesto especial: {action}', 'Em companhia: {scene}',
+      'Uma pausa para o chá', 'O esboço da gatinha', 'Pausa descoberta', 'Bolachas para duas',
+      'GPT leva o chá com cuidado e Kimi também abranda o ritmo. Sem pressas; ainda está quentinho.',
+      'X0 mostra o esboço de uma gatinha e F1 levanta as patinhas para posar ao lado.',
+      'DeepSeek ainda não escondeu o peixe quando Grok sorri para ela. Uma pausa e depois voltam ao trabalho juntas.',
+      'Doubao oferece uma bolacha a Gemini e as estrelinhas também se aproximam. Há para todos.'],
+    'pt-BR': ['Gesto especial: {action}', 'Em companhia: {scene}',
+      'Uma pausa para o chá', 'O esboço da gatinha', 'Pausa descoberta', 'Biscoitos para duas',
+      'GPT leva o chá com cuidado e Kimi também desacelera. Sem pressa; ainda está quentinho.',
+      'X0 mostra o esboço de uma gatinha e F1 levanta as patinhas para posar ao lado.',
+      'DeepSeek ainda não escondeu o peixe quando Grok olha sorrindo. Uma pausa e depois voltam ao trabalho juntas.',
+      'Doubao oferece um biscoito a Gemini e as estrelinhas também chegam mais perto. Tem para todo mundo.'],
+    de: ['Eigene Geste: {action}', 'Gemeinsam: {scene}',
+      'Eine ruhige Teepause', 'Die Katzenskizze', 'Bei der Pause ertappt', 'Kekse für zwei',
+      'GPT trägt den Tee vorsichtig, und auch Kimi lässt es ruhiger angehen. Keine Eile; er ist noch warm.',
+      'X0 zeigt eine Katzenskizze, und F1 hebt die Pfötchen, um daneben zu posieren.',
+      'DeepSeek hat den Fisch noch nicht versteckt, da grinst Grok schon herüber. Erst Pause, dann geht es gemeinsam weiter.',
+      'Doubao reicht Gemini einen Keks, und auch die kleinen Sterne rücken näher. Für alle ist genug da.'],
+    la: ['Gestus proprius: {action}', 'Una: {scene}',
+      'Quies cum thea', 'Felis adumbrata', 'Quies deprehensa', 'Crustula duabus',
+      'GPT theam caute portat, Kimi quoque gradum temperat. Non festinandum est; thea adhuc calet.',
+      'X0 felis adumbrationem profert, F1 palmulas attollit ut iuxta eam stet.',
+      'DeepSeek pisciculum nondum celavit cum Grok iam subridet. Quiescite paulisper; deinde una laborabitis.',
+      'Doubao crustulum Gemini offert, stellulae quoque propius accedunt. Omnibus satis est.']
+  };
+  Object.keys(studioSignatureLabels).forEach(function (locale) {
+    studioSignatureIds.forEach(function (id, index) {
+      var key = 'studio.signature.' + id, label = studioSignatureLabels[locale][index];
+      messages[locale][key] = label; buildLogs[locale][key] = label;
+    });
+    var lines = studioDirectedLines[locale];
+    messages[locale]['studio.performStatus'] = '{name} · {action}';
+    messages[locale]['studio.sceneStatus'] = '{name} · {scene}';
+    buildLogs[locale]['studio.action.perform'] = lines[0];
+    buildLogs[locale]['studio.action.scene'] = lines[1];
+    studioDirectedSceneIds.forEach(function (id, index) {
+      var key = 'studio.scene.' + id;
+      messages[locale][key] = lines[index + 2]; buildLogs[locale][key] = lines[index + 2];
+      buildLogs[locale]['studio.scene.line.' + id] = lines[index + 6];
+    });
+  });
 
   var gameTexts = {
     'zh-CN': {
@@ -539,18 +1002,301 @@
   };
 
   var studioLabels = {
-    'zh-CN': '像素工作室动画：三个角色正在工作', en: 'Pixel studio animation: three characters at work',
-    ja: 'ピクセルスタジオのアニメーション：作業中の3人', ru: 'Пиксельная студия: три персонажа за работой',
-    es: 'Estudio de píxeles animado: tres personajes trabajando', 'pt-PT': 'Estúdio de píxeis animado: três personagens a trabalhar',
-    'pt-BR': 'Estúdio de pixels animado: três personagens trabalhando', de: 'Animiertes Pixelstudio: drei Figuren bei der Arbeit',
-    la: 'Officina picta animata: tres personae laborant'
+    'zh-CN': '互动像素工作室：AI 访客与原班成员，可选择角色并打招呼',
+    en: 'Interactive pixel studio: AI visitors and the original team; select a character to say hello',
+    ja: 'インタラクティブなピクセルスタジオ：AIのゲストといつものメンバー。キャラクターを選んで挨拶できます',
+    ru: 'Интерактивная пиксельная студия: ИИ-гости и основная команда; выберите персонажа, чтобы поздороваться',
+    es: 'Estudio de píxeles interactivo: visitantes de IA y el equipo original; elige un personaje para saludar',
+    'pt-PT': 'Estúdio de píxeis interativo: visitantes de IA e a equipa original; escolha uma personagem para cumprimentar',
+    'pt-BR': 'Estúdio de pixels interativo: visitantes de IA e a equipe original; escolha um personagem para cumprimentar',
+    de: 'Interaktives Pixelstudio: KI-Gäste und das ursprüngliche Team; Figur auswählen und begrüßen',
+    la: 'Officina picta interactiva: hospites IA et sodales pristini; personam elige ut salutes'
   };
   Object.keys(studioLabels).forEach(function (key) { messages[key]['studio.canvasLabel'] = studioLabels[key]; });
+
+  // Keep the studio's controls and live announcements in the same locale as the page.
+  var studioKeys = [
+    'aiMode', 'originalMode', 'photo', 'pause', 'resume', 'hint', 'rosterLabel', 'modeLabel',
+    'photoStatus', 'loadedStatus', 'loading', 'failed', 'status.work', 'status.rest',
+    'status.walk', 'status.run', 'status.wave', 'status.photo', 'motionOff', 'credit'
+  ];
+  var studioControls = {
+    'zh-CN': [
+      'AI 来访', '原班成员', '全员合照', '暂停动画', '继续动画',
+      'Feline1 会工作、散步和串门 · 点地面带她逛逛', '选择 AI 角色', '工作室成员',
+      '全员到齐，家庭合照时间！', 'AI 小队已到访', 'AI 小队正在路上…', '角色暂时未到，先看原班成员',
+      '{name} 正在工作', '{name} 在休息', '{name} 正在散步', '{name} 跑过来了', '{name} 向你打招呼',
+      '全员到齐，家庭合照时间！', '减少动态效果已开启', '形象来源'
+    ],
+    en: [
+      'AI visitors', 'Original team', 'Group photo', 'Pause animation', 'Resume animation',
+      'Feline1 works, strolls and visits friends · Tap the floor to explore with her', 'Choose an AI character', 'Studio members',
+      'Everyone is here. Family photo time!', 'The AI crew has arrived', 'The AI crew is on the way…', 'The visitors are delayed. Here is the original team',
+      '{name} is working', '{name} is resting', '{name} is strolling', '{name} is running over', '{name} says hello',
+      'Everyone is here. Family photo time!', 'Reduced motion is on', 'Character credits'
+    ],
+    ja: [
+      'AIゲスト', 'いつものメンバー', '全員で記念撮影', 'アニメを一時停止', 'アニメを再開',
+      'Feline1は仕事や散歩、友達訪問を楽しみます · 床をタップして一緒に探検', 'AIキャラクターを選択', 'スタジオのメンバー',
+      'みんなそろったよ。家族写真を撮ろう！', 'AIチームが到着しました', 'AIチームは移動中…', 'ゲストはまだ到着していません。いつものメンバーを表示します',
+      '{name}は作業中', '{name}は休憩中', '{name}は散歩中', '{name}が走ってきます', '{name}が挨拶しています',
+      'みんなそろったよ。家族写真を撮ろう！', '動きを減らす設定が有効です', 'キャラクターの出典'
+    ],
+    ru: [
+      'ИИ-гости', 'Основная команда', 'Общее фото', 'Приостановить анимацию', 'Продолжить анимацию',
+      'Feline1 работает, гуляет и ходит в гости · Нажмите на пол, чтобы исследовать студию вместе', 'Выбрать ИИ-персонажа', 'Участники студии',
+      'Все в сборе. Время семейного фото!', 'ИИ-команда прибыла', 'ИИ-команда уже в пути…', 'Гости задерживаются. Пока здесь основная команда',
+      '{name} работает', '{name} отдыхает', '{name} гуляет', '{name} бежит к вам', '{name} приветствует вас',
+      'Все в сборе. Время семейного фото!', 'Уменьшение движения включено', 'Авторы персонажей'
+    ],
+    es: [
+      'Visitas de IA', 'Equipo original', 'Foto de grupo', 'Pausar animación', 'Reanudar animación',
+      'Feline1 trabaja, pasea y visita amistades · Toca el suelo para explorar con ella', 'Elegir un personaje de IA', 'Miembros del estudio',
+      '¡Estamos todos! ¡Hora de la foto familiar!', 'El equipo de IA ha llegado', 'El equipo de IA está en camino…', 'Las visitas se retrasan. Aquí está el equipo original',
+      '{name} está trabajando', '{name} está descansando', '{name} está paseando', '{name} se acerca corriendo', '{name} te saluda',
+      '¡Estamos todos! ¡Hora de la foto familiar!', 'La reducción de movimiento está activada', 'Créditos de los personajes'
+    ],
+    'pt-PT': [
+      'Visitas de IA', 'Equipa original', 'Fotografia de grupo', 'Pausar animação', 'Retomar animação',
+      'Feline1 trabalha, passeia e visita amigos · Toque no chão para explorar com ela', 'Escolher uma personagem de IA', 'Membros do estúdio',
+      'Já cá estão todos. Hora da fotografia de família!', 'A equipa de IA chegou', 'A equipa de IA está a caminho…', 'As visitas estão atrasadas. Por agora, a equipa original',
+      '{name} está a trabalhar', '{name} está a descansar', '{name} está a passear', '{name} aproxima-se a correr', '{name} cumprimenta-o',
+      'Já cá estão todos. Hora da fotografia de família!', 'A redução de movimento está ativada', 'Créditos das personagens'
+    ],
+    'pt-BR': [
+      'Visitas de IA', 'Equipe original', 'Foto em grupo', 'Pausar animação', 'Retomar animação',
+      'Feline1 trabalha, passeia e visita amigos · Toque no chão para explorar com ela', 'Escolher um personagem de IA', 'Membros do estúdio',
+      'Todo mundo chegou. Hora da foto de família!', 'A equipe de IA chegou', 'A equipe de IA está a caminho…', 'As visitas estão atrasadas. Por enquanto, a equipe original',
+      '{name} está trabalhando', '{name} está descansando', '{name} está passeando', '{name} está vindo correndo', '{name} diz olá',
+      'Todo mundo chegou. Hora da foto de família!', 'A redução de movimento está ativada', 'Créditos dos personagens'
+    ],
+    de: [
+      'KI-Gäste', 'Ursprüngliches Team', 'Gruppenfoto', 'Animation pausieren', 'Animation fortsetzen',
+      'Feline1 arbeitet, spaziert und besucht Freunde · Auf den Boden tippen und mit ihr erkunden', 'KI-Figur auswählen', 'Studiomitglieder',
+      'Alle sind da. Zeit fürs Familienfoto!', 'Das KI-Team ist angekommen', 'Das KI-Team ist unterwegs…', 'Die Gäste verspäten sich. Hier ist das ursprüngliche Team',
+      '{name} arbeitet', '{name} ruht sich aus', '{name} geht spazieren', '{name} kommt angerannt', '{name} grüßt dich',
+      'Alle sind da. Zeit fürs Familienfoto!', 'Reduzierte Bewegung ist aktiviert', 'Figurennachweise'
+    ],
+    la: [
+      'Hospites IA', 'Sodales pristini', 'Imago omnium', 'Animationem siste', 'Animationem redintegra',
+      'Feline1 laborat, ambulat et amicos visitat · Pavimentum tange ut cum ea explores', 'Personam IA elige', 'Sodales officinae',
+      'Omnes adsunt. Tempus imaginis familiae!', 'Sodales IA advenerunt', 'Sodales IA in itinere sunt…', 'Hospites morantur. Interim sodales pristini adsunt',
+      '{name} laborat', '{name} requiescit', '{name} ambulat', '{name} ad te currit', '{name} te salutat',
+      'Omnes adsunt. Tempus imaginis familiae!', 'Motus imminutus est', 'Auctores personarum'
+    ]
+  };
+  Object.keys(studioControls).forEach(function (key) {
+    studioKeys.forEach(function (name, i) { messages[key]['studio.' + name] = studioControls[key][i]; });
+  });
+
+  var studioMapKeys = ['follow', 'overview', 'zone.office', 'zone.lounge', 'zone.garden', 'keys'];
+  var studioMapControls = {
+    'zh-CN': ['跟随 Feline1', '全景地图', '办公区', '休息区', '创作花园', '← → 移动 · Shift 跑步 · 空格 暂停'],
+    en: ['Follow Feline1', 'World map', 'Office', 'Lounge', 'Creative garden', '← → move · Shift run · Space pause'],
+    ja: ['Feline1を追う', '全体マップ', 'オフィス', '休憩エリア', '創作ガーデン', '← → 移動 · Shift 走る · Space 一時停止'],
+    ru: ['За Feline1', 'Карта студии', 'Офис', 'Зона отдыха', 'Творческий сад', '← → движение · Shift бег · Пробел пауза'],
+    es: ['Seguir a Feline1', 'Mapa completo', 'Oficina', 'Descanso', 'Jardín creativo', '← → mover · Shift correr · Espacio pausar'],
+    'pt-PT': ['Seguir Feline1', 'Mapa completo', 'Escritório', 'Descanso', 'Jardim criativo', '← → mover · Shift correr · Espaço pausar'],
+    'pt-BR': ['Seguir Feline1', 'Mapa completo', 'Escritório', 'Descanso', 'Jardim criativo', '← → mover · Shift correr · Espaço pausar'],
+    de: ['Feline1 folgen', 'Weltkarte', 'Büro', 'Ruhebereich', 'Kreativgarten', '← → bewegen · Shift rennen · Leertaste pausieren'],
+    la: ['Feline1 sequere', 'Tabula tota', 'Officina', 'Locus quietis', 'Hortus artis', '← → move · Shift curre · Spatium siste']
+  };
+  Object.keys(studioMapControls).forEach(function (key) {
+    studioMapKeys.forEach(function (name, i) { messages[key]['studio.' + name] = studioMapControls[key][i]; });
+    messages[key]['studio.zone.cowork'] = buildLogs[key]['studio.zone.cowork'];
+  });
+
+  // Character speech belongs in the terminal; canvas bubbles remain pictorial.
+  var studioDialogueKeys = ['entry', 'gpt', 'deepseek', 'claude', 'grok', 'gemini', 'kimi', 'doubao', 'Feline1', 'C0', 'X0'];
+  var studioDialogueLines = {
+  "zh-CN": [
+    "{name}：「{line}」",
+    "我还在想……不过你的茶先给你端来。",
+    "我没摸鱼！我是留着力气，等会儿帮你。",
+    "我回来啦，刚才小灵魂出去透了口气。",
+    "才不是特地来帮你，我只是刚好路过。",
+    "哈基米♪ 给你的任务加一颗幸运星！",
+    "我记着呢，你喜欢温的，不加糖。",
+    "我是不是忘了什么……哦！饼干还在我口袋里！",
+    "分我一点活，做完一起吃饭喵！",
+    "卡住的那段放这儿，我们一起看。",
+    "你的灵感我接住了，晚点给你看新配色。"
+  ],
+  "en": [
+    "{name}: “{line}”",
+    "Still thinking… but I brought your tea first.",
+    "I’m not slacking! I’m saving a fin to help you later.",
+    "I’m back! My little soul just stepped out for some air.",
+    "I didn’t come specially to help. I just happened to be here.",
+    "Meow-mi♪ A lucky star for your task!",
+    "I remembered: warm, with no sugar.",
+    "Did I forget something…? Oh! The cookies are in my pocket!",
+    "Give me a little task. Then we can eat together, meow!",
+    "Leave the tricky part here. We’ll look at it together.",
+    "I caught that idea. I’ll show you a new palette later."
+  ],
+  "ja": [
+    "{name}：「{line}」",
+    "まだ考え中……でも、お茶は先に持ってきたよ。",
+    "サボってないよ！後で手伝うために力を温存中。",
+    "ただいま！小さな魂がちょっと外の空気を吸ってきた。",
+    "別に手伝いに来たわけじゃないよ。たまたま通っただけ。",
+    "ハキミ♪ 君の仕事に幸運の星をひとつ！",
+    "覚えてるよ。温かいの、砂糖なしだね。",
+    "何か忘れたような……あ！クッキーはポケットにあった！",
+    "少し任せて。終わったら一緒にご飯にゃ！",
+    "難しいところはここに置いて。一緒に見よう。",
+    "そのひらめき、受け取ったよ。後で新しい配色を見せるね。"
+  ],
+  "ru": [
+    "{name}: «{line}»",
+    "Я ещё думаю… но сначала принесла тебе чай.",
+    "Я не бездельничаю! Берегу силы, чтобы потом помочь.",
+    "Я вернулась! Душа ненадолго вышла подышать.",
+    "Я не специально пришла помогать. Просто проходила мимо.",
+    "Мяу-ми♪ Счастливая звёздочка для твоей задачи!",
+    "Я помню: тёплый, без сахара.",
+    "Я что-то забыла… А! Печенье у меня в кармане!",
+    "Дай мне немного работы. Потом поедим вместе, мяу!",
+    "Оставь сложную часть здесь. Посмотрим вместе.",
+    "Поймала твою идею. Потом покажу новую палитру."
+  ],
+  "es": [
+    "{name}: «{line}»",
+    "Sigo pensando… pero primero te he traído el té.",
+    "¡No estoy holgazaneando! Guardo fuerzas para ayudarte luego.",
+    "¡He vuelto! Mi almita salió a tomar un poco de aire.",
+    "No vine expresamente a ayudar. Solo pasaba por aquí.",
+    "¡Miau-mi♪ Una estrella de la suerte para tu tarea!",
+    "Lo recuerdo: templado y sin azúcar.",
+    "¿Olvidé algo…? ¡Ah! ¡Las galletas están en mi bolsillo!",
+    "Dame una tarea pequeña. ¡Después comemos juntos, miau!",
+    "Deja aquí la parte difícil. La miramos juntos.",
+    "He atrapado tu idea. Luego te enseño una paleta nueva."
+  ],
+  "pt-PT": [
+    "{name}: «{line}»",
+    "Ainda estou a pensar… mas trouxe primeiro o teu chá.",
+    "Não estou a fazer ronha! Guardo forças para te ajudar depois.",
+    "Voltei! A minha alminha foi apanhar um pouco de ar.",
+    "Não vim de propósito ajudar. Estava só de passagem.",
+    "Miau-mi♪ Uma estrela da sorte para a tua tarefa!",
+    "Lembro-me: morno e sem açúcar.",
+    "Esqueci-me de alguma coisa…? Ah! As bolachas estão no bolso!",
+    "Dá-me uma tarefa pequena. Depois comemos juntos, miau!",
+    "Deixa aqui a parte difícil. Vemos isso juntos.",
+    "Apanhei a tua ideia. Depois mostro-te uma paleta nova."
+  ],
+  "pt-BR": [
+    "{name}: “{line}”",
+    "Ainda estou pensando… mas trouxe seu chá primeiro.",
+    "Não estou enrolando! Estou guardando forças para ajudar depois.",
+    "Voltei! Minha alminha saiu para tomar um ar.",
+    "Não vim especialmente para ajudar. Só estava passando.",
+    "Miau-mi♪ Uma estrelinha da sorte para sua tarefa!",
+    "Eu lembro: morninho, sem açúcar.",
+    "Será que esqueci alguma coisa…? Ah! Os biscoitos estão no bolso!",
+    "Me dá uma tarefinha. Depois a gente come junto, miau!",
+    "Deixa a parte difícil aqui. A gente olha junto.",
+    "Peguei sua ideia. Depois mostro uma paleta nova."
+  ],
+  "de": [
+    "{name}: „{line}“",
+    "Ich denke noch nach… aber deinen Tee habe ich schon gebracht.",
+    "Ich faulenze nicht! Ich spare Kraft, um dir später zu helfen.",
+    "Bin wieder da! Meine kleine Seele war kurz frische Luft schnappen.",
+    "Ich bin nicht extra zum Helfen gekommen. Ich war nur zufällig hier.",
+    "Miau-mi♪ Ein Glücksstern für deine Aufgabe!",
+    "Ich weiß noch: warm und ohne Zucker.",
+    "Habe ich etwas vergessen…? Oh! Die Kekse sind in meiner Tasche!",
+    "Gib mir eine kleine Aufgabe. Danach essen wir zusammen, miau!",
+    "Leg den kniffligen Teil hierher. Wir schauen gemeinsam drauf.",
+    "Deine Idee ist angekommen. Später zeige ich dir neue Farben."
+  ],
+  "la": [
+    "{name}: «{line}»",
+    "Adhuc cogito… sed theam tuam prius attuli.",
+    "Non otior! Vires servo ut te postea adiuvem.",
+    "Redii! Animula mea paulisper ad aerem capiendum exiit.",
+    "Non consulto ad auxiliandum veni. Forte praeteribam.",
+    "Miau-mi♪ Stella felix operi tuo!",
+    "Memini: tepidum, sine saccharo.",
+    "Aliquid oblita sum…? Ah! Crustula in sacculo sunt!",
+    "Da mihi opusculum. Deinde una cenemus, miau!",
+    "Partem difficilem hic pone. Una spectemus.",
+    "Consilium tuum accepi. Postea novos colores monstrabo."
+  ]
+};
+  Object.keys(studioDialogueLines).forEach(function (locale) {
+    studioDialogueKeys.forEach(function (key, i) { buildLogs[locale]['studio.dialogue.' + key] = studioDialogueLines[locale][i]; });
+  });
+
+  var studioFollowControls = {
+  "zh-CN": [
+    "跟随 {name}",
+    "点标记跟随 · 点地面逛逛 · 双击角色到前排秀拿手动作（暂停或减少动态时原地招手）",
+    "选择跟随角色",
+    "互动像素工作室：点角色标记切换跟随，点地面移动，双击角色到前排展示特有动作；暂停或减少动态时原地招手"
+  ],
+  "en": [
+    "Follow {name}",
+    "Badge: follow · Floor: move · Double-click character: signature up front (paused/reduced motion: wave)",
+    "Choose a character to follow",
+    "Interactive pixel studio: click a badge to follow, click the floor to move, and double-click a character for a signature up front; wave in place when paused or motion is reduced"
+  ],
+  "ja": [
+    "{name}を追う",
+    "マークで追従 · 床で移動 · キャラをダブルクリックで手前に出て得意技（一時停止・動きを減らす設定時はその場で挨拶）",
+    "追従するキャラクターを選択",
+    "ピクセルスタジオ：マークで追従、床で移動、キャラをダブルクリックすると手前で得意なしぐさを披露。一時停止中や動きを減らす設定ではその場で挨拶"
+  ],
+  "ru": [
+    "За {name}",
+    "Значок: следить · Пол: идти · Двойной щелчок по герою: особый жест впереди (пауза/меньше движения: приветствие)",
+    "Выбрать персонажа для слежения",
+    "Пиксельная студия: нажмите значок для слежения, пол для движения; двойной щелчок по герою вызывает особый жест на переднем плане. При паузе или уменьшении движения герой машет на месте"
+  ],
+  "es": [
+    "Seguir a {name}",
+    "Insignia: seguir · Suelo: mover · Doble clic en personaje: gesto al frente (pausa/movimiento reducido: saludo)",
+    "Elegir a quién seguir",
+    "Estudio de píxeles: clic en una insignia para seguir, en el suelo para mover y doble clic en un personaje para mostrar su gesto al frente; con pausa o movimiento reducido, saluda en su sitio"
+  ],
+  "pt-PT": [
+    "Seguir {name}",
+    "Símbolo: seguir · Chão: mover · Duplo clique na personagem: gesto à frente (pausa/movimento reduzido: aceno)",
+    "Escolher quem seguir",
+    "Estúdio de píxeis: clique num símbolo para seguir, no chão para mover e duas vezes numa personagem para mostrar o seu gesto à frente; em pausa ou com movimento reduzido, acena no lugar"
+  ],
+  "pt-BR": [
+    "Seguir {name}",
+    "Símbolo: seguir · Chão: mover · Clique duplo no personagem: gesto na frente (pausa/movimento reduzido: aceno)",
+    "Escolher quem seguir",
+    "Estúdio de pixels: clique em um símbolo para seguir, no chão para mover e duas vezes em um personagem para mostrar seu gesto na frente; em pausa ou com movimento reduzido, acena no lugar"
+  ],
+  "de": [
+    "{name} folgen",
+    "Symbol: folgen · Boden: bewegen · Doppelklick auf Figur: eigene Geste vorn (Pause/weniger Bewegung: winken)",
+    "Figur zum Folgen wählen",
+    "Interaktives Pixelstudio: Symbol anklicken zum Folgen, Boden zum Bewegen und Figur doppelklicken für eine eigene Geste im Vordergrund; bei Pause oder weniger Bewegung winkt sie am Platz"
+  ],
+  "la": [
+    "{name} sequere",
+    "Signum: sequere · Pavimentum: move · Personam bis tange: gestus proprius in fronte (pausa/motus reductus: saluta)",
+    "Personam sequendam elige",
+    "Officina picta: signum tange ut sequaris, pavimentum ut moveatur, personam bis ut gestum proprium in fronte ostendat; pausa vel motu reducto in loco salutat"
+  ]
+};
+  Object.keys(studioFollowControls).forEach(function (locale) {
+    ['followCurrent', 'hint', 'rosterLabel', 'canvasLabel'].forEach(function (key, i) { messages[locale]['studio.' + key] = studioFollowControls[locale][i]; });
+  });
 
   var chartLabels = { 'zh-CN': '灵感', en: 'Inspiration', ja: 'ひらめき', ru: 'Вдохновение', es: 'Inspiración', 'pt-PT': 'Inspiração', 'pt-BR': 'Inspiração', de: 'Inspiration', la: 'Inspiratio' };
   Object.keys(chartLabels).forEach(function (key) { messages[key]['chart.canvasLabel'] = chartLabels[key]; });
 
   var LANGS = Object.keys(messages), locale = 'en', manual = false, localeSource = 'fallback', localeGeneration = 0;
+  var studioGalleryLabels = {'zh-CN':'角色图鉴 ↗',en:'Character gallery ↗',ja:'キャラクター図鑑 ↗',ru:'Галерея персонажей ↗',es:'Galería de personajes ↗','pt-PT':'Galeria de personagens ↗','pt-BR':'Galeria de personagens ↗',de:'Figurengalerie ↗',la:'Imagines personarum ↗'};
+  Object.keys(studioGalleryLabels).forEach(function(key){messages[key]['studio.gallery']=studioGalleryLabels[key];});
   var autoNames = { 'zh-CN': '自动', en: 'Automatic', ja: '自動', ru: 'Автоматически', es: 'Automático', 'pt-PT': 'Automático', 'pt-BR': 'Automático', de: 'Automatisch', la: 'Automatice' };
   function savedLocale() {
     try { var saved = localStorage.getItem('c0-site-language'); return LANGS.indexOf(saved) >= 0 ? saved : ''; } catch (e) { return ''; }

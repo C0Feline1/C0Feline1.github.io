@@ -1,4 +1,4 @@
-/* 小八 v3: a long-legged pixel spider that roams the page but never walks over the game console.
+/* 小八 v3: a long-legged pixel spider that roams outside the game and studio screens.
    Random behaviours: watch things, weave webs that form little pictures, swing on silk,
    dig a tunnel (always used to get past the console), nap, dance and wave at the cursor. */
 (function () {
@@ -309,37 +309,73 @@
     /* keep the bubble off the header clock/ticker: flip it below 小八 when it would overlap the top bar */
     var hd = document.querySelector('.top'); if (hd) { var hr = hd.getBoundingClientRect(), hb = hr.bottom + window.scrollY; if (by < hb + 4 && S.y < hb + 140) by = S.y + 14 * K; }
     by = clamp(by, F.t + 4, F.b - bub.offsetHeight - 12);
-    bub.style.transform = 'translate(' + Math.round(bx) + 'px,' + Math.round(by) + 'px)';
+    var h = bub.offsetHeight, spots = [[bx, by], [bx, S.y + 14 * K],
+      [S.x - w - 20 * K, S.y - h / 2], [S.x + 20 * K, S.y - h / 2]];
+    var safe = spots.map(function (p) { return [clamp(p[0], F.l + 4, F.r - w - 4), clamp(p[1], F.t + 4, F.b - h - 12)]; })
+      .filter(function (p) { return !overlapsProtected({ l: p[0] - 3, t: p[1] - 3, r: p[0] + w + 4, b: p[1] + h + 9 }, 2); })[0];
+    bub.style.visibility = safe ? 'visible' : 'hidden';
+    if (safe) bub.style.transform = 'translate(' + Math.round(safe[0]) + 'px,' + Math.round(safe[1]) + 'px)';
   }
 
-  /* ---------- geometry: bounds = the pink .frame; the whole ARCADE panel is off limits ---------- */
-  var NG = null, FR = null, P = 18 * K; /* P: body + leg reach kept clear of the arcade panel */
+  /* Whole-body avoidance plus a shared exclusion mask for every decorative effect. */
+  var NG = null, protectedRects = [], clipSignature = '', FR = null, P = 18 * K;
   function pageRect(e) { var r = e.getBoundingClientRect(); return { l: r.left + window.scrollX, t: r.top + window.scrollY, r: r.right + window.scrollX, b: r.bottom + window.scrollY }; }
   function refreshNoGo() {
     var e = document.querySelector('.arcade > .panel') || document.querySelector('.gba');
-    NG = e ? pageRect(e) : null;
+    protectedRects = [e, document.querySelector('.cam') || document.getElementById('studio')].filter(function (node) {
+      return node && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0;
+    }).map(pageRect);
+    NG = protectedRects[0] || null;
     var f = document.querySelector('.frame'), nf = f ? pageRect(f) : null;
     if (nf && (!FR || nf.l !== FR.l || nf.t !== FR.t || nf.r !== FR.r || nf.b !== FR.b)) {
       FR = nf;
       layer.style.cssText = 'left:' + FR.l + 'px;top:' + FR.t + 'px;width:' + (FR.r - FR.l) + 'px;height:' + (FR.b - FR.t) + 'px';
       host.style.cssText = 'left:' + -FR.l + 'px;top:' + -FR.t + 'px';
     }
+    if (FR) {
+      // An even-odd path cuts literal holes in the one shared effects layer.
+      // This also protects a screen if a resize happens during a web or swing.
+      var w = FR.r - FR.l, h = FR.b - FR.t;
+      var path = 'M0 0H' + w + 'V' + h + 'H0Z';
+      protectedRects.forEach(function (r) {
+        var l = clamp(r.l - FR.l - 2, 0, w), t = clamp(r.t - FR.t - 2, 0, h);
+        var right = clamp(r.r - FR.l + 2, 0, w), bottom = clamp(r.b - FR.t + 2, 0, h);
+        if (right > l && bottom > t) path += 'M' + l + ' ' + t + 'H' + right + 'V' + bottom + 'H' + l + 'Z';
+      });
+      if (path !== clipSignature) {
+        clipSignature = path;
+        layer.style.clipPath = 'path(evenodd, "' + path + '")';
+        layer.style.webkitClipPath = layer.style.clipPath;
+      }
+    }
   }
   function inFrame(x, y, m) { return !FR || (x > FR.l + m && x < FR.r - m && y > FR.t + m && y < FR.b - m); }
   function noGo(pad) { return NG ? { l: NG.l - pad, t: NG.t - pad, r: NG.r + pad, b: NG.b + pad } : null; }
+  function noGos(pad) { return protectedRects.map(function (r) { return { l: r.l - pad, t: r.t - pad, r: r.r + pad, b: r.b + pad }; }); }
+  function blocked(x, y, pad) { return noGos(pad).filter(function (r) { return inR(x, y, r); })[0] || null; }
+  function overlapsProtected(rect, pad) { return noGos(pad).some(function (r) { return rectsOverlap(rect, r); }); }
   function inR(x, y, Q) { return !!Q && x > Q.l && x < Q.r && y > Q.t && y < Q.b; }
   function rectsOverlap(a, b) { return !!a && !!b && a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t; }
   function crosses(x0, y0, x1, y1, pad) {
-    var Q = noGo(pad); if (!Q) return false;
-    for (var i = 0; i <= 40; i++) { var t = i / 40; if (inR(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, Q)) return true; }
-    return false;
+    return noGos(pad).some(function (Q) {
+      var min = 0, max = 1, dx = x1 - x0, dy = y1 - y0;
+      var axes = [[x0, dx, Q.l, Q.r], [y0, dy, Q.t, Q.b]];
+      for (var i = 0; i < axes.length; i++) {
+        var a = axes[i];
+        if (Math.abs(a[1]) < 0.0001) { if (a[0] <= a[2] || a[0] >= a[3]) return false; }
+        else { var first = (a[2] - a[0]) / a[1], last = (a[3] - a[0]) / a[1]; min = Math.max(min, Math.min(first, last)); max = Math.min(max, Math.max(first, last)); if (min > max) return false; }
+      }
+      return max >= 0 && min <= 1;
+    });
   }
   function view() { var de = document.documentElement; return { x: window.scrollX, y: window.scrollY, w: de.clientWidth, h: window.innerHeight, dw: de.scrollWidth, dh: de.scrollHeight }; }
-  function okSpot(x, y) { return inFrame(x, y, 8 * K) && !inR(x, y, noGo(P + 12)); }
+  function okSpot(x, y) { return inFrame(x, y, 8 * K) && !blocked(x, y, P + 12); }
   function onScreen(x, y, m) { var v = view(); m = m || 0; return x > v.x + m && x < v.x + v.w - m && y > v.y + m && y < v.y + v.h - m; }
   function nearestOutside(x, y) {
-    var Q = noGo(P + 16); if (!Q || !inR(x, y, Q)) return [x, y];
-    var c = [[Q.l, y], [Q.r, y], [x, Q.t], [x, Q.b]].filter(function (p) { return okSpot(p[0], p[1]); });
+    if (!blocked(x, y, P + 16)) return [x, y];
+    var c = [];
+    noGos(P + 16).forEach(function (Q) { c.push([Q.l, y], [Q.r, y], [x, Q.t], [x, Q.b], [Q.l, Q.t], [Q.r, Q.b], [Q.r, Q.t], [Q.l, Q.b]); });
+    c = c.filter(function (p) { return okSpot(p[0], p[1]); });
     c.sort(function (a, b) { return Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y); });
     return c[0] || null;
   }
@@ -356,7 +392,7 @@
   /* ---------- walking ---------- */
   var SPOTS = [
     { sel: '.gba', border: true, lines: ['加油！', '跳啊！', '前面有障碍！', '猫娘好快……', '我也想玩', '我在旁边看着～'] },
-    { sel: '#studio', lines: ['他们在摸鱼吗？', 'X0 画得真好看', '猫猫又睡了', '咖啡好香'] },
+    { sel: '#studio', border: true, lines: ['他们在摸鱼吗？', 'X0 画得真好看', '猫猫又睡了', '咖啡好香'] },
     { sel: '#chart', lines: ['灵感涨了！', '这曲线是真的吗？', '梭哈灵感！'] },
     { sel: '#log', lines: ['日志好长', 'fixed？真的假的', '又在 commit 了'] },
     { sel: '#lbList', lines: ['第一名是谁？', '我也想上榜', '排行榜好热闹'] },
@@ -489,7 +525,7 @@
   function removeWeb(w) { if (!w) return; w.el.style.opacity = 0; setTimeout(function () { w.el.remove(); }, 2100); }
   function tryWeave() {
     var v = view(), x0 = S.x - 28 * K, y0 = S.y - 28 * K, box = { l: x0, t: y0, r: x0 + WS * K, b: y0 + WS * K };
-    if (box.l < v.x + 4 || box.t < v.y + 4 || box.r > v.x + v.w - 4 || box.b > v.y + v.h - 4 || rectsOverlap(box, noGo(P))) return false;
+    if (box.l < v.x + 4 || box.t < v.y + 4 || box.r > v.x + v.w - 4 || box.b > v.y + v.h - 4 || overlapsProtected(box, P)) return false;
     if (FR && (box.l < FR.l + 2 || box.t < FR.t + 2 || box.r > FR.r - 2 || box.b > FR.b - 2)) return false;
     if (web) { removeWeb(web); web = null; }
     var c = PX.make(WS, WS); c.className = 'spider-web'; c.style.width = WS * K + 'px'; c.style.height = WS * K + 'px';
@@ -647,13 +683,14 @@
   }
   function stepFling(dt) {
     var A = S.act, v = view(); A.t += dt;
-    var ox = S.x, oy = S.y, Q = noGo(P), m = 8 * K;
+    var ox = S.x, oy = S.y, m = 8 * K;
     A.vy += 0.45 * dt; S.x += A.vx * dt; S.y += A.vy * dt; S.a += A.spin * dt;
     var wl = Math.max(v.x, FR ? FR.l : -1e9) + m, wr = Math.min(v.x + v.w, FR ? FR.r : 1e9) - m;
     if (S.x < wl) { S.x = wl; A.vx = Math.abs(A.vx) * 0.7; snd('bonk'); }
     if (S.x > wr) { S.x = wr; A.vx = -Math.abs(A.vx) * 0.7; snd('bonk'); }
     if (FR && S.y < FR.t + m) { S.y = FR.t + m; A.vy = Math.abs(A.vy) * 0.5; snd('bonk'); }
-    if (inR(S.x, S.y, Q)) { /* never into the arcade panel: bounce off the side we came from */
+    var Q = blocked(S.x, S.y, P);
+    if (Q) { /* Bounce outside either protected screen, whichever side we came from. */
       if (ox <= Q.l || ox >= Q.r) { S.x = ox <= Q.l ? Q.l : Q.r; A.vx = -A.vx * 0.7; }
       else if (oy <= Q.t) { S.y = Q.t; A.floor = Q.t; }
       else { S.y = Q.b; A.vy = Math.abs(A.vy) * 0.5; }
@@ -665,7 +702,7 @@
       else {
         S.mode = 'idle'; S.tuck = false; S.act = null; S.wait = 130; S.twitch = 60; S.a = Math.PI / 2 + (R() - 0.5) * 0.6; plantAll();
         snd('dizzy'); say(pick(['头好晕……', '@_@ 转晕了', '再也不碰风车了……']), 2200);
-        if (inR(S.x, S.y, noGo(P)) || !inFrame(S.x, S.y, 0)) { var o = nearestOutside(S.x, S.y) || randomSpot(); if (o) startDig(o[0], o[1], null); }
+        if (blocked(S.x, S.y, P) || !inFrame(S.x, S.y, 0)) { var o = nearestOutside(S.x, S.y) || randomSpot(); if (o) startDig(o[0], o[1], null); }
       }
     }
     if (A.t > 400) { S.mode = 'idle'; S.tuck = false; S.act = null; S.wait = 60; plantAll(); }
@@ -699,7 +736,7 @@
       var go = (flee || S.rest <= 0) && Math.abs(diff) < 0.9, tv = go ? Math.min(maxV, dist / 12 + 0.6) : 0;
       S.v += (tv - S.v) * (tv > S.v ? 0.25 : 0.45) * dt;
       var nx = S.x + Math.cos(S.a) * S.v * dt, ny = S.y + Math.sin(S.a) * S.v * dt;
-      if (inR(nx, ny, noGo(P))) { S.v = 0; startDig(S.tx, S.ty, S.target); }
+      if (blocked(nx, ny, P) || crosses(S.x, S.y, nx, ny, P)) { S.v = 0; startDig(S.tx, S.ty, S.target); }
       else { S.x = nx; S.y = ny; }
       if (S.mode !== 'dig' && dist < 6) {
         S.v = 0; S.mode = 'idle'; S.twitch = 20;
@@ -742,12 +779,14 @@
       S.x = clamp(S.x, FR.l + m, FR.r - m); S.y = clamp(S.y, FR.t + m, FR.b - m);
       S.mode = 'idle'; S.act = null; S.tuck = false; S.hop = 0; S.sink = 0; S.scale = 1; S.wait = 30; plantAll();
     }
-    if (S.mode !== 'weave' && S.mode !== 'dig' && inR(S.x, S.y, noGo(P - 4))) {
+    if (web && overlapsProtected({ l: web.x0, t: web.y0, r: web.x0 + WS * K, b: web.y0 + WS * K }, P)) { removeWeb(web); web = null; if (S.mode === 'weave') { S.mode = 'idle'; S.act = null; } }
+    if (S.mode !== 'dig' && blocked(S.x, S.y, P - 4)) {
       var out = nearestOutside(S.x, S.y) || randomSpot(); if (out) startDig(out[0], out[1], null);
     }
   }
   window.addEventListener('resize', function () { refreshNoGo(); reclamp(); });
   function showSilk(x, y, h, rad) {
+    if (crosses(x, y, x - Math.sin(rad) * h, y + Math.cos(rad) * h, 3)) { silk.style.display = 'none'; return; }
     silk.style.display = 'block'; silk.style.height = Math.max(0, Math.round(h)) + 'px';
     silk.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px) rotate(' + (rad * 180 / Math.PI).toFixed(2) + 'deg)';
   }

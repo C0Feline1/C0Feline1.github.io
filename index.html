@@ -91,9 +91,28 @@
   .up { color: var(--green); } .down { color: var(--red); }
 
   .main { grid-template-columns: 1.55fr 1fr; }
-  .cam { padding: 0; overflow: hidden; }
+  .cam { padding: 0; overflow: clip; }
   .cam .ph { padding: 8px 12px 0; }
   .cam canvas { display: block; width: 100%; aspect-ratio: 16 / 9; image-rendering: pixelated; }
+  .studio-controls { padding: 7px 10px 8px; border-top: 1px solid var(--line); background: #100c1d; }
+  .studio-roster-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .studio-roster-row > button, .studio-roster button { font: inherit; font-size: 11px; line-height: 1.4; color: var(--dim); background: #191127; border: 1px solid #3b2b51; padding: 4px 7px; cursor: pointer; touch-action: manipulation; }
+  .studio-roster-row > button { flex: none; white-space: nowrap; }
+  .studio-roster-row > button:hover, .studio-roster button:hover { color: #fff; border-color: var(--cyan); }
+  .studio-roster-row button:focus-visible, #studio:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .studio-roster { display: flex; flex: 1 1 0; min-width: 0; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 3px 0 5px; }
+  .studio-roster button { flex: none; display: inline-flex; align-items: center; justify-content: center; border-color: color-mix(in srgb, var(--actor-color) 45%, #292037); color: var(--actor-color); padding: 4px; }
+  .studio-roster button canvas { width: 20px; height: 20px; image-rendering: pixelated; flex: none; }
+  .studio-roster button[aria-pressed="true"] { background: #30213e; box-shadow: inset 0 -2px 0 var(--actor-color); }
+  .studio-roster button { position: relative; }
+  .studio-roster button[data-performing="true"]::after { content: ''; position: absolute; right: 1px; top: 1px; width: 3px; height: 3px; background: var(--actor-color); box-shadow: 0 0 0 1px #100c1d; }
+  .studio-caption { display: flex; align-items: center; gap: 8px; justify-content: space-between; font-size: 10px; color: var(--dim); margin-top: 3px; }
+  .studio-caption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .studio-caption a { flex: none; color: var(--dim); }
+  .studio-links { display: flex; flex: none; gap: 10px; }
+  .studio-hint { margin: 4px 0 0; color: var(--dim); font-size: 10px; }
+  .studio-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (max-width: 520px) { .studio-controls { padding: 5px 6px; } .studio-roster-row > button { font-size: 10px; padding: 4px 5px; } .studio-hint { line-height: 1.4; } }
   .rec { color: var(--red); animation: blink 1.2s steps(2) infinite; }
   .term { font-size: 12px; height: 100%; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .term pre { margin: 0; flex: 1 1 0; height: 300px; min-height: 220px; max-height: 340px; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; white-space: pre-wrap; font-family: inherit; color: #cfc3ea; }
@@ -384,23 +403,41 @@
   html.fx-land .arc .gba.sw { --jcw: 116px; --bc: 36px; }
   html.fx-land footer { padding-left: 0; }
   html.fx-land .lb-row { grid-template-columns: 24px minmax(0, 1fr) auto 50px; } html.fx-land .lb-time { display: none; }
-  /* portrait 9:16: header, stacked console (screen full width, Joy-Cons under it), tabbed dock */
-  html.fx-port .frame { padding: 5px; gap: 5px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); grid-template-areas: "top" "arcade" "tabs" "dock"; }
+  /* Portrait: live studio stays in the primary slot; the console opens from the dock. */
+  html.fx-port .frame { padding: 5px; gap: 5px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); grid-template-areas: "top" "cam" "tabs" "dock"; }
   html.fx-port .top { padding: 4px 8px; gap: 8px; justify-content: space-between; } html.fx-port .ticker, html.fx-port .mood, html.fx-port .clock { display: none; }
   html.fx-port .logo { font-size: 15px; } html.fx-port .logo canvas { width: 22px; height: 22px; } html.fx-port .clock { font-size: 13px; }
   html.fx-port .lang-switch select { max-width: 96px; }
   html.fx-port footer, html.fx-port .arc > .ph, html.fx-port .arc .help, html.fx-port .scrlabel { display: none !important; }
-  html.fx-port .arcade > .panel { --force: stack; padding: 2px 2px 4px; }
+  html.fx-port .arcade > .panel { --force: stack; padding: 2px 2px 4px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
   /* Joy-Cons under the screen: − / + in the inner top corners (as on the real thing), the D-pad and the diamond big and
      centred below them, where the thumbs rest */
-  html.fx-port .arc .gba.sw { --bc: 54px; padding-top: 36px; margin: 0 auto; }
-  html.fx-port .gba.sw .scr { padding: 6px 4px 6px; }
-  html.fx-port .gba.sw.stack .jc { flex-direction: column; justify-content: flex-start; gap: 0; padding: 6px 8px 16px; }
-  html.fx-port .gba.sw.stack .jl .jmini { align-self: flex-end; margin: 0; }
-  html.fx-port .gba.sw.stack .jr .jmini { align-self: flex-start; margin: 0; order: 0; }
-  html.fx-port .jmini { width: 40px; height: 40px; font-size: 24px; line-height: 40px; }
+  html.fx-port .arc .gba.sw { --bc: 48px; width: 100%; padding-top: 36px; margin: auto; }
+  html.fx-port .gba.sw .scr { padding: 6px 4px 6px; display: flex; flex-direction: column; align-items: center; }
+  html.fx-port .gba.sw.stack .jc { flex-direction: column; justify-content: flex-start; gap: 0; padding: 38px 8px 12px; }
+  html.fx-port .gba.sw.stack .jmini { position: absolute; top: 4px; margin: 0; }
+  html.fx-port .gba.sw.stack .jl .jmini { right: 8px; }
+  html.fx-port .gba.sw.stack .jr .jmini { left: 8px; order: 0; }
+  html.fx-port .jmini { width: 32px; height: 32px; font-size: 22px; line-height: 32px; }
   html.fx-port .tp { padding: 6px 8px; }
+  html.fx-port .cam.tab-on, html.fx-phl .cam.tab-on { overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--violet) var(--panel); }
   html.fx-port .dock-tabs button { font-size: 12px; }
+  /* Short portrait screens keep both the studio and all console buttons visible
+     while the game tab is open. Tall phones keep the full-size live picture. */
+  html.fx-port.game-dock .cam #studio { --live-limit: max(110px, calc(var(--fh) - 610px)); width: min(100%, calc(var(--live-limit) * 16 / 9)); align-self: center; }
+  /* iPad and narrow desktop portrait windows retain normal scrolling, with the
+     same studio-first order. DOM nodes stay put, preserving all game controls. */
+  @media (max-width: 920px) and (orientation: portrait) {
+    html:not(.fx) .frame { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "top" "cards" "cam" "arcade" "term" "lb" "ad" "lower" "guestbook" "foot" "credit"; }
+    html:not(.fx) .grid.main, html:not(.fx) .grid.arcade, html:not(.fx) .lbrow { display: contents; }
+    html:not(.fx) .top { grid-area: top; } html:not(.fx) .cards { grid-area: cards; margin: 0; }
+    html:not(.fx) .cam { grid-area: cam; } html:not(.fx) .arcade > .arc { grid-area: arcade; margin: 0; }
+    html:not(.fx) .term { grid-area: term; } html:not(.fx) .lb { grid-area: lb; } html:not(.fx) .ad { grid-area: ad; }
+    html:not(.fx) .grid.lower { grid-area: lower; margin: 0; }
+    html:not(.fx) .guestbook { grid-area: guestbook; margin: 0; }
+    html:not(.fx) footer { grid-area: foot; margin: 0; } html:not(.fx) .geo-credit { grid-area: credit; }
+  }
   /* phone landscape 16:9: the console is the whole frame; the dashboard opens over it from the "≡ 信息" button */
   html.fx-phl .frame { padding: 4px; gap: 4px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); grid-template-areas: "arcade"; }
   html.fx-phl .top, html.fx-phl footer, html.fx-phl .arc > .ph, html.fx-phl .arc .help, html.fx-phl .scrlabel { display: none !important; }
@@ -470,14 +507,14 @@
   </header>
 
   <nav class="dock-tabs" id="dockTabs" data-i18n-aria-label="nav.panelLabel" aria-label="面板切换">
-    <button type="button" data-t="cards" data-i18n="nav.cards">数据</button><button type="button" data-t="cam" data-i18n="nav.cam">实况</button><button type="button" data-t="lb" data-i18n="nav.rank">排行</button><button type="button" data-t="term" data-i18n="nav.logs">日志</button><button type="button" data-t="chart" data-i18n="nav.inspiration">灵感</button><button type="button" data-t="works" data-i18n="nav.works">作品</button><button type="button" data-t="guestbook">留言</button><button type="button" data-t="legal" data-i18n="nav.about">关于</button><button type="button" data-t="ad" data-i18n="nav.ads">广告</button><button type="button" class="dock-x" data-t="close" data-i18n-aria-label="nav.closeLabel" aria-label="关闭面板">✕</button>
+    <button type="button" data-t="cards" data-i18n="nav.cards">数据</button><button type="button" data-t="cam" data-i18n="nav.cam">实况</button><button type="button" data-t="game" data-i18n="nav.game">游戏</button><button type="button" data-t="lb" data-i18n="nav.rank">排行</button><button type="button" data-t="term" data-i18n="nav.logs">日志</button><button type="button" data-t="chart" data-i18n="nav.inspiration">灵感</button><button type="button" data-t="works" data-i18n="nav.works">作品</button><button type="button" data-t="guestbook">留言</button><button type="button" data-t="legal" data-i18n="nav.about">关于</button><button type="button" data-t="ad" data-i18n="nav.ads">广告</button><button type="button" class="dock-x" data-t="close" data-i18n-aria-label="nav.closeLabel" aria-label="关闭面板">✕</button>
   </nav>
   <button type="button" class="dock-open" id="dockOpen" data-i18n="nav.openInfo" data-i18n-aria-label="nav.openInfo" aria-label="打开信息面板">≡ 信息</button>
 
   <section class="grid cards" id="cards" data-tab="cards"></section>
 
   <section class="grid arcade">
-    <div class="panel arc">
+    <div class="panel arc" data-tab="game">
       <div class="ph"><h2 data-i18n="game.title">▶ ARCADE · KITTY RUNNER</h2><span class="tag" style="color:var(--gold)" data-i18n="game.playable">PLAYABLE</span></div>
       <div class="gba sw">
         <div class="jc jl">
@@ -513,7 +550,16 @@
   <section class="grid main">
     <div class="panel cam" data-tab="cam">
       <div class="ph"><h2><span class="rec">●</span> <span data-i18n="studio.title">STUDIO CAM · 工作室实况</span></h2><span class="tag" style="color:var(--cyan)">LIVE</span></div>
-      <canvas data-i18n-aria-label="studio.canvasLabel" id="studio" width="320" height="180" aria-label="像素工作室动画：三个角色正在工作"></canvas>
+      <canvas data-i18n-aria-label="studio.canvasLabel" data-i18n-title="studio.keys" aria-describedby="studioHint studioKeys" id="studio" width="960" height="540" tabindex="0" aria-label="交互像素工作室：Feline1 与伙伴们一起工作和串门"></canvas>
+      <div class="studio-controls">
+        <div class="studio-roster-row">
+          <div class="studio-roster" id="studioRoster" role="group" data-i18n-aria-label="studio.rosterLabel" aria-label="选择角色"></div>
+          <button type="button" id="studioPhoto" data-i18n="studio.photo">全员合照</button>
+        </div>
+        <div class="studio-caption"><span id="studioStatus" role="status" aria-live="polite"></span><div class="studio-links"><a href="studio-characters.html" target="_blank" rel="noopener" data-i18n="studio.gallery">角色图鉴 ↗</a><a href="media/ai-studio/README.md" target="_blank" rel="noopener" data-i18n="studio.credit">形象来源</a></div></div>
+        <p class="studio-hint" id="studioHint" data-i18n="studio.hint">点标记切换跟随 · 点地面带伙伴逛逛 · 双击角色看拿手动作</p>
+        <span id="studioKeys" class="studio-sr" data-i18n="studio.keys">← → 移动 · Shift 跑步 · 空格 暂停</span>
+      </div>
     </div>
     <div class="panel term" data-tab="term">
       <div class="ph"><h2 data-i18n="terminal.title">&gt;_ build.log</h2><span class="tag" style="color:var(--green)">TAIL -F</span></div>
@@ -609,11 +655,21 @@
 <script src="js/audio.js?v=20261018m"></script>
 <script src="js/game.js?v=20261022e"></script>
 <script src="js/music.js?v=20261018o"></script>
-<script src="js/logs.js?v=20261018m"></script>
-<script src="js/i18n.js?v=20261028d"></script>
-<script src="js/dash.js?v=20261028d"></script>
-<script src="js/studio.js?v=20261018p"></script>
-<script src="js/spider.js?v=20261028e"></script>
+<script src="js/logs.js?v=20261028director10"></script>
+<script src="js/i18n.js?v=20261028workspace11"></script>
+<script src="js/dash.js?v=20261028workspace11"></script>
+<script src="js/studio-room.js?v=20261028studio2"></script>
+<script src="js/studio-world.js?v=20261028workspace11"></script>
+<script src="js/studio-navigation.js?v=20261028workspace11"></script>
+<script src="js/studio-motion.js?v=20261028twelve9"></script>
+<script src="js/studio-gait.js?v=20261028twelve9"></script>
+<script src="js/studio-heroes.js?v=20261028twelve9"></script>
+<script src="js/ai-sprites.js?v=20261028twelve9"></script>
+<script src="js/ai-badges.js?v=20261028polish7"></script>
+<script src="js/studio-personality.js?v=20261028studio2"></script>
+<script src="js/studio-director.js?v=20261028workspace11"></script>
+<script src="js/studio.js?v=20261028workspace11"></script>
+<script src="js/spider.js?v=20261028director10"></script>
 <script src="js/board.js?v=20261018p"></script>
 <script src="js/guestbook.js?v=20261028f" defer></script>
 <script src="js/analytics.js?v=20261028f" defer></script>
