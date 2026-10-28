@@ -538,11 +538,50 @@
     }
   };
 
-  var locale = 'zh-CN', LANGS = Object.keys(messages);
-  try {
-    var saved = localStorage.getItem('c0-site-language');
-    if (saved && messages[saved]) locale = saved;
-  } catch (e) { }
+  var LANGS = Object.keys(messages), locale = 'en', manual = false, localeSource = 'fallback', localeGeneration = 0;
+  var autoNames = { 'zh-CN': '自动', en: 'Automatic', ja: '自動', ru: 'Автоматически', es: 'Automático', 'pt-PT': 'Automático', 'pt-BR': 'Automático', de: 'Automatisch', la: 'Automatice' };
+  function savedLocale() {
+    try { var saved = localStorage.getItem('c0-site-language'); return saved && messages[saved] ? saved : ''; } catch (e) { return ''; }
+  }
+  function matchLanguage(value) {
+    if (typeof value !== 'string') return '';
+    var tag = value.replace(/_/g, '-').toLowerCase().split(/-(?:u|x|t)-/)[0];
+    if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/.test(tag)) return '';
+    var exact = LANGS.filter(function (key) { return key.toLowerCase() === tag; })[0];
+    if (exact) return exact;
+    var base = tag.split('-')[0];
+    if (base === 'zh') return 'zh-CN';
+    if (base === 'pt') return /(?:^|-)br(?:-|$)/.test(tag) ? 'pt-BR' : 'pt-PT';
+    return messages[base] ? base : '';
+  }
+  function browserLocale() {
+    var langs = (typeof navigator !== 'undefined' && navigator.languages && navigator.languages.length) ? navigator.languages : [typeof navigator !== 'undefined' ? navigator.language : ''];
+    for (var i = 0; i < langs.length; i++) { var match = matchLanguage(langs[i]); if (match) return match; }
+    return '';
+  }
+  var initialSaved = savedLocale(), initialBrowser = browserLocale();
+  if (initialSaved) { locale = initialSaved; manual = true; localeSource = 'saved'; }
+  else if (initialBrowser) { locale = initialBrowser; localeSource = 'browser'; }
+  function notify() {
+    window.dispatchEvent(new CustomEvent('c0-language-change', { detail: { locale: locale, source: localeSource, automatic: !manual } }));
+  }
+  async function automaticLocale() {
+    var generation = ++localeGeneration, chosen = browserLocale();
+    manual = false;
+    locale = chosen || 'en'; localeSource = chosen ? 'browser' : 'fallback'; apply(); notify();
+    if (chosen) return;
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timeout = setTimeout(function () { if (controller) controller.abort(); }, 3000);
+    try {
+      var options = { credentials: 'omit', cache: 'no-store' }; if (controller) options.signal = controller.signal;
+      var response = await fetch('https://feline1.top/api/site-locale', options);
+      if (!response.ok) return;
+      var data = await response.json();
+      if (generation !== localeGeneration || manual || !data || data.source !== 'ip' || !messages[data.locale]) return;
+      locale = data.locale; localeSource = 'ip'; apply(); notify();
+    } catch (e) { /* Offline, blocked country lookup or timeout leaves English usable. */ }
+    finally { clearTimeout(timeout); }
+  }
 
   function t(key, vars) {
     var dict = messages[locale] || messages.en, value = dict[key];
@@ -564,15 +603,24 @@
     document.querySelectorAll('[data-i18n-title]').forEach(function (el) { el.setAttribute('title', t(el.getAttribute('data-i18n-title'))); });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) { el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))); });
     var select = document.getElementById('langSelect');
-    if (select) select.value = locale;
+    if (select) {
+      var automatic = select.querySelector('option[value="auto"]');
+      var current = select.querySelector('option[value="' + locale + '"]');
+      if (automatic) automatic.textContent = (autoNames[locale] || autoNames.en) + ' · ' + (current ? current.textContent : locale);
+      select.value = manual ? locale : 'auto';
+    }
   }
   function setLocale(next) {
-    if (!messages[next] || next === locale) return;
-    locale = next;
+    if (next === 'auto') {
+      try { localStorage.removeItem('c0-site-language'); } catch (e) { }
+      return automaticLocale();
+    }
+    if (!messages[next]) return;
+    ++localeGeneration; manual = true; locale = next; localeSource = 'saved';
     try { localStorage.setItem('c0-site-language', locale); } catch (e) { }
-    apply();
-    window.dispatchEvent(new CustomEvent('c0-language-change', { detail: { locale: locale } }));
+    apply(); notify();
   }
+
   function formatLog(value, vars) {
     return String(value).replace(/\{(\w+)\}/g, function (all, name) { return vars && vars[name] !== undefined ? String(vars[name]) : all; });
   }
@@ -590,9 +638,17 @@
     if (value === undefined) value = key;
     return formatLog(value, vars);
   }
-  window.I18N = { t: t, game: gameText, log: logText, getLogLines: getLogLines, apply: apply, setLocale: setLocale, getLocale: function () { return locale; }, locales: LANGS.slice() };
+  window.I18N = { t: t, game: gameText, log: logText, getLogLines: getLogLines, apply: apply, setLocale: setLocale, getLocale: function () { return locale; }, getLocaleSource: function () { return localeSource; }, isAutomatic: function () { return !manual; }, locales: LANGS.slice() };
   apply();
   var select = document.getElementById('langSelect');
   if (select) select.addEventListener('change', function () { setLocale(select.value); });
-  window.dispatchEvent(new CustomEvent('c0-language-change', { detail: { locale: locale } }));
+  notify();
+  if (!manual && !initialBrowser) automaticLocale();
+  window.addEventListener('languagechange', function () { if (!manual) automaticLocale(); });
+  window.addEventListener('storage', function (event) {
+    if (event.key !== 'c0-site-language' && event.key !== null) return;
+    var saved = savedLocale();
+    if (saved) { ++localeGeneration; manual = true; locale = saved; localeSource = 'saved'; apply(); notify(); }
+    else automaticLocale();
+  });
 }());
