@@ -183,7 +183,7 @@
     '.spider-web{position:absolute;left:0;top:0;image-rendering:pixelated;z-index:38;pointer-events:none;transition:opacity 2s}' +
     '.spider-hole{position:absolute;left:0;top:0;image-rendering:pixelated;z-index:39;pointer-events:none;transform-origin:50% 50%}' +
     '.spider-dirt{position:absolute;left:0;top:0;width:' + K + 'px;height:' + K + 'px;z-index:41;pointer-events:none}' +
-    '.spider-bub{position:absolute;left:0;top:0;z-index:41;pointer-events:none;background:#fff;color:#1a1030;font:13px/1.3 "DotGothic16",monospace;padding:3px 8px;border:2px solid #1a1030;box-shadow:3px 3px 0 #ff4fa3;white-space:nowrap;opacity:0;transition:opacity .15s}' +
+    '.spider-bub{position:absolute;left:0;top:0;z-index:41;pointer-events:none;background:#fff;color:#1a1030;font:13px/1.3 "DotGothic16",monospace;padding:3px 8px;border:2px solid #1a1030;box-shadow:3px 3px 0 #ff4fa3;width:max-content;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box;opacity:0;transition:opacity .15s}' +
     '.spider-bub::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-4px;border:4px solid transparent;border-top-color:#1a1030}' +
     '.spider-bub.on{opacity:1}' +
     '.spider-snd{position:fixed;left:10px;bottom:10px;z-index:60;width:34px;height:34px;border:2px solid #1a1030;background:#2a1648;color:#fff;font-size:17px;line-height:28px;padding:0;cursor:pointer;box-shadow:2px 2px 0 #ff4fa3;opacity:.75;-webkit-tap-highlight-color:transparent}' +
@@ -302,7 +302,9 @@
   var sayUntil = 0, lastSpeech = null;
   function say(text, ms) { var n = String(text).replace(/[^\u4e00-\u9fffA-Za-z]/g, '').length; if (n <= 1) snd('chirp'); else snd('babble', { n: Math.ceil(n / 1.5) }); lastSpeech = String(text); bub.textContent = localizeSpeech(lastSpeech); bub.classList.add('on'); sayUntil = performance.now() + (ms || 2400); placeBubble(); }
   function placeBubble() {
-    var w = bub.offsetWidth, F = FR || { l: 0, t: 0, r: document.documentElement.clientWidth, b: 1e9 };
+    var F = FR || { l: 0, t: 0, r: document.documentElement.clientWidth, b: 1e9 };
+    bub.style.maxWidth = Math.max(80, F.r - F.l - 8) + 'px';
+    var w = bub.offsetWidth;
     var bx = clamp(S.x - w / 2, F.l + 4, F.r - w - 4), by = S.y - S.hop - 26 * K;
     /* keep the bubble off the header clock/ticker: flip it below 小八 when it would overlap the top bar */
     var hd = document.querySelector('.top'); if (hd) { var hr = hd.getBoundingClientRect(), hb = hr.bottom + window.scrollY; if (by < hb + 4 && S.y < hb + 140) by = S.y + 14 * K; }
