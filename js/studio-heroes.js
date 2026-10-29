@@ -87,7 +87,7 @@
   R.prototype.canvas=function(flip){
     var c=document.createElement('canvas');c.width=W;c.height=H;var g=c.getContext('2d'),a=this.rows,id=this.owner;
     for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(!a[y][x]&&((x>0&&a[y][x-1])||(x<W-1&&a[y][x+1])||(y>0&&a[y-1][x])||(y<H-1&&a[y+1][x]))){g.fillStyle=INK;g.fillRect(flip?W-1-x:x,y,1,1);}
-    for(var yy=0;yy<H;yy++)for(var xx=0;xx<W;xx++)if(a[yy][xx]){g.fillStyle=gbaColour(id,a[yy][xx]);g.fillRect(flip?W-1-xx:xx,yy,1,1);}return c;
+    for(var yy=0;yy<H;yy++)for(var xx=0;xx<W;xx++)if(a[yy][xx]){g.fillStyle=gbaColour(id,a[yy][xx]);g.fillRect(flip?W-1-xx:xx,yy,1,1);}c.headBounds=facingHead(this.headBounds,flip);return c;
   };
   function palmPoint(x,y,id,big){return{x:Math.max(4,Math.min(id==='Feline1'&&big?42:43,x)),y:y};}
   function hand(r,x,y,id,p,far,big,back,joinMask){
@@ -317,7 +317,16 @@
     var mood=expression&&expression!=='auto'?expression:expressions.resolve(id,state,phase);
     return expressions.moods.some(function(item){return item.id===mood;})?mood:null;
   }
+  // Record only head paint, independently of raised hands and action props.
+  // Bounds use native sprite pixels and include the one-pixel outside contour.
+  function trackHead(r){
+    var paint=r.dot,left=W,top=H,right=-1,bottom=-1;
+    r.dot=function(x,y,c){var px=Math.round(x),py=Math.round(y);if(c&&px>=0&&px<W&&py>=0&&py<H){left=Math.min(left,px);top=Math.min(top,py);right=Math.max(right,px);bottom=Math.max(bottom,py);}paint.call(this,x,y,c);};
+    return function(){r.dot=paint;r.headBounds={left:Math.max(0,left-1),top:Math.max(0,top-1),right:Math.min(W,right+2),bottom:Math.min(H,bottom+2)};};
+  }
+  function facingHead(bounds,flip){if(!bounds)return null;var b={left:flip?W-bounds.right:bounds.left,top:bounds.top,right:flip?W-bounds.left:bounds.right,bottom:bounds.bottom};b.centerX=(b.left+b.right)/2;return b;}
   function head(r,id,p,side,back,bob,lean,state,phase,expression){
+    var finishHead=trackHead(r);
     var frame12=((Math.floor(Number(phase)||0)%12)+12)%12;phase=phase8(phase);
     var y=8+bob,hx=lean,blink=state==='nap'?1:state==='idle'?[0,.5,1,0,0,0,0,0,0,0,0,0][frame12]:0,happy=state==='wave'||state==='cheer';
     if(id==='Feline1'){
@@ -377,6 +386,7 @@
       r.rect(12+hx,y+15,3,6,'#535466');r.line(12+hx,y+16,12+hx,y+20,p.accent);r.dot(13+hx,y+21,p.accentD);
       if(!back){r.line(15+hx,y+23,20+hx,y+26,'#59596a');r.line(20+hx,y+26,27+hx,y+25,'#59596a');r.rect(26+hx,y+24,3,2,p.accentD);r.dot(27+hx,y+24,p.accent);}
     }
+    finishHead();
   }
   function arms(r,id,p,side,back,bob,lean,state,phase,screenLeft,propsOnly){
     // Action targets are authored by screen side; physical depth is derived
@@ -553,6 +563,7 @@
     // Grooming deliberately looks toward the held tail; ordinary locomotion
     // keeps the same forward-facing eye plane as every other right view.
     stamp(subject,h,state==='f1_groom'&&!back);
+    r.headBounds=facingHead(h.headBounds,state==='f1_groom'&&!back);
     if(!back){
       signatureProps(subject,id,p,side,false,bob,lean,state,phase);
       if(side)foregroundForearm(subject,rearLimb);else signatureArm(subject,id,p,false,false,bob,lean,state,phase,true);

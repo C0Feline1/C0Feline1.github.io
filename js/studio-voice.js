@@ -13,7 +13,7 @@
   }
   function pip(cue,at,speed,profile,level,frequency){
     profile=profile||profiles.doubao;level=level===undefined?1:level;
-    var duration=Math.max(.025,Math.min(.14,cue.duration*.78/speed)),gain=context.createGain(),filter=context.createBiquadFilter();
+    var duration=Math.max(.025,Math.min(cue.durationLimit||.14,cue.duration*.78/speed)),gain=context.createGain(),filter=context.createBiquadFilter();
     filter.type='lowpass';filter.frequency.setValueAtTime(profile.cutoff,at);filter.Q.setValueAtTime(.55,at);filter.connect(gain);gain.connect(context.destination);
     var peak=volume*.13*level,attack=Math.min(profile.attack,duration*.2),remaining=profile.waves.length;
     gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(peak,at+attack);gain.gain.linearRampToValueAtTime(peak*profile.decay,at+duration*.55);gain.gain.linearRampToValueAtTime(0,at+duration);
@@ -73,6 +73,21 @@
     }
     return count;
   }
+  function photo(ids){
+    // One shared "qie2-zi4": existing voices enter just apart, rise together,
+    // then give the short falling photo-call ending. Never opens audio itself.
+    if(!enabled||!context||context.state!=='running')return false;
+    var cast=(ids||Object.keys(profiles)).filter(function(id,i,list){return profiles[id]&&list.indexOf(id)===i;});
+    if(!cast.length)return false;
+    stop();lastKey='photo:cheese';
+    var now=context.currentTime+.025,level=.65/Math.sqrt(cast.length);
+    cast.forEach(function(id,i){
+      var at=now+i*.016;
+      pip({tone:2,duration:.29,durationLimit:.24},at,1,profiles[id],level);
+      pip({tone:4,duration:.23,durationLimit:.19},at+.28,1,profiles[id],level);
+    });
+    return true;
+  }
   async function audition(id,kind){
     var request=++generation;await open();if(request!==generation)return false;stop();var now=context.currentTime+.03,profile=profiles[id]||profiles.doubao;
     if(kind==='dots'){[0,.25,.57].forEach(function(t,i){pip({tone:5,duration:.07},now+t,1,pauseSound,.55,340-i*35);});}
@@ -80,5 +95,5 @@
     else [1,2,3,4].forEach(function(t,i){pip({tone:t,duration:.18},now+i*.24,1,profile);});
     return true;
   }
-  window.StudioVoice={enable:enable,stop:stop,sync:sync,audition:audition,setVolume:function(value){volume=Math.max(0,Math.min(1,value));stop();},setScene:function(value){sceneEnabled=value;stop();},isEnabled:function(){return enabled;},snapshot:function(){return{enabled:enabled,nodes:nodes.length,key:lastKey,context:context?context.state:'unopened'};},plan:plan};
+  window.StudioVoice={enable:enable,stop:stop,sync:sync,photo:photo,audition:audition,setVolume:function(value){volume=Math.max(0,Math.min(1,value));stop();},setScene:function(value){sceneEnabled=value;stop();},isEnabled:function(){return enabled;},snapshot:function(){return{enabled:enabled,nodes:nodes.length,key:lastKey,context:context?context.state:'unopened'};},plan:plan};
 }());

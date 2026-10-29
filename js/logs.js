@@ -136,21 +136,21 @@
   };
   var studioZones = { office: true, cowork: true, garden: true };
   var lastStudioAt = -Infinity, lastDirectedAt = -Infinity, studioRecent = Object.create(null), lastStudioLine = null;
-  var dialogueTimers = [], dialogueEpoch = 0, dialogueRecent = Object.create(null), lastDialogueAt = -Infinity;
+  var dialogueTimers = [], dialogueEpoch = 0, dialogueRecent = Object.create(null), lastDialogueAt = -Infinity, liveStage=true;
   function cancelDialogue() {
     dialogueEpoch++;
     dialogueTimers.forEach(clearTimeout); dialogueTimers = [];
   }
   function appendDialogue(id, epoch) {
     var terminal = document.getElementById('log'), i18n = window.I18N;
-    if (epoch !== dialogueEpoch || document.hidden || !terminal || !i18n) return;
+    if (epoch !== dialogueEpoch || !liveStage || document.hidden || !terminal || !i18n) return;
     var line = document.createElement('div'), stamp = document.createElement('span'), speech = document.createElement('span');
     var now = new Date(), pad = function (n) { return String(n).padStart(2, '0'); };
     stamp.className = 't';
     stamp.textContent = '[' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + '] ';
     speech.className = 'p'; speech.textContent = i18n.log('studio.dialogue.entry', {
       name: studioName(id),
-      line: window.StudioCast&&StudioCast.get(id)&&i18n.getLocale()==='zh-CN'?StudioCast.get(id).beats[3].line:studioText(i18n.log('studio.dialogue.' + id))
+      line: window.StudioCast&&StudioCast.localized(id)?StudioCast.localized(id).beats[3].line:studioText(i18n.log('studio.dialogue.' + id))
     });
     line.appendChild(stamp); line.appendChild(speech);
     var cursor = terminal.querySelector('.cursor'); terminal.insertBefore(line, cursor);
@@ -158,7 +158,7 @@
     terminal.scrollTop = terminal.scrollHeight;
   }
   function sceneDialogue(detail) {
-    if (!detail || !Array.isArray(detail.actors) || document.hidden) return;
+    if (!detail || !liveStage || !Array.isArray(detail.actors) || document.hidden) return;
     var ids = detail.actors.filter(function (id, i, list) {
       return typeof id === 'string' && Object.prototype.hasOwnProperty.call(studioNames, id) && list.indexOf(id) === i;
     }).slice(0, 2);
@@ -173,7 +173,7 @@
   }
   function sceneLog(detail) {
     if (!detail || !Object.prototype.hasOwnProperty.call(studioKinds, detail.type) ||
-        !Array.isArray(detail.actors) || document.hidden) return;
+        !liveStage || !Array.isArray(detail.actors) || document.hidden) return;
     var ids = detail.actors.filter(function (id, i, list) {
       return typeof id === 'string' && Object.prototype.hasOwnProperty.call(studioNames, id) && list.indexOf(id) === i;
     }).slice(0, 10);
@@ -214,8 +214,8 @@
       (['work', 'chat', 'heart'].indexOf(detail.type) >= 0 ? i18n.log('studio.aside.' + speaker) : '');
     aside = studioText(aside);
     var castPerformance=isPerform&&window.StudioCast&&detail.performance===ids[0]&&StudioCast.story(ids[0]);
-    if(castPerformance&&i18n.getLocale()==='zh-CN')aside=castPerformance.beats[0].line;
-    var action = isPerform ? i18n.log('studio.action.perform', { action: castPerformance&&i18n.getLocale()==='zh-CN'?castPerformance.title:i18n.log('studio.signature.' + (castPerformance?studioSignatureGroups[ids[0]][0]:detail.action)) }) :
+    if(castPerformance)aside=StudioCast.text(castPerformance.beats[0].line);
+    var action = isPerform ? i18n.log('studio.action.perform', { action: castPerformance?StudioCast.text(castPerformance.title):i18n.log('studio.signature.' + detail.action) }) :
       isScene ? i18n.log('studio.action.scene', { scene: i18n.log('studio.scene.' + detail.scene) }) :
       i18n.log('studio.action.' + detail.type);
     var msg = i18n.log('studio.entry', {
@@ -253,6 +253,7 @@
     studioRecent = Object.create(null); lastStudioAt = lastDirectedAt = -Infinity; lastStudioLine = null;
   });
   document.addEventListener('visibilitychange', function () { if (document.hidden) cancelDialogue(); });
+  window.addEventListener('studio-stage-change',function(event){liveStage=!(event.detail&&event.detail.active==='game');if(!liveStage)cancelDialogue();});
   window.addEventListener('pagehide', cancelDialogue);
   window.BuildLog = { next: next, inStory: function () { return queue.length > 0; } };
 })();

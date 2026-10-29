@@ -21,6 +21,8 @@
     var e = cue.effect, p = cue.progress, color = actor.color, mirror = cue.mainDirection === 'left';
     g.save(); g.translate(Math.round(actor.renderX), Math.round(actor.renderY)); if (mirror) g.scale(-1, 1);
     function label(value, x, y, width, ink) {
+      value=window.StudioCast?StudioCast.text(value):value;
+      g.font='6px '+FONT;width=Math.max(width,Math.ceil(g.measureText(value).width)+4);
       box(g, x, y, width, 11, '#30263e');
       g.save(); if (mirror) { g.translate(x + width - 2, y + 2); g.scale(-1, 1); text(g, value, 0, 0, ink || color, 6); }
       else text(g, value, x + 2, y + 2, ink || color, 6); g.restore();
@@ -76,17 +78,31 @@
   function speech(g, actor, cue, view) {
     if (!cue || !cue.performance || !cue.line) return;
     // The full-width reserve keeps the cloud still while the sentence appears.
-    var value = cue.line, size = 7, maxWidth = 148;
+    var value = window.StudioCast?StudioCast.text(cue.line):cue.line, size = 7, maxWidth = 148;
     g.save(); g.font = size + 'px ' + FONT; g.textBaseline = 'top';
     var words = Array.from(value), lines = [''];
-    words.forEach(function (char) { var i = lines.length - 1; if (g.measureText(lines[i] + char).width > maxWidth - 10) lines.push(char); else lines[i] += char; });
+    words.forEach(function (char) {
+      var i=lines.length-1;
+      if(g.measureText(lines[i]+char).width<=maxWidth-10){lines[i]+=char;return;}
+      var space=lines[i].lastIndexOf(' ');
+      if(space>0){var carry=lines[i].slice(space+1)+char;lines[i]=lines[i].slice(0,space);lines.push(carry);}
+      else lines.push(char);
+    });
     var width = Math.ceil(Math.max.apply(null, lines.map(function (line) { return g.measureText(line).width; }))) + 10;
-    var h = lines.length * 9 + 6, anchor = actor.renderX + placement(cue);
-    var x = Math.max(view.left + 3, Math.min(view.right - width - 3, anchor - width / 2)), y = actor.renderY - 52 - h;
+    var head = actor.renderHead, h = lines.length * 9 + 6;
+    var anchor = head ? head.centerX : actor.renderX + placement(cue), headTop = head ? head.top : actor.renderY - 32;
+    // Keep the tail beside the actual head, regardless of sprite canvas margins.
+    var x = Math.max(view.left + 3, Math.min(view.right - width - 3, anchor - width / 2)), y = headTop - h - 5;
     var tail = Math.max(x + 4, Math.min(x + width - 5, anchor));
     box(g, x + 3, y, width - 6, 1, '#2e243e'); box(g, x + 1, y + 1, width - 2, 2, '#2e243e'); box(g, x, y + 3, width, h - 5, '#2e243e'); box(g, x + 2, y + h - 2, width - 4, 2, '#2e243e'); box(g, tail - 1, y + h, 3, 2, '#2e243e');
     box(g, x + 3, y + 1, width - 6, h - 2, '#fff5ea'); box(g, x + 1, y + 3, width - 2, h - 6, '#fff5ea'); box(g, tail, y + h - 1, 2, 2, '#fff5ea');
-    var count = window.StudioVoice&&cue.beat.voice?StudioVoice.plan(cue.beat.voice,cue.seconds).filter(function(unit){return unit.start*1000<=cue.localMs;}).length:Math.min(words.length, Math.floor(cue.localMs / Math.max(35, cue.seconds * 1000 / Math.max(1, words.length))));
+    var count;
+    if(window.StudioVoice&&cue.beat&&cue.beat.voice){
+      var units=cue.beat.voice,heard=StudioVoice.plan(units,cue.seconds).filter(function(unit){return unit.start*1000<=cue.localMs;}).length;
+      // Longer English lines share the original voice timing without stopping
+      // after the Chinese number of glyphs. Audio profiles remain unchanged.
+      count=Math.min(words.length,Math.ceil(words.length*heard/Math.max(1,units.length)));
+    }else count=Math.min(words.length, Math.floor(cue.localMs / Math.max(35, cue.seconds * 1000 / Math.max(1, words.length))));
     var left = count;
     lines.forEach(function (line, index) { text(g, Array.from(line).slice(0, left).join(''), x + 5, y + 4 + index * 9, '#594a72', size); left = Math.max(0, left - Array.from(line).length); });
     g.restore();

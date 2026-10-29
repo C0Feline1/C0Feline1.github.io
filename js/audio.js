@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   var AC = window.AudioContext || window.webkitAudioContext;
-  var on = localStorage.getItem('sound-on') === '1';
+  var on = localStorage.getItem('sound-on') === '1', stageGain = null, stageLevel = 1;
   var spOn = localStorage.getItem('spider-sound') !== '0', spListeners = [];
   var duck = null, lowFx = false;
   /* measured music RMS per world (audit/audio_bal.json) -> gain that brings every song to about -24 dBFS */
@@ -19,7 +19,7 @@
     ctx = new AC();
     master = ctx.createGain(); master.gain.value = on ? 1 : 0;
     var comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
-    master.connect(comp); comp.connect(ctx.destination);
+    stageGain = ctx.createGain(); stageGain.gain.value = on ? stageLevel : 0; master.connect(stageGain); stageGain.connect(comp); comp.connect(ctx.destination);
     musicBus = ctx.createGain(); musicBus.gain.value = 0.55; duck = ctx.createGain(); duck.gain.value = 1; musicBus.connect(duck); duck.connect(master);
     sfxBus = ctx.createGain(); sfxBus.gain.value = 1.42; sfxBus.connect(master); /* +4 dB: jump / shard used to sit under the music */
     spiderBus = ctx.createGain(); spiderBus.gain.value = 0.42; spiderBus.connect(comp); /* not under master: the SOUND switch doesn't mute 小八 */
@@ -176,7 +176,7 @@
     if (play && on) {
       if (pageEl.paused) pageEl.play().catch(function () { });
       pageGain.gain.setTargetAtTime(pageSrc ? 0.35 : 0, now, 0.3);
-      if (!pageSrc) pageEl.volume = 0.12;
+      if (!pageSrc) pageEl.volume = 0.12 * stageLevel;
     } else {
       pageGain.gain.setTargetAtTime(0.0001, now, 0.15);
       clearTimeout(pageTimer); pageTimer = setTimeout(function () { if (pageEl && (!on || gameState === 'play' || gameState === 'paused')) pageEl.pause(); }, 700);
@@ -247,7 +247,7 @@
     if (on) init(); apply(); listeners.forEach(function (f) { f(on); });
   }
   var SND = {
-    get on() { return on; }, toggle: function () { setOn(!on); }, setOn: setOn, onChange: function (f) { listeners.push(f); f(on); },
+    get on() { return on; }, isOn: function () { return on; }, toggle: function () { setOn(!on); }, setOn: setOn, onChange: function (f) { listeners.push(f); f(on); },
     setWorlds: function (keys) { BIOME_KEYS = keys; }, songs: SONGS,
     duck: function () { if (!on || !duck) return; var t = ctx.currentTime; duck.gain.cancelScheduledValues(t); duck.gain.setTargetAtTime(0.7, t, 0.01); duck.gain.setTargetAtTime(1, t + 0.12, 0.08); },
     lowfx: function (v) { lowFx = !!v; players.forEach(function (p) { p.eg.gain.value = lowFx ? 0 : 0.22; }); },
@@ -259,10 +259,19 @@
       var now = ctx.currentTime;
       if (state === 'play') { page(false); musicBus.gain.setTargetAtTime(0.55, now, 0.1); if (prev !== 'paused' && prev !== 'play') startWorld(wantWorld < 0 ? 0 : wantWorld, true); else if (!cur()) startWorld(wantWorld, true); }
       else if (state === 'paused') musicBus.gain.setTargetAtTime(0.18, now, 0.1);
-      else if (state === 'over') { stopGameMusic(1.5); setTimeout(function () { if (gameState === 'over' || gameState === 'title') { musicBus.gain.setTargetAtTime(0.55, ctx.currentTime, 0.1); page(true); } }, 2200); }
+      else if (state === 'over') { stopGameMusic(1.5); setTimeout(function () { if (on && !document.hidden && (gameState === 'over' || gameState === 'title')) { musicBus.gain.setTargetAtTime(0.55, ctx.currentTime, 0.1); page(true); } }, 2200); }
       else if (state === 'title') { stopGameMusic(0.6); musicBus.gain.setTargetAtTime(0.55, now, 0.1); page(true); }
     },
     spider: spider, get spiderOn() { return spOn; }, setSpider: setSpider, toggleSpider: function () { setSpider(!spOn); }, onSpider: function (f) { spListeners.push(f); f(spOn); }
+  };
+  // The visible stage owns this transient mute/level. Keep the saved legacy
+  // preference and Xiao Ba's independent sound switch untouched.
+  SND.setStageAudio = function (active, level) {
+    on = !!active; stageLevel = Math.max(0, Math.min(1, Number(level) || 0));
+    if (on) init();
+    if (ctx && stageGain) { stageGain.gain.cancelScheduledValues(ctx.currentTime); stageGain.gain.setValueAtTime(on ? stageLevel : 0, ctx.currentTime); }
+    apply(); listeners.forEach(function (listener) { listener(on); });
+    return on;
   };
   window.SND = SND;
   /* browsers need a gesture before audio: the first one anywhere unlocks it (小八 may talk even when the SOUND switch is off) */

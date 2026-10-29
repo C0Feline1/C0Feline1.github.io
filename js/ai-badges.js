@@ -156,13 +156,14 @@
 
   ids.forEach(function (id) { cache[id] = make(id); });
 
-  function draw(ctx, id, x, y, tick, reduced) {
+  function draw(ctx, id, x, y, tick, reduced, size) {
     if (!cache[id]) return false;
+    size = size || SIZE;
     var phase = ids.indexOf(id) * 9;
     var bob = reduced ? 0 : (Math.floor(((tick || 0) + phase) / 20) % 2 ? -1 : 0);
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(cache[id], Math.round(x), Math.round(y) + bob);
+    ctx.drawImage(cache[id], Math.round(x), Math.round(y) + bob, size, size);
     ctx.restore();
     return true;
   }

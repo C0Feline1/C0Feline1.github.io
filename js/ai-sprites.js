@@ -162,7 +162,7 @@
     // Keep deliberate pixel clusters intact: no automatic chamfer/dither pass.
     var c=document.createElement('canvas');c.width=W;c.height=H;var g=c.getContext('2d');
     for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(!rows[y][x]&&((x&&rows[y][x-1]&&rows[y][x-1]!==INK)||(x<W-1&&rows[y][x+1]&&rows[y][x+1]!==INK)||(y&&rows[y-1][x]&&rows[y-1][x]!==INK)||(y<H-1&&rows[y+1][x]&&rows[y+1][x]!==INK))){g.fillStyle=INK;g.fillRect(flip?W-1-x:x,y,1,1);}
-    for(var yy=0;yy<H;yy++)for(var xx=0;xx<W;xx++)if(rows[yy][xx]){g.fillStyle=rows[yy][xx];g.fillRect(flip?W-1-xx:xx,yy,1,1);}return c;
+    for(var yy=0;yy<H;yy++)for(var xx=0;xx<W;xx++)if(rows[yy][xx]){g.fillStyle=rows[yy][xx];g.fillRect(flip?W-1-xx:xx,yy,1,1);}c.headBounds=facingHead(this.headBounds,flip);return c;
   };
   function star(r,x,y,color){r.rect(x,y-1,1,3,color);r.rect(x-1,y,3,1,color);}
   // A right-front turn exposes the screen-left shoulder. Forward reach is
@@ -477,7 +477,16 @@
       else limb(r,[sx,y],[sx-2,y+2],[sx-2,y+4],p.dark,SKIN_D);
     }else if(back){limb(r,[7,y],[5,y+2],[5,y+4],p.dark,SKIN_D);}
   }
+  // The scaffold is half-size; keep head-only bounds on the native 48px grid.
+  // Measuring paint rather than the full pose excludes hands, effects and props.
+  function trackHead(r){
+    var paint=r.dot,left=BW,top=BH,right=-1,bottom=-1;
+    r.dot=function(x,y,c){var px=Math.round(x),py=Math.round(y);if(c&&px>=0&&px<BW&&py>=0&&py<BH){left=Math.min(left,px);top=Math.min(top,py);right=Math.max(right,px);bottom=Math.max(bottom,py);}paint.call(this,x,y,c);};
+    return function(){r.dot=paint;r.headBounds={left:Math.max(0,left*2-1),top:Math.max(0,top*2-1),right:Math.min(W,(right+1)*2+1),bottom:Math.min(H,(bottom+1)*2+1)};};
+  }
+  function facingHead(bounds,flip){if(!bounds)return null;var b={left:flip?W-bounds.right:bounds.left,top:bounds.top,right:flip?W-bounds.left:bounds.right,bottom:bounds.bottom};b.centerX=(b.left+b.right)/2;return b;}
   function head(r,id,p,side,back,bob,lean,state,phase){
+    var finishHead=trackHead(r);
     var k=key8(phase);
     var y=5+bob, hx=lean, blink=state==='nap'||state==='idle'&&k===1, happy=state==='wave'||state==='cheer';
     r.poly([[6+hx,y],[17+hx,y],[20+hx,y+3],[20+hx,y+10],[17+hx,y+13],[7+hx,y+13],[4+hx,y+10],[4+hx,y+4]],p.hair);
@@ -546,6 +555,7 @@
       r.poly([[6+hx,y+6],[8+hx,y+2],[14+hx,y+1],[18+hx,y+4],[19+hx,y+7],[15+hx,y+4],[12+hx,y+4],[9+hx,y+6]],p.hair);
       r.line(7+hx,y+4,12+hx,y+1,p.light);
     }
+    finishHead();
   }
   function armFront(r,id,p,side,back,bob,lean,state,phase){
     if(correctDepth(p,side,back))r=actionPlane(r,'near',0,false,false,false,state==='wave'||state==='cheer');

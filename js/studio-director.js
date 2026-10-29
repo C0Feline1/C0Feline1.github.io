@@ -141,7 +141,8 @@
         if (!Array.isArray(targets) || targets.length !== 2 || !targets.every(pointValid) || Math.hypot(targets[0].x - targets[1].x, targets[0].y - targets[1].y) < 32) continue;
         storyCursor = (index + 1) % STORIES.length;
         var journey = Math.max.apply(null, members.map(function (a, i) {
-          var speed = a.id === 'gpt' ? .88 * .58 : a.ai ? .88 : 1.05;
+          var fallback = a.id === 'gpt' ? .88 * .58 : a.ai ? .88 : 1.05;
+          var speed = options.getSpeed ? Math.max(.1, finite(options.getSpeed(a, 'walk'), fallback)) : fallback;
           return Math.hypot(a.x - targets[i].x, a.y - targets[i].y) / speed * 55 * 1.35 + 4000;
         }));
         return prepare({ id: ++serial, actors: members, story: story, phase: 'approach', actions: story.stages[0].actions.slice(), targets: targets, saved: members.map(function (a) { return { direction: a.direction, facingLeft: a.facingLeft }; }), createdMs: now, approachUntil: now + Math.min(50000, Math.max(12000, journey)) });
