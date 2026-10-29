@@ -246,6 +246,29 @@ footer {grid-area:foot}
 .site-layout .game-down[aria-pressed=true] canvas {opacity:1}
 .site-layout .game-down:focus-visible, .site-layout .game-pause:focus-visible {outline:2px solid var(--pink);outline-offset:-3px}
 @media(max-width:640px){.site-layout .game-title-row h2 {font-size:11px;letter-spacing:0}.site-layout .game-title-tools {gap:7px}.site-layout .game-title-tools .tag {display:none}}
+/* Keep phone controls proportional to the small playfield. The transparent
+   target stays easy to press while the visible button leaves the road clear. */
+@media(max-width:640px), (max-width:1000px) and (max-height:520px) {
+  .site-layout .game-down {width:52px;height:52px;right:3px;bottom:3px}
+  .site-layout .game-down::before {inset:6px;border-radius:9px;background:rgba(9,7,18,.3)}
+  .site-layout .game-down canvas {width:24px;height:24px;opacity:.8}
+  .site-layout .game-pause {left:3px;top:34%;width:44px;height:44px;border:0;border-radius:0;background:transparent;font-size:14px}
+  .site-layout .game-pause::before {content:"";position:absolute;inset:7px;border:1px solid rgba(79,227,255,.4);border-radius:6px;background:rgba(9,7,18,.32)}
+  .site-layout .game-pause > span {position:relative;pointer-events:none}
+  .site-layout .game-pause[aria-pressed=true] {background:transparent}
+  .site-layout .game-pause[aria-pressed=true]::before {border-color:var(--cyan);background:rgba(20,39,51,.8)}
+}
+@media(max-width:640px) {
+  .site-layout .layout-stage .arc {padding:8px 0 0}
+  .site-layout .game-title-row {padding:0 8px}
+  .site-layout .game-surface {border-left:0;border-right:0;border-bottom:0}
+}
+@media(max-width:360px) {
+  .site-layout .game-down {width:48px;height:48px}
+}
+@media(max-width:1000px) and (max-height:520px) and (orientation:landscape) {
+  .site-layout .game-surface {max-width:calc((100vh - 148px) * 1.5);max-width:calc((100svh - 148px) * 1.5);margin-inline:auto}
+}
 @media(prefers-reduced-motion:reduce){.site-layout .game-down::before {transition:none}}
 
 .site-layout .game-surface #game:focus-visible {outline:2px solid var(--cyan);outline-offset:-2px}
