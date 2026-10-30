@@ -4,16 +4,12 @@
   var stage = document.getElementById('interactiveStage');
   if (!stage) return;
   var tabs = Array.from(stage.querySelectorAll('[role="tab"]'));
-  var sound = document.getElementById('stageSound'), volume = document.getElementById('stageVolume');
+  var sound = document.getElementById('stageSound');
   var status = document.getElementById('stageAudioStatus');
   var active = 'live', enabled = false, inView = true, audioRevision = 0;
   var audioError = false, touched = false;
+  var AUDIO_LEVEL = 0.25;
   function t(key) { return window.I18N ? I18N.t(key) : key; }
-  try {
-    var saved = localStorage.getItem('studio-stage-volume');
-    if (saved === null) saved = localStorage.getItem('layout-stage-volume');
-    if (saved !== null && Number.isFinite(Number(saved))) volume.value = String(Math.max(0, Math.min(100, Number(saved))));
-  } catch (_) { /* A private window still has working volume controls. */ }
   function updateLabels() {
     sound.setAttribute('aria-pressed', String(enabled));
     sound.textContent = t(enabled ? 'stage.soundOn' : 'stage.soundOff');
@@ -21,13 +17,13 @@
     status.textContent = audioError ? t('stage.audioError') : '';
   }
   function syncAudio() {
-    var revision = ++audioRevision, level = Number(volume.value) / 100;
+    var revision = ++audioRevision;
     var audible = enabled && inView && !document.hidden;
     // Stop the old path before unlocking the currently visible one.
-    if (window.SND && SND.setStageAudio) SND.setStageAudio(audible && active === 'game', level);
+    if (window.SND && SND.setStageAudio) SND.setStageAudio(audible && active === 'game', AUDIO_LEVEL);
     if (window.StudioVoice) {
       StudioVoice.enable(false);
-      StudioVoice.setVolume(level);
+      StudioVoice.setVolume(AUDIO_LEVEL);
       if (audible && active === 'live') StudioVoice.enable(true).catch(function () {
         if (revision !== audioRevision) return;
         enabled = false; audioError = true; syncAudio();
@@ -55,6 +51,29 @@
     if (location.hash !== '#game' && location.hash !== '#studio') return;
     requestAnimationFrame(function () { stage.scrollIntoView({ block: 'start' }); });
   }
+  var gamePane = document.getElementById('pane-game');
+  var resizeWidth = window.innerWidth, resizeHeight = window.innerHeight, resizeFrame = 0;
+  var previousStageRect = stage.getBoundingClientRect();
+  function rememberStageRect() { previousStageRect = stage.getBoundingClientRect(); }
+  function intersectsViewport(rect, height) { return rect.width > 0 && rect.bottom > 0 && rect.top < height; }
+  function gameHasFocus() { return active === 'game' && gamePane && gamePane.contains(document.activeElement) && !document.hidden; }
+  window.addEventListener('scroll', rememberStageRect, { passive: true });
+  stage.addEventListener('focusin', rememberStageRect);
+  window.addEventListener('resize', function (event) {
+    var oldHeight = resizeHeight, wasVisible = intersectsViewport(previousStageRect, oldHeight);
+    resizeHeight = window.innerHeight; rememberStageRect();
+    // Height-only changes include the phone keyboard and browser chrome. Keep
+    // them still; accumulate width changes so slow window drags also qualify.
+    if (event.isTrusted === false || Math.abs(window.innerWidth - resizeWidth) < 64) return;
+    resizeWidth = window.innerWidth;
+    if (!gameHasFocus() || !wasVisible || resizeFrame) return;
+    var visibleHeight = Math.max(oldHeight, resizeHeight);
+    resizeFrame = requestAnimationFrame(function () {
+      resizeFrame = 0;
+      if (!gameHasFocus() || !intersectsViewport(stage.getBoundingClientRect(), visibleHeight)) return;
+      stage.scrollIntoView({ block: 'start' }); rememberStageRect();
+    });
+  });
   tabs.forEach(function (tab, index) {
     tab.addEventListener('click', function () { select(index ? 'game' : 'live', false, true); });
     tab.addEventListener('keydown', function (event) {
@@ -66,10 +85,6 @@
   stage.addEventListener('pointerdown', function () { touched = true; }, { once: true });
   stage.addEventListener('keydown', function () { touched = true; }, { once: true });
   sound.addEventListener('click', function () { enabled = !enabled; audioError = false; syncAudio(); });
-  volume.addEventListener('input', function () {
-    try { localStorage.setItem('studio-stage-volume', volume.value); } catch (_) {}
-    syncAudio();
-  });
   // Keyboard M and the toolbar always address the same sound preference.
   if (window.SND) {
     SND.toggle = function () { enabled = !enabled; audioError = false; syncAudio(); };
@@ -78,7 +93,7 @@
   document.addEventListener('visibilitychange', syncAudio);
   window.addEventListener('pagehide', function () {
     ++audioRevision;
-    if (window.SND && SND.setStageAudio) SND.setStageAudio(false, Number(volume.value) / 100);
+    if (window.SND && SND.setStageAudio) SND.setStageAudio(false, AUDIO_LEVEL);
     if (window.StudioVoice) StudioVoice.enable(false);
   });
   window.addEventListener('c0-language-change', updateLabels);
@@ -96,5 +111,5 @@
   // visible as well, unless the visitor has already started using the stage.
   if (document.readyState === 'complete') revealLinkedStage();
   else window.addEventListener('load', function () { if (!touched) revealLinkedStage(); }, { once: true });
-  window.StudioStage = { snapshot: function () { return { active: active, sound: enabled, volume: Number(volume.value), inView: inView }; } };
+  window.StudioStage = { snapshot: function () { return { active: active, sound: enabled, volume: AUDIO_LEVEL * 100, inView: inView }; } };
 })();

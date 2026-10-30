@@ -325,7 +325,7 @@
   var NG = null, protectedRects = [], clipSignature = '', FR = null, P = 18 * K;
   var frameNode = document.querySelector('.frame'), headerNode = document.querySelector('.top'), headerRect = null, geometryDirty = true;
   var spinNode = window.AdSpin && AdSpin.el || document.getElementById('adSpin'), pinwheelCenter = null;
-  var protectedNodes = [document.querySelector('.arcade > .panel') || document.querySelector('.gba'), document.querySelector('.cam') || document.getElementById('studio')].filter(Boolean);
+  var protectedNodes = [document.querySelector('.game-surface') || document.getElementById('game'), document.querySelector('.cam') || document.getElementById('studio')].filter(Boolean);
   function pageRect(e) { var r = e.getBoundingClientRect(); return { l: r.left + window.scrollX, t: r.top + window.scrollY, r: r.right + window.scrollX, b: r.bottom + window.scrollY }; }
   function invalidateGeometry() { geometryDirty = true; }
   function refreshNoGo(force) {
@@ -815,6 +815,12 @@
     }
   }
   window.addEventListener('resize', function () { refreshNoGo(); reclamp(); });
+  window.addEventListener('studio-stage-change', function () {
+    // Both panes stay mounted. Rebuild the mask as soon as the visible one
+    // changes, so an existing web, strand or bubble cannot cover the new screen.
+    invalidateGeometry(); refreshNoGo(false); reclamp();
+    if (bub.classList.contains('on')) placeBubble();
+  });
   function showSilk(x, y, h, rad) {
     if (crosses(x, y, x - Math.sin(rad) * h, y + Math.cos(rad) * h, 3)) { silk.style.display = 'none'; return; }
     silk.style.display = 'block'; silk.style.height = Math.max(0, Math.round(h)) + 'px';

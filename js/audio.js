@@ -3,9 +3,11 @@
    小八's spider sounds are separate: they play after the first gesture anywhere, with their own switch ('spider-sound'). */
 (function () {
   'use strict';
+  function readSetting(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function saveSetting(key, value) { try { localStorage.setItem(key, value); } catch (e) { /* Keep the current in-tab switch usable. */ } }
   var AC = window.AudioContext || window.webkitAudioContext;
-  var on = localStorage.getItem('sound-on') === '1', stageGain = null, stageLevel = 1;
-  var spOn = localStorage.getItem('spider-sound') !== '0', spListeners = [];
+  var on = readSetting('sound-on') === '1', stageGain = null, stageLevel = 1;
+  var spOn = readSetting('spider-sound') !== '0', spListeners = [];
   var duck = null, lowFx = false;
   /* measured music RMS per world (audit/audio_bal.json) -> gain that brings every song to about -24 dBFS */
   var NORM = { home: 1.02, park: 0.89, market: 1.02, xian: 1.2, ink: 1.22, sakura: 1.2, cyber: 0.9, bit8: 0.86, steam: 0.89, desert: 1.11, court: 1.06, sea: 1.1,
@@ -240,10 +242,10 @@
     } else if (kind === 'wave') { tone(B, 0.25, pn(4, 24), now, 0.09, 0.04); tone(B, 0.25, pn(7, 24), now + 0.11, 0.14, 0.04, { vib: 1 });
     } else if (kind === 'dizzy') { for (var d = 0; d < 4; d++) tone(B, 'sine', pn(6 - d, 12), now + d * 0.13, 0.12, 0.03, { vib: 1, slide: pn(5 - d, 12), sus: 0.6 }); }
   }
-  function setSpider(v) { spOn = !!v; localStorage.setItem('spider-sound', spOn ? '1' : '0'); spListeners.forEach(function (f) { f(spOn); }); if (spOn && gestured) { init(); spider('chirp'); } }
+  function setSpider(v) { spOn = !!v; saveSetting('spider-sound', spOn ? '1' : '0'); spListeners.forEach(function (f) { f(spOn); }); if (spOn && gestured) { init(); spider('chirp'); } }
 
   function setOn(v) {
-    on = !!v; localStorage.setItem('sound-on', on ? '1' : '0');
+    on = !!v; saveSetting('sound-on', on ? '1' : '0');
     if (on) init(); apply(); listeners.forEach(function (f) { f(on); });
   }
   var SND = {

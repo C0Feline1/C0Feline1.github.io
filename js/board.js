@@ -5,7 +5,20 @@
   var T = function (key, vars) { return window.I18N ? I18N.t(key, vars) : key; };
   var listEl = $('lbList'), statusEl = $('lbStatus');
   if (!listEl) return;
-  var pending = null, myName = localStorage.getItem('runner-name') || '', lastTop = null, listMessageKey = null;
+  // Name/country stay usable within this tab if storage is blocked or full.
+  // Pending scores keep their existing in-memory retry lifecycle.
+  var preferenceCache = Object.create(null);
+  function readPreference(key) {
+    var cached = preferenceCache[key];
+    if (cached && cached.unsaved) return cached.value;
+    try { var value = localStorage.getItem(key); preferenceCache[key] = { value: value }; return value; }
+    catch (e) { return cached ? cached.value : null; }
+  }
+  function savePreference(key, value) {
+    var cached = preferenceCache[key] = { value: String(value), unsaved: true };
+    try { localStorage.setItem(key, cached.value); cached.unsaved = false; } catch (e) { }
+  }
+  var pending = null, myName = readPreference('runner-name') || '', lastTop = null, listMessageKey = null;
   var NAMES = { Feline1: 'FELINE1', C0: 'C0', X0: 'X0' };
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -47,7 +60,7 @@
     return '<span class="flag-wrap" title="' + name + '"><img class="flag" src="https://flagcdn.com/w20/' + code + '.png" width="16" height="12" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="flag-cc" hidden>' + c + '</span></span>';
   }
   function guessCC() {
-    var saved = localStorage.getItem('runner-cc'); if (saved !== null) return ISOSET[saved] ? saved : '';
+    var saved = readPreference('runner-cc'); if (saved !== null) return ISOSET[saved] ? saved : '';
     var langs = navigator.languages || [navigator.language || ''];
     for (var i = 0; i < langs.length; i++) { var m = /[-_]([A-Za-z]{2})\b/.exec(langs[i] || ''); if (m && ISOSET[m[1].toUpperCase()]) return m[1].toUpperCase(); }
     var base = (langs[0] || '').slice(0, 2).toLowerCase();
@@ -171,7 +184,7 @@
     req('/submit', { run: d.run.run, nonce: d.run.nonce, name: name, score: d.score, dist: d.dist, shards: d.shards, frames: d.frames, cps: d.cps, v: d.v, cc: d.cc })
       .then(function (j) {
         if (j.ok) {
-          myName = name; localStorage.setItem('runner-name', name); localStorage.setItem('runner-cc', d.cc || ''); pending = null; retryRow.hidden = true;
+          myName = name; savePreference('runner-name', name); savePreference('runner-cc', d.cc || ''); pending = null; retryRow.hidden = true;
           highlight = { name: name, score: d.score };
           setMsg('board.submitted', { rank: j.rank }); load();
           window.dispatchEvent(new CustomEvent('leaderboard', { detail: { name: name, rank: j.rank, score: d.score } }));

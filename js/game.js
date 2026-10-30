@@ -1337,7 +1337,7 @@
   SFX.yarn = function () { beep(720, 0.09, 'sine', 0.045, 380); };
   SFX.dash = function () { beep(180, 0.4, 'sawtooth', 0.04, 900); };
   /* ---------- state ---------- */
-  var best = +(localStorage.getItem('runner-best') || 0);
+  var best = +lsGet('runner-best', 0);
   var st = { mode: 'title', sel: 0, tapSel: -1, t: 0, trow: 0, msel: 0, pcur: 0, acur: 0, pbi: -1 };
   /* ---------- phase3 meta: practice (G10), album (G6), badges (G7) - all local, nothing is sent anywhere ---------- */
   function lsGet(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v === null || v === undefined ? d : v; } catch (e) { return d; } }
@@ -3476,7 +3476,7 @@
     var G = game; st.mode = 'dying'; G.dieT = 0; G.vy = -3.5; G.shake = 7; SFX.hit();
     burst(G.x + 8, G.y - 10, 22, ['#ffffff', '#ff4f7a', '#7fd3ff'], 2.2);
     var sc = score(), isBest = sc > best && !G.practice;
-    if (isBest) { best = sc; localStorage.setItem('runner-best', best); }
+    if (isBest) { best = sc; lsSet('runner-best', best); }
     G.isBest = isBest;
     if (G.practice) { emit({ type: 'over', practice: true, id: G.id, score: sc, dist: Math.floor(G.dist), shards: G.shards, best: best, isBest: false, where: localizedWorld(BIOMES[G.biome]) }); return; }
     emit({ type: 'over', v: GAME_VERSION, id: G.id, score: sc, dist: Math.floor(G.dist), shards: G.shards, frames: G.frame, cps: G.cps.slice(), best: best, isBest: isBest, where: localizedWorld(BIOMES[G.biome]) });

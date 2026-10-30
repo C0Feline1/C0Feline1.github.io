@@ -78,7 +78,7 @@
   function speech(g, actor, cue, view) {
     if (!cue || !cue.performance || !cue.line) return;
     // The full-width reserve keeps the cloud still while the sentence appears.
-    var value = window.StudioCast?StudioCast.text(cue.line):cue.line, size = 7, maxWidth = 148;
+    var value = window.StudioCast?StudioCast.text(cue.line):cue.line, size = 7, maxWidth = Math.min(148,view.right-view.left-6);
     g.save(); g.font = size + 'px ' + FONT; g.textBaseline = 'top';
     var words = Array.from(value), lines = [''];
     words.forEach(function (char) {

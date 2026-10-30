@@ -4,12 +4,13 @@
 (function () {
   'use strict';
   var world = window.StudioWorld;
-  var W = world ? world.width : 1280, MIN_X = 8, MAX_X = W - 8, MIN_Y = 126, MAX_Y = 178, STEP = 2;
-  var COLS=(MAX_X-MIN_X)/STEP+1, ROWS=(MAX_Y-MIN_Y)/STEP+1, TOTAL=COLS*ROWS;
+  var W = world ? world.width : 1280, H = world ? world.height : 180;
+  var MIN_X = 8, MAX_X = W - 8, MIN_Y = 126, MAX_Y = H - 2, STEP = 2;
+  var COLS=Math.floor((MAX_X-MIN_X)/STEP)+1, ROWS=Math.floor((MAX_Y-MIN_Y)/STEP)+1, TOTAL=COLS*ROWS;
   // StudioWorld owns furniture footprints so a moved desk or shared sofa cannot
   // leave an invisible obstacle at its former position.
   var obstacles = world && world.obstacles ? world.obstacles.map(function (o) { return Object.assign({}, o); }) : [];
-  // Leave the y178 foreground corridor clear even below the old refrigerator.
+  // The foreground corridor follows the map's bottom edge as its depth grows.
   // Horizontal padding represents both feet; vertical padding is much smaller
   // because the room is viewed almost straight-on rather than from overhead.
   function blocked(x,y){

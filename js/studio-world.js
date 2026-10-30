@@ -1,30 +1,19 @@
-/* A code-painted extension of the original 320px studio. All coordinates are world pixels. */
+/* A shared pixel home: ten work docks on the left, open living rooms beyond. */
 (function () {
   'use strict';
-
-  var WIDTH = 1280, HEIGHT = 180, FLOOR = 128;
-  var C = {
-    ink: '#0b0716', wall: '#1e1534', wallHi: '#2a1d45', trim: '#4a3a6a',
-    wood: '#5a3a52', woodHi: '#79506b', woodLow: '#3a2438',
-    pink: '#ff6fa6', cyan: '#4fe3ff', violet: '#b48cff', cream: '#e8d8e8',
-    leaf: '#3fae83', leafHi: '#72d6a0', leafLow: '#23685f'
-  };
-  // x/y are the seated actor's foot position; deskX is the furniture origin.
-  // The center dock stays clear, so an owner can enter and leave their chair.
-  var workstations = [
-    { id: 'C0', name: 'C0 CODE', x: 38, y: 126, deskX: 22, color: '#4fe3ff', kind: 'code' },
-    { id: 'X0', name: 'X0 ART', x: 128, y: 126, deskX: 112, color: '#b48cff', kind: 'art' },
-    { id: 'Feline1', name: 'F1 MASCOT', x: 218, y: 126, deskX: 202, color: '#ff9fc4', kind: 'paw' },
-    { id: 'gpt', name: 'GPT', x: 355, y: 126, deskX: 340, color: '#94cbb9', kind: 'think' },
-    { id: 'deepseek', name: 'DEEPSEEK', x: 450, y: 126, deskX: 435, color: '#7aaff0', kind: 'ocean' },
-    { id: 'claude', name: 'CLAUDE', x: 555, y: 126, deskX: 540, color: '#e9a16f', kind: 'book' },
-    { id: 'grok', name: 'GROK', x: 665, y: 126, deskX: 650, color: '#dba0ba', kind: 'spark' },
-    { id: 'gemini', name: 'GEMINI', x: 760, y: 126, deskX: 745, color: '#b8a1f2', kind: 'stars' },
-    { id: 'kimi', name: 'KIMI', x: 860, y: 126, deskX: 845, color: '#bec8ed', kind: 'moon' },
-    { id: 'doubao', name: 'DOUBAO', x: 985, y: 126, deskX: 970, color: '#b6d8e8', kind: 'cookie' }
+  var WIDTH=1280, HEIGHT=300, FLOOR=128;
+  var C={ink:'#0b0716',wall:'#1e1534',wallHi:'#2a1d45',trim:'#4a3a6a',
+    wood:'#5a3a52',woodHi:'#79506b',woodLow:'#3a2438',pink:'#ff6fa6',
+    cyan:'#4fe3ff',violet:'#b48cff',cream:'#e8d8e8',leaf:'#3fae83',leafHi:'#72d6a0',leafLow:'#23685f'};
+  var cast=[
+    ['C0','#4fe3ff','code'],['X0','#b48cff','art'],['Feline1','#ff9fc4','paw'],
+    ['gpt','#94cbb9','think'],['deepseek','#7aaff0','ocean'],['claude','#e9a16f','book'],
+    ['grok','#dba0ba','spark'],['gemini','#b8a1f2','stars'],['kimi','#bec8ed','moon'],['doubao','#b6d8e8','cookie']
   ];
-  workstations.forEach(function (s) { s.footY = 129;if(window.StudioCast&&StudioCast.get(s.id))s.name=StudioCast.name(s.id,'zh-CN'); });
-
+  var workstations=cast.map(function(c,i){
+    var x=24+i%5*88,y=i<5?146:240;
+    return{id:c[0],name:window.StudioCast?StudioCast.name(c[0],'zh-CN'):c[0],color:c[1],kind:c[2],deskX:x,x:x+16,y:y,footY:y+3};
+  });
   function rect(g, x, y, w, h, color) {
     g.fillStyle = color;
     g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h)));
@@ -94,51 +83,75 @@
       rect(g, x + (p[0] + 1) * s, bottom + (p[1] + 1) * s, Math.max(1, p[2] - 3) * s, s, C.leafLow);
     });
   }
-  function shell(g) {
-    // Continue the original room's bands and staggered wood floor without a seam.
-    rect(g, 320, 0, WIDTH - 320, HEIGHT, '#120c22');
-    rect(g, 320, 32, WIDTH - 320, 48, C.wall);
-    rect(g, 320, 80, WIDTH - 320, 48, C.wallHi);
-    for (var y = FLOOR; y < HEIGHT; y++) {
-      var row = Math.floor((y - FLOOR) / 6), shift = (row % 2) * 23;
-      for (var x = 320; x < WIDTH; x++) {
-        var plank = Math.floor((x + shift) / 46);
-        rect(g, x, y, 1, 1, (y - FLOOR) % 6 === 0 || (x + shift) % 46 === 0
-          ? '#1e1220' : (plank % 2 ? '#3a2436' : '#33202f'));
+  function rug(g,x,y,w,h,base,edge){
+    rect(g,x,y,w,h,base);rect(g,x+2,y+1,w-4,1,edge);rect(g,x+2,y+h-2,w-4,1,edge);
+    for(var n=x+7;n<x+w-4;n+=14){rect(g,n,y+3,3,1,edge);rect(g,n,y+h-4,3,1,edge);}
+  }
+  function shell(g){
+    rect(g,0,0,WIDTH,HEIGHT,C.wall);rect(g,0,80,WIDTH,48,C.wallHi);
+    for(var y=FLOOR;y<HEIGHT;y++){
+      var row=Math.floor((y-FLOOR)/6),shift=row%2*23;
+      for(var x=0;x<WIDTH;x++){
+        var plank=Math.floor((x+shift)/46);
+        rect(g,x,y,1,1,(y-FLOOR)%6===0||(x+shift)%46===0?'#1e1220':plank%2?'#3a2436':'#33202f');
       }
     }
-    rect(g, 320, 125, WIDTH - 320, 1, '#ff4fa3');
-    rect(g, 320, 126, WIDTH - 320, 2, '#3a1838');
-    rect(g, 320, 128, WIDTH - 320, 2, '#4a2e44');
-    // Slim wall posts stop above the floor, preserving the open connecting aisle.
-    [320, 638, 958].forEach(function (x) {
-      rect(g, x, 0, 3, 125, '#30223f');
-      rect(g, x + 1, 15, 1, 105, '#604969');
-    });
-    rect(g, WIDTH - 2, 0, 2, 126, '#4a3a5b');
+    rect(g,0,125,WIDTH,1,'#ff4fa3');rect(g,0,126,WIDTH,2,'#3a1838');rect(g,0,128,WIDTH,2,'#4a2e44');
+    [478,746,1006].forEach(function(x){rect(g,x,0,3,125,'#30223f');rect(g,x+1,15,1,105,'#604969');});
+    rect(g,0,0,2,126,C.trim);rect(g,WIDTH-2,0,2,126,C.trim);
+    rug(g,17,143,437,13,'#302538','#59445f');rug(g,17,237,437,15,'#302538','#59445f');
+    // A subtle runner links the rooms; it stays painted floor, never a collider.
+    rect(g,477,280,790,8,'#3b293b');rect(g,481,281,782,1,'#584052');
+    for(var seam=492;seam<1260;seam+=32)rect(g,seam,286,8,1,'#61465b');
+    if(window.StudioFurnishings)StudioFurnishings.paintFloor(g);
   }
-  function cowork(g) {
-    plaque(g, 'MODEL COWORK', 335, 6, '#b9a0db');
-    nightWindow(g, 341, 23, 267, 41, 4);
-    // A few quiet reflections and warm desk lighting.
-    rect(g, 351, 27, 44, 1, '#343255');
-    rect(g, 499, 28, 29, 1, '#343255');
-    rect(g, 348, 68, 53, 1, '#9a657e');
-    rect(g, 444, 68, 52, 1, '#49677e');
-    books(g, 517, 73, 9);
-    // Half-height, quietly lit server stack at the far end of the room.
-    rect(g, 615, 69, 17, 59, '#0a0812');
-    rect(g, 615, 69, 17, 2, '#40364f');
-    for (var rack = 0; rack < 7; rack++) {
-      rect(g, 617, 74 + rack * 7, 13, 5, '#221a31');
-      rect(g, 619, 76 + rack * 7, 2, 1, rack % 3 ? '#65b9b2' : '#ce8fae');
-      rect(g, 624, 76 + rack * 7, 4, 1, '#51445e');
-    }
-    plant(g, 421, 127, 1, '#6a3e54');
-    rect(g, 329, 139, 300, 18, '#332333');
-    rect(g, 332, 140, 294, 1, '#5e3c50');
-    rect(g, 332, 154, 294, 1, '#4a3045');
-    for (var stitch = 340; stitch < 626; stitch += 18) rect(g, stitch, 156, 4, 1, '#705062');
+  function studioWall(g){
+    plaque(g,'LITTLE FAMILY / WORKROOM',18,7,C.cyan);
+    nightWindow(g,18,24,172,51,4);nightWindow(g,292,24,154,51,8);
+    // Keep the two familiar studio posters beside the expanded shared desks.
+    rect(g,207,25,30,40,C.pink);rect(g,208,26,28,38,'#1a1030');
+    for(var n=0;n<14;n++)rect(g,210+n*7%24,29+n*11%18,1,1,n%3?'#ffd45e':'#fff');
+    star(g,222,41,true);PX.text(g,'STAR',214,53,'#ff9fc4');PX.text(g,'DREAM',212,58,'#ff9fc4');
+    rect(g,247,31,22,28,C.cyan);rect(g,248,32,20,26,'#0c1a2a');
+    PX.text(g,'V07',251,34,C.cyan);rect(g,254,46,7,2,'#dde8fa');rect(g,256,48,3,2,'#dde8fa');
+    books(g,207,88,14);books(g,387,88,9);
+    rect(g,56,33,7,5,'#fff6d8');
+    // Task boards hang below the windows, leaving the aisle between rows open.
+    [[86,'#94cbb9'],[310,'#b48cff']].forEach(function(p){
+      rect(g,p[0],78,65,12,'#281e35');rect(g,p[0]+2,80,61,8,'#42334b');
+      for(var i=0;i<6;i++){var xx=p[0]+5+i*9;rect(g,xx,81,6,5,i%2?p[1]:'#d8b98b');rect(g,xx+1,83,4,1,'#6d576a');}
+    });
+  }
+  function commonWall(g){
+    plaque(g,'COMMON ROOM / TEA BREAK',494,7,'#d9b38c');
+    nightWindow(g,502,25,106,49,11);books(g,647,76,11);
+    // Snapshots, a clock, and a pencilled shopping list make a lived-in wall.
+    rect(g,617,28,60,30,'#8b6655');rect(g,619,30,56,26,'#ad8970');
+    for(var i=0;i<4;i++){var px=622+i*12;rect(g,px,34,9,16,'#f0dfcf');rect(g,px+1,35,7,9,cast[(i+2)%cast.length][1]);rect(g,px+2,45,5,1,'#b6a08e');}
+    rect(g,700,34,20,20,'#7a5d75');rect(g,702,36,16,16,'#ddd4c5');rect(g,709,39,1,7,'#4f405d');rect(g,709,45,5,1,'#4f405d');
+    rect(g,698,70,24,22,'#c3aa88');rect(g,700,72,20,18,'#e6d7be');
+    for(var ln=0;ln<4;ln++)rect(g,703,76+ln*3,12-ln%2*3,1,'#9d8370');
+    // Pendant shades stay on the wall, well above paths and heads.
+    [544,656].forEach(function(x){rect(g,x,15,1,67,'#685665');rect(g,x-7,82,15,3,'#a78385');rect(g,x-5,85,11,3,'#e4ba93');});
+  }
+  function creativeWall(g){
+    plaque(g,'STAR ATELIER / PLAY TOGETHER',763,7,C.violet);
+    nightWindow(g,766,24,218,48,15);books(g,801,88,10);books(g,945,88,7);
+    // Pinned sketches and colour chips, with an open rehearsal floor in front.
+    [[759,94],[786,99],[949,96],[973,99]].forEach(function(p,i){
+      rect(g,p[0],p[1],18,20,'#47364e');rect(g,p[0]+1,p[1]+1,16,18,'#d4c3b1');
+      line(g,p[0]+3,p[1]+12,p[0]+8,p[1]+5,i%2?'#8b779b':'#a77a86');
+      line(g,p[0]+8,p[1]+5,p[0]+13,p[1]+13,'#a77a86');rect(g,p[0]+8,p[1],2,2,'#b48cff');
+    });
+    rect(g,852,81,50,5,'#74516b');
+    ['#d99bb5','#d7bd84','#85b7b8','#a38bc1','#d6c8db'].forEach(function(c,i){rect(g,855+i*9,78,7,6,c);});
+  }
+  function gardenWall(g){
+    plaque(g,'MOON GARDEN / WIND DOWN',1022,7,'#a0c6cc');
+    g.save();g.translate(312,0);glasshouse(g);g.restore();
+    nightWindow(g,1021,27,54,47,19);books(g,1041,87,8);
+    // A little garland over the quiet nook.
+    for(var i=0;i<11;i++){var x=1104+i*14,y=64+Math.round(Math.sin(i/10*Math.PI)*8);rect(g,x,y,13,1,'#685e73');rect(g,x+4,y+1,2,3,i%3?'#c1a1bd':'#e3c397');}
   }
   function glasshouse(g) {
     // A stepped glass roof with a crescent moon and city stars behind it.
@@ -190,38 +203,6 @@
     rect(g, x + 7, 126, 18, 2, '#1a1226');
     rect(g, x + 8, 128, 2, 1, '#80718c');
     rect(g, x + 22, 128, 2, 1, '#80718c');
-  }
-  function atelier(g) {
-    plaque(g, 'STAR ATELIER', 654, 6, C.violet);
-    nightWindow(g, 659, 23, 276, 41, 8);
-    books(g, 722, 74, 5);
-    books(g, 908, 74, 6);
-    // A crossed-tool peg and twin stars distinguish the creative desks.
-    rect(g, 652, 69, 23, 2, '#634559');
-    line(g, 656, 70, 667, 81, '#c6a785');
-    line(g, 668, 70, 657, 81, '#92758b');
-    star(g, 794, 73, true); star(g, 804, 69, true);
-    rect(g, 832, 71, 19, 2, '#69516a');
-    rect(g, 837, 65, 7, 6, '#d9d4e9');
-    rect(g, 840, 64, 5, 5, C.wallHi);
-    rect(g, 650, 139, 294, 18, '#2c253e');
-    rect(g, 653, 140, 288, 1, '#504263');
-    rect(g, 653, 154, 288, 1, '#433752');
-    for (var x = 662; x < 940; x += 18) rect(g, x, 156, 4, 1, '#6f567e');
-  }
-  function lounge(g) {
-    plaque(g, 'MOON GARDEN', 973, 6, '#a0c6cc');
-    nightWindow(g, 975, 24, 108, 40, 11);
-    books(g, 1047, 75, 6);
-    rect(g, 977, 72, 23, 1, '#9a788c');
-    // The greenhouse and shared furniture move beyond the ten work docks.
-    g.save(); g.translate(320, 0); glasshouse(g); g.restore();
-    rect(g, 1054, 140, 221, 24, '#302a37');
-    rect(g, 1057, 141, 215, 1, '#655069');
-    rect(g, 1057, 162, 215, 1, '#55435a');
-    [1062, 1114, 1172, 1224, 1262].forEach(function (x) {
-      rect(g, x, 166, 8, 1, '#5a4960'); rect(g, x + 2, 166, 4, 1, '#82909b');
-    });
   }
   function deskKeepsake(g, d) {
     var x = d.deskX, y = 111;
@@ -295,22 +276,11 @@
     if(cast){g.fillStyle=d.color;g.fillText(name,labelX+3,74);}else PX.text(g, name, labelX + 3, 75, d.color);
     deskKeepsake(g, d);
   }
-  var stationCaches = [],stationLabels=[];
+  var stationCaches=[],stationLabels=[];
   function refreshLabels(){stationCaches=[];stationLabels=[];}
   window.addEventListener('c0-language-change',refreshLabels);
-  function drawWorkstations(g, actors, tick, bounds) {
-    var byId = {}, phase = Math.floor((Number(tick) || 0) / 10);
-    (actors || []).forEach(function (a) { byId[a.id] = a; });
-    workstations.forEach(function (d, i) {
-      if (bounds && (d.deskX + 82 < bounds.left || d.deskX > bounds.right)) return;
-      var label=window.StudioCast?StudioCast.name(d.id):d.name;
-      if (!stationCaches[i]||stationLabels[i]!==label) {
-        stationLabels[i]=label;
-        var cache = PX.make(82, 58), p = cache.getContext('2d');
-        p.translate(-d.deskX, -72); paintWorkstation(p, d); stationCaches[i] = cache;
-      }
-      g.drawImage(stationCaches[i], d.deskX, 72);
-      var a = byId[d.id], active = a && a.state === 'work' && (!a.path || !a.path.length) && Math.abs(a.x - d.x) < 7 && Math.abs(a.y - d.y) < 5;
+  function stationScreen(g,d,a,phase){
+      var active = a && a.state === 'work' && (!a.path || !a.path.length) && Math.abs(a.x - d.x) < 7 && Math.abs(a.y - d.y) < 5;
       var mx = d.deskX + 39;
       if (!active) {
         rect(g, mx + 5, 88, 19, 1, '#38495e'); rect(g, mx + 5, 91, 12, 1, '#29384d');
@@ -335,24 +305,43 @@
       rect(g, mx + 23, 99, 2, 1, phase % 2 ? d.color : '#182539');
       rect(g, d.deskX + 23 + phase % 2, 108, 3, 2, '#efd3da');
       rect(g, d.deskX + 32 - phase % 2, 108, 3, 2, '#efd3da');
+  }
+  function drawWorkstations(g,actors,tick,bounds,depth){
+    var byId={},phase=Math.floor((Number(tick)||0)/10);
+    (actors||[]).forEach(function(a){byId[a.id]=a;});
+    workstations.forEach(function(d,i){
+      if(depth!==undefined&&d.footY!==depth)return;
+      var dy=d.y-126;
+      if(bounds&&(d.deskX+82<bounds.left||d.deskX>bounds.right||d.y+4<bounds.top||72+dy>bounds.bottom))return;
+      var label=window.StudioCast?StudioCast.name(d.id):d.name;
+      if(!stationCaches[i]||stationLabels[i]!==label){
+        stationLabels[i]=label;var cache=PX.make(82,58),p=cache.getContext('2d');
+        p.translate(-d.deskX,-72);paintWorkstation(p,d);stationCaches[i]=cache;
+      }
+      g.save();g.translate(0,dy);g.drawImage(stationCaches[i],d.deskX,72);stationScreen(g,d,byId[d.id],phase);g.restore();
     });
   }
-
-  // Transparent prop layers are painted over characters according to each
-  // object's floor depth. They contain furniture pixels only, never a rectangular
-  // patch of floor/wall, so a passing friend's head is not accidentally erased.
-  var occluders = [];
-  var propOffsets = { sofa: 410, 'tea-table': 410, lamp: 410, 'snack-counter': 320, 'garden-pot': 320 };
-  function prop(id, x, y, w, h, footY, paint) {
-    var offset = propOffsets[id] || 0, originalX = x, cache = null;
-    x += offset;
-    occluders.push({ id: id, footY: footY, x: x, y: y, w: w, h: h, draw: function (g) {
-      if (!cache) {
-        cache = PX.make(w, h); var p = cache.getContext('2d');
-        p.translate(-originalX, -y); paint(p);
-      }
-      g.drawImage(cache, x, y);
-    } });
+  var occluders=[];
+  // Position is assigned once; the same delta moves the drawing and its footprint.
+  var positions={
+    'office-server':[452,67], 'cowork-server':[457,179], 'office-plant':[2,161], 'cowork-plant':[484,125],
+    'garden-pot':[1240,147],bed:[1134,202],easel:[784,179],'cat-bed':[1210,247],fridge:[684,130],
+    sofa:[530,164],'tea-table':[548,219],lamp:[1092,153],'snack-counter':[622,108]
+  };
+  var geometry={
+    bed:[2,8,57,23],easel:[3,19,12,9],'cat-bed':[2,6,39,11],fridge:[2,26,24,17],
+    'office-server':[0,70,30,7],'office-plant':[2,25,12,6],'cowork-plant':[3,27,10,6],
+    'cowork-server':[0,53,17,7],sofa:[0,17,64,14],'tea-table':[2,10,37,14],lamp:[2,70,11,4],
+    'snack-counter':[2,48,59,18],'garden-pot':[4,19,9,7]
+  };
+  function prop(id,x,y,w,h,footY,paint){
+    var place=positions[id]||[x,y],originalX=x,originalY=y,cache=null,shape=geometry[id];
+    var item={id:id,x:place[0],y:place[1],w:w,h:h,footY:place[1]+footY-y,draw:function(g){
+      if(!cache){cache=PX.make(w,h);var p=cache.getContext('2d');p.translate(-originalX,-originalY);paint(p);}
+      g.drawImage(cache,item.x,item.y);
+    }};
+    if(shape)item.obstacle={id:id,x:item.x+shape[0],y:item.y+shape[1],w:shape[2],h:shape[3]};
+    occluders.push(item);
   }
   prop('office-server', 284, 52, 31, 77, 129, function (g) {
     rect(g, 284, 52, 30, 76, '#0a0812'); rect(g, 284, 52, 30, 2, '#2a2240');
@@ -440,54 +429,44 @@
     rect(g, 890, 111, 7, 5, '#edcad0'); rect(g, 891, 110, 5, 1, '#fff0e6');
   });
 
-  // A shared geometry source keeps the painted floor, navigation and depth
-  // sorting in agreement. Desks reserve only their two legs, leaving a chair
-  // dock in the middle and the whole y132+ connecting aisle open.
-  var obstacles = [
-    { id: 'bed', x: 4, y: 151, w: 57, h: 23 },
-    { id: 'easel', x: 148, y: 154, w: 12, h: 9 },
-    { id: 'cat-bed', x: 174, y: 159, w: 39, h: 11 },
-    { id: 'fridge', x: 282, y: 158, w: 24, h: 17 },
-    { id: 'office-server', x: 284, y: 122, w: 30, h: 7 },
-    { id: 'office-plant', x: 262, y: 123, w: 12, h: 6 },
-    { id: 'cowork-plant', x: 416, y: 122, w: 10, h: 6 },
-    { id: 'cowork-server', x: 615, y: 122, w: 17, h: 7 },
-    { id: 'sofa', x: 1060, y: 143, w: 64, h: 14 },
-    { id: 'tea-table', x: 1135, y: 147, w: 37, h: 14 },
-    { id: 'lamp', x: 1173, y: 155, w: 11, h: 4 },
-    { id: 'snack-counter', x: 1205, y: 144, w: 59, h: 18 },
-    { id: 'garden-pot', x: 1266, y: 154, w: 9, h: 7 }
-  ];
-  workstations.forEach(function (d) {
-    obstacles.push({ id: 'desk-' + d.id + '-left', x: d.deskX + 2, y: 124, w: 3, h: 4 });
-    obstacles.push({ id: 'desk-' + d.id + '-right', x: d.deskX + 65, y: 124, w: 3, h: 4 });
+  if(window.StudioFurnishings)occluders=occluders.concat(StudioFurnishings.items);
+  workstations.forEach(function(d){
+    occluders.push({id:'chair-'+d.id,x:d.deskX+2,y:d.y-36,w:28,h:40,footY:d.y-1,draw:function(g){g.save();g.translate(0,d.y-126);chair(g,d);g.restore();}});
   });
-
-  window.StudioWorld = {
-    width: WIDTH,
-    height: HEIGHT,
-    zones: [
-      { id: 'office', x: 0, end: 320, label: 'C0 / X0 / F1' },
-      { id: 'cowork', x: 320, end: 640, label: 'MODEL COWORK' },
-      { id: 'atelier', x: 640, end: 960, label: 'STAR ATELIER', logZone: 'cowork' },
-      { id: 'garden', x: 960, end: 1280, label: 'MOON GARDEN' }
-    ],
-    workstations: workstations,
-    obstacles: obstacles,
-    catHome: { x: 1085, target: 1110, y: 164 },
-    photoStart: WIDTH - 320 + 14,
-    photoY: 178,
-    build: function (originalRoom) {
-      var canvas = PX.make(WIDTH, HEIGHT), g = canvas.getContext('2d');
-      g.imageSmoothingEnabled = false;
-      if (originalRoom) g.drawImage(originalRoom, 0, 0);
-      shell(g); cowork(g); atelier(g); lounge(g);
-      workstations.forEach(function (d) { chair(g, d); });
-      occluders.forEach(function (p) { p.draw(g); });
-      return canvas;
+  var obstacles=occluders.filter(function(o){return!!o.obstacle;}).map(function(o){return Object.assign({id:o.id},o.obstacle);});
+  workstations.forEach(function(d){
+    obstacles.push({id:'desk-'+d.id+'-left',x:d.deskX+2,y:d.y-2,w:3,h:4});
+    obstacles.push({id:'desk-'+d.id+'-right',x:d.deskX+65,y:d.y-2,w:3,h:4});
+  });
+  var hangouts=[
+    {id:'studio-aisle',x:239,y:178},{id:'sofa',x:562,y:211},{id:'tea',x:610,y:250},
+    {id:'kitchen',x:693,y:203},{id:'easel',x:817,y:216},{id:'stage',x:910,y:249},
+    {id:'arcade',x:975,y:206},{id:'reading',x:1061,y:247},{id:'cat',x:1195,y:265},{id:'garden',x:1246,y:207}
+  ];
+  window.StudioWorld={
+    width:WIDTH,height:HEIGHT,floorY:FLOOR,
+    zones:[{id:'office',x:0,end:480,label:'FAMILY WORKROOM'},
+      {id:'cowork',x:480,end:748,label:'COMMON ROOM'},
+      {id:'atelier',x:748,end:1008,label:'STAR ATELIER',logZone:'garden'},
+      {id:'garden',x:1008,end:WIDTH,label:'MOON GARDEN'}],
+    workstations:workstations,workstationDepths:workstations.map(function(d){return d.footY;}).filter(function(y,i,rows){return rows.indexOf(y)===i;}).sort(function(a,b){return a-b;}),obstacles:obstacles,occluders:occluders,hangouts:hangouts,
+    performanceSpots:[{x:910,y:248},{x:885,y:253},{x:944,y:248},{x:600,y:268}],
+    catHome:{x:1215,target:1230,y:258},photoStart:836,photoY:HEIGHT-2,
+    build:function(){
+      var canvas=PX.make(WIDTH,HEIGHT),g=canvas.getContext('2d');g.imageSmoothingEnabled=false;
+      shell(g);studioWall(g);commonWall(g);creativeWall(g);gardenWall(g);return canvas;
     },
-    drawWorkstations: drawWorkstations,refreshLabels:refreshLabels,
-    foreground: function (g) { drawWorkstations(g, [], 0); },
-    occluders: occluders
+    drawWorkstations:drawWorkstations,refreshLabels:refreshLabels,
+    drawAmbience:function(g,tick,bounds){
+      if(bounds.left<480){
+        [positions['office-server'],positions['cowork-server']].forEach(function(p,k){
+          for(var i=0;i<(k?7:9);i++)rect(g,p[0]+(k?4:6),p[1]+8+i*7,2,1,(Math.floor(tick/13)+i)%3?'#5dca9b':'#284638');
+        });
+      }
+      if(bounds.right>620&&bounds.left<680)for(var i=0;i<3;i++){
+        var rise=(tick/7+i*4)%10;rect(g,632+Math.round(Math.sin(rise)),121-rise,1,1,'#bcaeb8');
+      }
+    },
+    foreground:function(g){drawWorkstations(g,[],0);}
   };
 })();

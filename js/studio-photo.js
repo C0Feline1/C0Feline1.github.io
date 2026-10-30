@@ -13,11 +13,18 @@
   function layout(anchor,actors,nav,preferred,random){
     random=random||Math.random;preferred=shapes[preferred]?preferred:'heart';
     var modes=[preferred].concat(Object.keys(shapes).filter(function(k){return k!==preferred;})),best=null;
+    var world=window.StudioWorld||{},footMin=Math.max(134,nav.bounds.top+8,(world.floorY||128)+6),bottom=nav.bounds.bottom;
+    var depth=Math.max.apply(null,shapes[preferred].map(function(p){return-p[1];}));
+    var nearby=Math.min(bottom,Math.max(footMin+depth,anchor.y+22));
+    var front=Math.min(bottom,world.photoY||bottom);
     var offsets=[0];for(var n=12;n<=180;n+=12)offsets.push(-n,n);
-    modes.forEach(function(mode){offsets.forEach(function(dx){for(var y=178;y>=150;y-=2){
+    modes.forEach(function(mode){offsets.forEach(function(dx){for(var y=bottom;y>=footMin;y-=2){
       var x=anchor.x+dx,points=shapes[mode].map(function(p){return{x:x+p[0],y:y+p[1]};});
-      if(!points.every(function(p){return p.x>=18&&p.x<=nav.bounds.right-10&&p.y>=134&&nav.isWalkable(p.x,p.y);}))continue;
-      var score=Math.abs(dx)+(178-y)*.6+(mode===preferred?0:32);
+      if(!points.every(function(p){return p.x>=18&&p.x<=nav.bounds.right-10&&p.y>=footMin&&p.y<=bottom&&nav.isWalkable(p.x,p.y);}))continue;
+      // Gather near the selected friend first; a clear front row is the fallback
+      // when furniture makes the nearby footprint too cramped for ten actors.
+      var vertical=Math.min(Math.abs(y-nearby)*.6,Math.abs(y-front)*.6+18);
+      var score=Math.abs(dx)+vertical+(mode===preferred?0:32);
       if(!best||score<best.score)best={pattern:mode,center:{x:x,y:y},points:points,score:score};
     }});});
     if(!best)throw new Error('No clear photo composition on the studio floor.');

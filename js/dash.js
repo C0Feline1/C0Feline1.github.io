@@ -15,12 +15,13 @@
   })();
 
   /* clock + mood */
-  setInterval(function () {
+  function updateClockMood() {
+    if (document.hidden) return;
     $('clock').textContent = now();
     var m = 60 + Math.sin(Date.now() / 9000) * 18 + R() * 4;
     $('moodTxt').textContent = m.toFixed(1) + '%'; $('moodBar').style.width = m + '%';
-  }, 1000);
-  $('clock').textContent = now();
+  }
+  setInterval(updateClockMood, 1000); updateClockMood();
   function updateVerifyTime() { $('verifyTime').textContent = new Date().toLocaleString(window.I18N ? I18N.getLocale() : 'zh-CN', { hour12: false }); }
   updateVerifyTime();
 
@@ -42,23 +43,27 @@
     { id: 'best', title: 'card.best.title', tag: 'card.best.tag', col: '#ff6fa6', v: (window.KittyRunner ? KittyRunner.best() : 0), unit: 'card.best.unit', sub: 'card.best.sub', meter: 0.3 }
   ];
   function renderCards() {
+    if (document.hidden) return;
     $('cards').innerHTML = cards.map(function (c) {
       return '<div class="panel card"><div class="ph"><h2 style="color:' + c.col + '">' + T(c.title) + '</h2><span class="tag" style="color:' + c.col + '">' + T(c.tag) +
         '</span></div><div class="big" id="cv-' + c.id + '">' + fmt(c.v) + T(c.unit) + '</div><div class="sub ' + (c.tone || '') + '" id="cs-' + c.id + '">' + T(c.sub, c.subVars) +
-        '</div><div class="meter"><i id="cm-' + c.id + '" style="width:' + c.meter * 100 + '%;background:' + c.col + '"></i></div></div>';
+        '</div><div class="meter"><i id="cm-' + c.id + '" style="width:' + Math.max(3, Math.min(100, c.meter * 100)) + '%;background:' + c.col + '"></i></div></div>';
     }).join('');
   }
   renderCards();
   function setCard(id, v, subKey, meter, tone, vars) {
     var c = cards.filter(function (x) { return x.id === id; })[0]; c.v = v;
     if (subKey) { c.sub = subKey; c.tone = tone || ''; c.subVars = vars || null; }
+    if (meter !== undefined) c.meter = meter;
+    if (document.hidden) return;
     $('cv-' + id).textContent = fmt(v) + T(c.unit);
     var sub = $('cs-' + id); sub.textContent = T(c.sub, c.subVars); sub.className = 'sub ' + (c.tone || '');
-    if (meter !== undefined) { c.meter = meter; $('cm-' + id).style.width = Math.max(3, Math.min(100, meter * 100)) + '%'; }
+    if (meter !== undefined) $('cm-' + id).style.width = Math.max(3, Math.min(100, meter * 100)) + '%';
   }
   if (window.I18N) window.addEventListener('c0-language-change', renderCards);
-  setInterval(function () { setCard('pixels', cards[2].v > 999999 ? 128402 : cards[2].v + Math.floor(R() * 40), null, 0.5 + R() * 0.5); }, 700);
+  setInterval(function () { if (!document.hidden) setCard('pixels', cards[2].v > 999999 ? 128402 : cards[2].v + Math.floor(R() * 40), null, 0.5 + R() * 0.5); }, 700);
   setInterval(function () {
+    if (document.hidden) return;
     var b = cards[1].v, d = R() < 0.55 ? -1 : 1, nb = Math.max(3, b + d);
     setCard('bugs', nb, d < 0 ? 'card.bugs.fixed' : 'card.bugs.new', nb / 20, d < 0 ? 'up' : 'down');
     if (d < 0) {
@@ -67,6 +72,7 @@
     }
   }, 6500);
   setInterval(function () {
+    if (document.hidden) return;
     if (R() > 0.4) return;
     if (cards[0].v >= 6) { setCard('coffee', 0, 'card.coffee.over', 0.05); log('ok', LT('coffeeReset', null, 'reset  咖啡计数器归零，C0 改喝白开水')); return; }
     setCard('coffee', cards[0].v + 1, 'card.coffee.brew', (cards[0].v + 1) / 6); log('w', LT('coffeeBrew', null, 'coffee++  C0 去续了一杯咖啡'));
@@ -77,6 +83,7 @@
   cur.className = 'cursor'; logEl.textContent = ''; logEl.appendChild(cur);
   function esc(s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
   function log(cls, msg) {
+    if (document.hidden) return;
     /* append one line, drop the oldest beyond MAXL: fixed-size DOM, no growing arrays */
     var d = document.createElement('div');
     d.innerHTML = '<span class="t">[' + now() + ']</span> <span class="' + cls + '">' + esc(msg) + '</span>';
@@ -89,20 +96,22 @@
     ['ok', 'check  app-ads.txt → 200 OK'], ['ok', 'check  privacy-policy → 200 OK'], ['p', 'spawn  Feline1 / C0 / X0 已就位'],
     ['c', 'arcade KITTY RUNNER 已加载，等待玩家']
   ];
-  var terminalEpoch = 0, bootTimers = [], terminalTimer = 0, logCursor = 0;
+  var terminalEpoch = 0, bootTimers = [], terminalTimer = 0, logCursor = 0, resumeTerminal = null;
   function startTerminal() {
     var epoch = ++terminalEpoch;
     bootTimers.forEach(clearTimeout); bootTimers = [];
-    clearTimeout(terminalTimer);
+    clearTimeout(terminalTimer); terminalTimer = 0;
     logCursor = 0;
     logEl.textContent = ''; logEl.appendChild(cur);
     var localized = window.I18N && I18N.getLocale() !== 'zh-CN';
     var startLines = localized ? I18N.getLogLines('boot') : boot;
-    startLines.forEach(function (b, i) {
+    if (!document.hidden) startLines.forEach(function (b, i) {
       bootTimers.push(setTimeout(function () { if (epoch === terminalEpoch) log(b[0], b[1]); }, 250 + i * 320));
     });
     function loop() {
       if (epoch !== terminalEpoch) return;
+      terminalTimer = 0;
+      if (document.hidden) return;
       var m, delay;
       if (localized) {
         var lines = I18N.getLogLines('stream');
@@ -116,7 +125,8 @@
       log(m[0], m[1]);
       terminalTimer = setTimeout(loop, delay);
     }
-    terminalTimer = setTimeout(loop, 3200);
+    resumeTerminal = function () { if (!document.hidden && epoch === terminalEpoch && !terminalTimer) terminalTimer = setTimeout(loop, 3200); };
+    resumeTerminal();
   }
   startTerminal();
 
@@ -172,6 +182,7 @@
   var chartVis = true;
   if (window.IntersectionObserver) new IntersectionObserver(function (en) { chartVis = en[en.length - 1].isIntersecting; if (chartVis) drawChart(); }).observe(ch);
   function drawChart() {
+    if (document.hidden || !chartVis) return;
     var box = ch.parentNode, dpr = (window.devicePixelRatio || 1) * (window.KR_FRAME ? KR_FRAME.s : 1), w = box.clientWidth, h = box.clientHeight;
     if (!w || !h) return;
     var bw0 = Math.round(w * dpr), bh0 = Math.round(h * dpr);
@@ -198,6 +209,7 @@
     cg.fillText(T('chart.canvasLabel'), 6, 14);
   }
   setInterval(function () {
+    if (document.hidden) return;
     var last = data[data.length - 1], nv = last + (R() - 0.47) * 2000;
     data.push(nv); data.shift(); if (chartVis) drawChart();
     var pct = (nv - data[0]) / data[0] * 100;
@@ -209,6 +221,16 @@
   else window.addEventListener('resize', drawChart);
   window.addEventListener('c0-language-change', function () { if (chartVis) drawChart(); });
   drawChart();
-
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      bootTimers.forEach(clearTimeout); bootTimers = [];
+      clearTimeout(terminalTimer); terminalTimer = 0;
+      return;
+    }
+    // These are decorative readouts: resume current values instead of catching
+    // up on every missed timer or replaying the terminal's boot sequence.
+    updateClockMood(); renderCards(); if (chartVis) drawChart();
+    if (resumeTerminal) resumeTerminal();
+  });
 
 })();

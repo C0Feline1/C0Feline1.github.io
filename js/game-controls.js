@@ -56,7 +56,7 @@
   pause.addEventListener('click', function (event) { event.preventDefault(); event.stopPropagation(); releaseAll(); KittyRunner.plus(); canvas.focus({ preventScroll: true }); refresh(); });
   window.addEventListener('blur', releaseAll);
   window.addEventListener('studio-stage-change', function (event) { if (!event.detail || event.detail.active !== 'game') releaseAll(); refresh(); });
-  document.addEventListener('visibilitychange', function () { if (document.hidden) releaseAll(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) releaseAll(); else refresh(); });
   if (pane && window.MutationObserver) new MutationObserver(function () { if (pane.hidden) releaseAll(); refresh(); }).observe(pane, { attributes: true, attributeFilter: ['hidden'] });
   function refresh() {
     var s = state();
@@ -74,5 +74,6 @@
     if (lastMode !== s.mode) { if (!playing) releaseAll(); lastMode = s.mode; }
   }
   window.addEventListener('c0-language-change', function () { paintArrow(); refresh(); });
-  paintArrow(); refresh(); setInterval(refresh, 200);
+  paintArrow(); refresh();
+  setInterval(function () { if (!document.hidden && !(pane && pane.hidden)) refresh(); }, 200);
 })();

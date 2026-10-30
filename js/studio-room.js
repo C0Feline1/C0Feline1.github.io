@@ -1,7 +1,7 @@
 /* Original studio scenery and kitten, shared by the expanded room. */
 (function () {
   'use strict';
-  var SW=320, SH=180, FY=128, FEET_Y=158;
+  var SW=320, SH=300, FY=128, FEET_Y=158;
   var FRIDGE={x:282,y:137,w:24,h:38};
   var props=PX.buildProps();
   function buildStudioCat() {
@@ -49,8 +49,9 @@
     return { walk: walk, idle: [walk[0], walk[2]], sleep: make(0, true) };
   }
   var bg = (function () {
-    var c = PX.skyGradient(SW, SH, ['#120c22', '#1e1534', '#2a1d45']);
-    var x = c.getContext('2d');
+    var c = PX.make(SW, SH), x = c.getContext('2d');
+    // Extending the floor must not stretch the original wall's color ramp.
+    x.drawImage(PX.skyGradient(SW, 180, ['#120c22', '#1e1534', '#2a1d45']), 0, 0);
     for (var yy = FY; yy < SH; yy++) for (var xx = 0; xx < SW; xx++) {
       var plank = Math.floor((xx + (Math.floor((yy - FY) / 6) % 2) * 23) / 46);
       x.fillStyle = (yy - FY) % 6 === 0 ||
@@ -106,27 +107,37 @@
     });
 
     // Small furniture, drawn in the same palette as the original room.
+    // The expanded floor separates the quiet corners from the work docks.
     // Bed at left.
+    x.save(); x.translate(0, 60);
     x.fillStyle = '#241425'; x.fillRect(2, 145, 59, 29);
     x.fillStyle = '#70405b'; x.fillRect(4, 143, 7, 29); x.fillRect(5, 145, 55, 4);
     x.fillStyle = '#d4b5c8'; x.fillRect(11, 150, 14, 8); x.fillStyle = '#9d6683'; x.fillRect(12, 151, 12, 2);
     x.fillStyle = '#7b4263'; x.fillRect(25, 149, 32, 17); x.fillStyle = '#b75883'; x.fillRect(28, 150, 25, 2);
     x.fillStyle = '#4a2e44'; x.fillRect(7, 170, 4, 5); x.fillRect(54, 170, 4, 5);
+    x.restore();
     // Exercise mat and dumbbells.
+    x.save(); x.translate(0, 60);
     x.fillStyle = '#241625'; x.fillRect(68, 155, 52, 7); x.fillStyle = '#b48cff'; x.fillRect(70, 155, 48, 2);
     x.fillStyle = '#4fe3ff'; x.fillRect(108, 150, 3, 7); x.fillRect(105, 152, 9, 2);
+    x.restore();
     // X0's easel and blank canvas.
+    x.save(); x.translate(0, 44);
     x.fillStyle = '#49303d'; x.fillRect(145, 135, 17, 15); x.fillStyle = '#c6a980'; x.fillRect(147, 137, 13, 11);
     x.fillStyle = '#684639'; x.fillRect(152, 150, 3, 12); x.fillRect(148, 160, 11, 2);
+    x.restore();
     // Wooden rack with two practice swords.
     x.fillStyle = '#56384c'; x.fillRect(222, 77, 29, 3); x.fillRect(224, 80, 2, 5); x.fillRect(247, 80, 2, 5);
     x.fillStyle = '#b9c2d8'; x.fillRect(228, 67, 2, 10); x.fillRect(239, 69, 2, 8);
     x.fillStyle = '#ff9fc4'; x.fillRect(226, 74, 6, 2); x.fillRect(237, 73, 6, 2);
     // Cat bed beside the easel.
+    x.save(); x.translate(0, 86);
     x.fillStyle = '#281426'; x.fillRect(172, 154, 43, 15);
     x.fillStyle = '#7a3a58'; x.fillRect(174, 153, 39, 8); x.fillStyle = '#ff7eaf'; x.fillRect(178, 154, 31, 4);
     x.fillStyle = '#563149'; x.fillRect(176, 167, 4, 3); x.fillRect(207, 167, 4, 3);
+    x.restore();
     // Compact snack fridge in its own floor corner, clear of the server rack.
+    x.save(); x.translate(0, 72);
     x.fillStyle = '#1b1220'; x.fillRect(FRIDGE.x - 2, FEET_Y + 18, FRIDGE.w + 4, 2);
     x.fillStyle = '#171322'; x.fillRect(FRIDGE.x, FRIDGE.y, FRIDGE.w, FRIDGE.h);
     x.fillStyle = '#8992b4'; x.fillRect(FRIDGE.x + 1, FRIDGE.y + 1, FRIDGE.w - 2, FRIDGE.h - 3);
@@ -139,6 +150,7 @@
     x.fillStyle = '#39243b'; x.fillRect(FRIDGE.x + 3, FRIDGE.y - 4, 8, 4);
     x.fillStyle = '#ff9fc4'; x.fillRect(FRIDGE.x + 4, FRIDGE.y - 5, 6, 2);
     x.fillStyle = '#ffd45e'; x.fillRect(FRIDGE.x + 6, FRIDGE.y - 3, 2, 2);
+    x.restore();
     return c;
   })();
 
