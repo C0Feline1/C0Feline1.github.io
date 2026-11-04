@@ -22,6 +22,7 @@
 | 隐私政策（Play 隐私政策字段） | https://c0feline1.github.io/stardream-gallery-privacy/ |
 | 服务条款（Play 应用内容 → 交易者身份） | https://c0feline1.github.io/stardream-gallery-terms/ |
 | AdMob app-ads.txt | https://c0feline1.github.io/app-ads.txt |
+| 站点地图（Search Console → 站点地图） | https://c0feline1.github.io/sitemap.xml |
 | 排行榜 API | https://feline1.top/api/kr |
 
 `app-ads.txt` 内容：`google.com, pub-3697974115457427, DIRECT, f08c47fec0942fa0`。
@@ -38,7 +39,8 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
   （`python tools/compose_loop.py` 重新生成，只用标准库）
 - `stardream-gallery-privacy/index.html`：隐私政策（中英文）
 - `stardream-gallery-terms/index.html`：服务条款（中英文）；主页“法律与验证”面板与隐私政策同一行链接。游戏加入内购、付费内容或改变奖励规则前，须同步更新条款与生效日期
-
+- `sitemap.xml` / `robots.txt`：供 Search Console 收录。新增或删除公开页面、或页面内容有实质更新时，同步修改对应 `<loc>` / `<lastmod>`
+- `googleebc8ee545beb6d97.html`：Search Console 所有权验证文件，必须一直保留，删除会导致验证失效
 ## 排行榜服务器
 
 - 前端：`js/board.js` 里 `API = 'https://feline1.top/api/kr'`，接口 `/top` `/qualify` `/start` `/submit`。
