@@ -127,6 +127,7 @@
   .legal-h { margin: 0 0 4px; font-size: 12px; font-weight: normal; color: var(--gold); letter-spacing: 1px; }
   .legal-apps { margin-bottom: 8px; }
   .legal-apps .app { color: #fff; }
+  .legal-docs { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   .lb-tip { color: var(--dim); font-size: 11px; margin: 6px 0 0; }
   .lb-modal { position: fixed; inset: 0; background: rgba(7,5,13,.72); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
   .lb-modal[hidden] { display: none; }

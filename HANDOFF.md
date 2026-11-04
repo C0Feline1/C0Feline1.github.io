@@ -20,6 +20,7 @@
 | --- | --- |
 | 主页 / Play 商店"网站" | https://c0feline1.github.io/ |
 | 隐私政策（Play 隐私政策字段） | https://c0feline1.github.io/stardream-gallery-privacy/ |
+| 服务条款（Play 应用内容 → 交易者身份） | https://c0feline1.github.io/stardream-gallery-terms/ |
 | AdMob app-ads.txt | https://c0feline1.github.io/app-ads.txt |
 | 排行榜 API | https://feline1.top/api/kr |
 
@@ -36,6 +37,7 @@ Play Console 与 AdMob 侧已手动更新；隐私政策在 Play 中显示"审�
 - `music/feline-neon-loop-v3.wav`：背景音乐，由 `tools/compose_loop.py` 用代码合成
   （`python tools/compose_loop.py` 重新生成，只用标准库）
 - `stardream-gallery-privacy/index.html`：隐私政策（中英文）
+- `stardream-gallery-terms/index.html`：服务条款（中英文）；主页“法律与验证”面板与隐私政策同一行链接。游戏加入内购、付费内容或改变奖励规则前，须同步更新条款与生效日期
 
 ## 排行榜服务器
 
