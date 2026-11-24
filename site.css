@@ -121,9 +121,9 @@
   .ad-copy b { color: var(--gold); font-size: 18px; font-weight: normal; letter-spacing: 2px; }
   .ad-copy p { margin: 6px 0 0; color: #cfc3ea; font-size: 12px; line-height: 1.5; }
   .ad-copy .dim, .ad-note { color: var(--dim) !important; font-size: 10px !important; }
-  .work-link a { display: block; color: inherit; text-decoration: none; }
-  .work-link:hover { border-color: var(--pink); background: rgba(255,79,163,.08); }
-  .work-link:hover b { color: var(--pink); }
+  .work-stores { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
+  .work-stores a { display: inline-block; padding: 4px 0; color: var(--cyan); font-size: 13px; text-underline-offset: 3px; }
+  .work-stores a:hover, .work-stores a:focus-visible { color: var(--pink); }
   .legal-h { margin: 0 0 4px; font-size: 12px; font-weight: normal; color: var(--gold); letter-spacing: 1px; }
   .legal-apps { margin-bottom: 8px; }
   .legal-apps .app { color: #fff; }
